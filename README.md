@@ -14,6 +14,21 @@ The projects are independent. Each one has its own folder and its own final deli
 | `p6-blindspot/` | Blind-spot sweep of numerical linear algebra | `index.html` | 15 |
 | `p7-explainers/` | Explainer series: power-system dynamics for programmers | `index.html`, `lesson1.html` to `lesson8.html` | 19 |
 
+## Live pages
+
+Every HTML deliverable is served by GitHub Pages. Click a link to open the rendered page.
+
+| Project | Live pages |
+|---|---|
+| P1 textbook | [Ch 1: Machines that swing](https://az9713.github.io/science-projects-misc/p1-textbook/ch1.html) · [Ch 2: The limit of following](https://az9713.github.io/science-projects-misc/p1-textbook/ch2.html) · [Ch 3: Grid-forming control](https://az9713.github.io/science-projects-misc/p1-textbook/ch3.html) · [Ch 4: System stability and sizing](https://az9713.github.io/science-projects-misc/p1-textbook/ch4.html) |
+| P2 physics | [Reproduction report](https://az9713.github.io/science-projects-misc/p2-physics/report.html) |
+| P3 PDE | [Bake-off report](https://az9713.github.io/science-projects-misc/p3-pde/report.html) |
+| P5 sizing | [BESS design memo](https://az9713.github.io/science-projects-misc/p5-sizing/design-memo.html) |
+| P6 blind spots | [Numerical linear algebra index](https://az9713.github.io/science-projects-misc/p6-blindspot/index.html) |
+| P7 explainers | [Series index](https://az9713.github.io/science-projects-misc/p7-explainers/index.html) · [1](https://az9713.github.io/science-projects-misc/p7-explainers/lesson1.html) · [2](https://az9713.github.io/science-projects-misc/p7-explainers/lesson2.html) · [3](https://az9713.github.io/science-projects-misc/p7-explainers/lesson3.html) · [4](https://az9713.github.io/science-projects-misc/p7-explainers/lesson4.html) · [5](https://az9713.github.io/science-projects-misc/p7-explainers/lesson5.html) · [6](https://az9713.github.io/science-projects-misc/p7-explainers/lesson6.html) · [7](https://az9713.github.io/science-projects-misc/p7-explainers/lesson7.html) · [8](https://az9713.github.io/science-projects-misc/p7-explainers/lesson8.html) |
+
+P4 proofs are Markdown. GitHub renders them in the repository view: [theorems.md](p4-proofs/theorems.md).
+
 ## How the agent fleet works
 
 Every project follows the same pattern. Claude Code's Workflow tool ran each stage as a script of `agent()` calls:
