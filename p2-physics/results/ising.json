@@ -1,0 +1,32 @@
+{
+  "target": "Tc, 2D square-lattice Ising model (J=1, k_B=1, h=0)",
+  "method": "Binder-cumulant crossing between L=16 and L=32 (cubic fit of U4_16 - U4_32 over a 7-point T window, single root taken as Tc)",
+  "measured": 2.2675,
+  "published": 2.269185,
+  "tolerance": 0.0094,
+  "abs_diff": 0.0017,
+  "error_estimate": 0.0025,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 157.0,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": null,
+  "seed": 20260922,
+  "lattice_sizes": [16, 32],
+  "runs": [
+    {"run": 1, "measured": 2.2675, "abs_diff": 0.0017, "tolerance": 0.0094, "runtime_s": 135.2, "exit_code": 0, "result": "PASS"},
+    {"run": 2, "measured": 2.2675, "abs_diff": 0.0017, "tolerance": 0.0094, "runtime_s": 178.8, "exit_code": 0, "result": "PASS"}
+  ],
+  "previous": {
+    "measured": 2.267460,
+    "tolerance": 0.05,
+    "abs_diff": 0.001725314,
+    "pass": true,
+    "runtime_s": 85.2
+  },
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "notes": "Fix stage applied ising.py changes 1-6 from referee.md (sigma(Tc) via 2000-draw noise Monte Carlo, run-time tolerance = 3 sigma + 0.002 finite-size bound, corrected docstring bound, sys.exit(1) instead of bare assert, corrected notes sentence, and the standard MEASURED/PUBLISHED/ERROR_ESTIMATE/TOLERANCE/ABS_DIFF/RUNTIME_S/RESULT print block). Two full verify2 runs gave identical numeric lines (MEASURED=2.2675, ERROR_ESTIMATE=0.0025, TOLERANCE=0.0094, ABS_DIFF=0.0017, RESULT=PASS in both), so the result is deterministic under the fixed seed (SEED=20260922); only wall-clock runtime differed (135.2 s vs 178.8 s), both well inside the 240 s per-run timeout. Recomputed abs_diff = |2.2675 - 2.269185| = 0.001685, matching the printed ABS_DIFF=0.0017 within the script's 4-decimal rounding. Pass holds on 3 sigma alone (3 sigma = 0.0074 > abs_diff 0.0017); tolerance is now measured (3 x sigma(Tc) + 0.002 finite-size bound) rather than the old fixed TOL=0.05 (a 20-sigma band). U4 at the crossing came out to 0.6124, close to the ~0.61 expected for the square lattice with periodic boundaries, so the crossing is not a fluke. No warnings or errors on stderr in either run. Referee change 5 applied: this notes field no longer claims bit-identical repeats are a precision check, and no longer says the docstring's asserted 0.005 bias is 'smaller than' the observed 0.0017 deviation -- per referee change 3, the run's own U16(Tc) vs U*=0.61069 bound now bounds the shift below about 0.0016, and the sign is not resolved. Previous (pre-fix, verify1) values for comparison: measured=2.267460, tolerance=0.05, abs_diff=0.001725314, pass=true, runtime_s=85.2, error_estimate not printed (script previously printed no ERROR_ESTIMATE/TOLERANCE/ABS_DIFF/RESULT block; results/ising.json was filled from free-text lines)."
+}

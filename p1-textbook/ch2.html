@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Chapter 2 — Inverter-based resources and the limit of following</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1;
+  --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf;
+  --border:#1e293b; --border2:#334155; --card2:#17233a; --eqbg:#16213a;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:Georgia,"Times New Roman",serif; font-size:17px; line-height:1.65;
+}
+.wrap{max-width:46rem;margin:0 auto;padding:1.5rem 1rem 5rem}
+h1,h2,h3{font-family:"Helvetica Neue",Arial,sans-serif;line-height:1.25;color:var(--text)}
+h1{font-size:1.75rem;margin:0 0 .35rem;letter-spacing:-.01em}
+h2{font-size:1.25rem;margin:2.6rem 0 .6rem;padding-top:.8rem;border-top:1px solid var(--border2)}
+h3{font-size:1.02rem;margin:1.8rem 0 .5rem;color:var(--accent2)}
+.chapnum{font-family:"Helvetica Neue",Arial,sans-serif;font-size:.8rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 .4rem}
+.subtitle{color:var(--muted);font-style:italic;margin:.2rem 0 1.4rem}
+p{margin:.85rem 0}
+var{font-style:italic;font-family:Georgia,serif}
+sub,sup{font-size:.72em}
+a{color:var(--accent2)}
+.card{background:var(--card);border:1px solid var(--border2);border-radius:8px;
+  padding:.9rem 1rem;margin:1.3rem 0}
+.card h4{font-family:"Helvetica Neue",Arial,sans-serif;font-size:.78rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 .5rem}
+.def,.model,.lem,.prop,.thm,.cor,.cit,.ex,.rem{
+  background:var(--card);border:1px solid var(--border2);border-left:3px solid var(--accent2);
+  border-radius:6px;padding:.85rem 1rem;margin:1.4rem 0}
+.thm,.cor{border-left-color:var(--accent)}
+.cit{border-left-color:var(--muted);border-left-style:dashed}
+.ex{border-left-color:var(--accent);background:var(--card2)}
+.rlabel{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;font-size:.9rem;
+  color:var(--accent2);display:block;margin-bottom:.35rem}
+.thm .rlabel,.cor .rlabel,.ex .rlabel{color:var(--accent)}
+.cit .rlabel{color:var(--muted)}
+.rid{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:400;font-size:.72rem;
+  color:var(--muted);letter-spacing:.06em}
+.status{display:block;font-family:"Helvetica Neue",Arial,sans-serif;font-size:.74rem;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:.6rem}
+.proof{margin:.9rem 0 0;padding-left:.9rem;border-left:1px solid var(--border2);color:var(--text2)}
+.proof .ph{font-family:"Helvetica Neue",Arial,sans-serif;font-size:.74rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent2);display:block;margin-bottom:.3rem}
+.qed{color:var(--accent2)}
+.eqn{display:flex;align-items:center;gap:.6rem;margin:1rem 0;
+  background:var(--eqbg);border:1px solid var(--border2);border-radius:6px;padding:.6rem .7rem}
+.eqbody{flex:1 1 auto;overflow-x:auto;color:var(--text);font-size:1.02rem;white-space:nowrap;
+  padding-bottom:.15rem}
+.eqno{flex:0 0 auto;color:var(--muted);font-family:"Helvetica Neue",Arial,sans-serif;font-size:.8rem}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:1.1rem 0;
+  border:1px solid var(--border2);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.82rem;min-width:30rem;background:var(--card)}
+caption{caption-side:top;text-align:left;color:var(--muted);font-size:.8rem;padding:.55rem .7rem;
+  font-family:"Helvetica Neue",Arial,sans-serif}
+th,td{border-bottom:1px solid var(--border2);padding:.4rem .55rem;text-align:left;vertical-align:top}
+th{color:var(--accent2);font-weight:600;white-space:nowrap}
+td{color:var(--text2)}
+tbody tr:last-child td{border-bottom:none}
+figure{margin:1.6rem 0;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:.8rem}
+figure svg{width:100%;height:auto;display:block}
+figcaption{color:var(--text2);font-size:.85rem;margin-top:.6rem;
+  font-family:"Helvetica Neue",Arial,sans-serif;line-height:1.5}
+figcaption b{color:var(--accent)}
+.cite{color:var(--muted);font-size:.86em;font-family:"Helvetica Neue",Arial,sans-serif}
+.exercise{background:var(--card);border:1px solid var(--border2);border-radius:6px;
+  padding:.8rem 1rem;margin:1.1rem 0}
+.exercise .xh{font-family:"Helvetica Neue",Arial,sans-serif;font-weight:700;font-size:.85rem;
+  color:var(--accent);display:block;margin-bottom:.3rem}
+details{margin-top:.6rem;border-top:1px solid var(--border2);padding-top:.5rem}
+summary{cursor:pointer;color:var(--accent2);font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.82rem;letter-spacing:.04em}
+details p{font-size:.95rem;color:var(--text2)}
+ul,ol{margin:.8rem 0;padding-left:1.3rem}
+li{margin:.4rem 0}
+.notation li{font-size:.94rem;color:var(--text2)}
+.lead{font-size:1.06rem;color:var(--text)}
+hr{border:none;border-top:1px solid var(--border2);margin:2.5rem 0}
+.svgtxt{font-family:"Helvetica Neue",Arial,sans-serif}
+@media (max-width:420px){
+  body{font-size:16px}
+  .wrap{padding:1.1rem .8rem 4rem}
+  h1{font-size:1.4rem}
+  .eqbody{font-size:.95rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="chapnum">Chapter 2</p>
+<h1>Inverter-based resources and the limit of following</h1>
+<p class="subtitle">Why a converter that measures the grid angle stops working when the grid gets weak.</p>
+
+<div class="card">
+<h4>What this chapter establishes</h4>
+<p>A grid-following converter injects a commanded current at an angle it has measured. Model this converter as a current source behind a grid reactance <var>X</var><sub>g</sub>. The angle loop then obeys one equation: <var>v</var><sub>q</sub> = <var>X</var><sub>g</sub><var>I</var><sub>d</sub> &minus; <var>V</var><sub>g</sub> sin <var>&theta;</var><sub>p</sub>. Three facts follow from it.</p>
+<p><em>This card summarises the results proved below. Its symbols are defined in &sect;2.1 to &sect;2.5.</em></p>
+<ol>
+<li>A steady state exists exactly when <var>X</var><sub>g</sub><var>I</var><sub>d</sub> &le; <var>V</var><sub>g</sub>, that is <var>I</var><sub>d</sub> &le; SCR &middot; <var>V</var><sub>g</sub> in per unit. The bound is on current, not on power (Theorem 2.7, <span class="rid">R18</span>).</li>
+<li>Delivered power peaks at SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 at the current <var>I</var><sub>d</sub> = SCR &middot; <var>V</var><sub>g</sub>/&radic;2, which is 0.707 of the current bound, and then falls back toward zero (Theorem 2.7, <span class="rid">R18</span>).</li>
+<li>The loop gain <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> equals the terminal voltage magnitude and goes to zero at the bound. It carries the loop bandwidth and the loop damping ratio down with it (Theorem 2.8, <span class="rid">R19</span>).</li>
+</ol>
+<p><var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> is the structural twin of Chapter 1's synchronizing torque coefficient <var>K</var><sub>s</sub> = (<var>E</var>&prime;<var>V</var><sub>inf</sub>/<var>X</var>) cos <var>&delta;</var><sub>0</sub> (<a href="ch1.html#lem-1-6"><span class="rid">R06</span></a>). The whole book turns on that parallel.</p>
+</div>
+
+<div class="card">
+<h4>Prerequisites</h4>
+<p>From Chapter 1, three results. The per-unit system (<a href="ch1.html#def-1-1"><span class="rid">R01</span></a>). The synchronizing torque coefficient <var>K</var><sub>s</sub> = (<var>E</var>&prime;<var>V</var><sub>inf</sub>/<var>X</var>) cos <var>&delta;</var><sub>0</sub>, with <var>V</var><sub>inf</sub> the infinite-bus voltage of Chapter 1, and the condition |<var>&delta;</var><sub>0</sub>| &lt; 90&deg; (<a href="ch1.html#lem-1-6"><span class="rid">R06</span></a>). The small-signal single-machine result <var>&omega;</var><sub>n</sub> = &radic;(<var>K</var><sub>s</sub><var>&omega;</var><sub>0</sub>/(2<var>H</var>)) with <var>&zeta;</var> = <var>K</var><sub>D</sub>/(4<var>H&omega;</var><sub>n</sub>) (<a href="ch1.html#thm-1-7"><span class="rid">R07</span></a>). This chapter cites those results by identifier. It does not restate their proofs.</p>
+<p>From the reader: linear time-invariant systems, second-order transfer functions, eigenvalues, phasors, and Kirchhoff's laws.</p>
+</div>
+
+<h2 id="s20">The problem: a control loop that needs what it is supposed to make</h2>
+
+<p class="lead">A power system that runs on synchronous machines has a frequency because rotors have mass. Chapter 1 showed the consequence. A rotor is a mechanical integrator. Its angle moves when mechanical power in and electrical power out differ. That one fact produced the swing equation, the inertia constant <var>H</var>, the synchronizing torque coefficient <var>K</var><sub>s</sub>, and a pair of complex eigenvalues that a planner can compute and a protection engineer can trust.</p>
+
+<p>An inverter has no rotor. It has semiconductor switches, a filter inductor, and a capacitor on its direct-current side. It cannot integrate power into an angle by physics. It must be told what angle to use.</p>
+
+<p>The standard answer for three decades is grid-following control. The converter measures the grid voltage. A phase-locked loop extracts the angle of that voltage. The converter then injects a current at a commanded magnitude and a commanded phase relative to that measured angle. The scheme needs no model of the grid, and the 10 Hz loop of &sect;2.4 settles in about 0.09 s on a stiff grid. It has been the standard inverter control of the last three decades (book plan &sect;1.1); the grid-forming plant of Chapter 3 is the alternative under test.</p>
+
+<p>The scheme has one structural weakness. It needs a grid angle that already exists. A phase-locked loop cannot lock to a signal that is not there.</p>
+
+<p>Here is the consequential question. As synchronous machines retire, the voltage that each converter measures is set more and more by other converters, which are themselves measuring it. The short-circuit power behind the point of connection falls. The grid reactance <var>X</var><sub>g</sub> seen by any one plant rises. What breaks first, and at what number?</p>
+
+<p>The symbols in the next paragraph are defined in &sect;2.4 and &sect;2.5. The paragraph states the destination.</p>
+
+<p>This chapter answers that with one scalar. Build the current-source model, write the angle-loop equation, and every weak-grid symptom that the static model contains falls out of the single quantity <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub>: the loss of terminal voltage, the loss of export power, and the loss of loop bandwidth and damping. Grid strength enters the control loop of that model through this one number and nowhere else. The number is also the terminal voltage magnitude, and at unity power factor it is also the delivered power in per unit. One collapse therefore takes voltage, power, and control bandwidth together. One symptom is <em>not</em> among these: the oscillatory instability that a fuller model predicts. Section 2.6.3 says why, and what the static model cannot claim.</p>
+
+<p>The route to that result runs through five pieces of machinery. Sections 2.1 to 2.4 build them: the rotating reference frame (&sect;2.1), the averaged converter (&sect;2.2), the inner current loop (&sect;2.3), and the phase-locked loop (&sect;2.4). Section 2.5 puts the converter behind a grid impedance and derives the bound. Section 2.6 reads off the damage, works two numerical cases, and states plainly what the model does not explain.</p>
+
+<div class="card notation">
+<h4>Local notation for this chapter</h4>
+<p>Every symbol below is used in this chapter and is <em>not</em> in the book-wide notation table of the plan. Each one is defined here and again in prose at first use. All other symbols in this chapter come from the book-wide table.</p>
+<ul>
+<li><var>&theta;</var><sub>g</sub> &mdash; angle of the grid Thevenin source phasor in the stationary frame, in rad. Under Model 2.6 assumption (5) the grid runs at rated frequency, so d<var>&theta;</var><sub>g</sub>/d<var>t</var> = <var>&omega;</var><sub>0</sub>.</li>
+<li><var>&theta;</var><sub>p</sub> &mdash; angle of the phase-locked-loop reference frame measured from the grid source phasor, <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>pll</sub> &minus; <var>&theta;</var><sub>g</sub>, in rad. Its time derivative is <var>&omega;</var><sub>pll</sub> &minus; <var>&omega;</var><sub>0</sub>. Its steady-state value is <var>&theta;</var><sub>0</sub>, which <em>is</em> in the book table.</li>
+<li><var>I</var><sub>d</sub>, <var>I</var><sub>q</sub> &mdash; steady-state (constant) values of the dq current components <var>i</var><sub>d</sub>, <var>i</var><sub>q</sub>, in pu. Capitals mark the operating point.</li>
+<li>&Delta;<var>&theta;</var><sub>p</sub>, &Delta;<var>v</var><sub>q</sub> &mdash; small deviations of <var>&theta;</var><sub>p</sub> and <var>v</var><sub>q</sub> from the operating point. The prefix &Delta; always means "small deviation from the operating point".</li>
+<li><var>P</var><sub>max</sub> &mdash; the largest active power the model of Model 2.6 can deliver, in pu.</li>
+<li>|<var>v</var>| &mdash; terminal voltage magnitude, &radic;(<var>v</var><sub>d</sub><sup>2</sup> + <var>v</var><sub>q</sub><sup>2</sup>), in pu.</li>
+<li><var>V</var><sub>m</sub> &mdash; peak value of a balanced three-phase set, in pu. Used in &sect;2.1 and Fig. 2.1 only.</li>
+<li><var>V</var><sub>inf</sub> &mdash; infinite-bus voltage magnitude of Chapter 1, in pu. Appears here only inside the Chapter 1 formula for <var>K</var><sub>s</sub> (<a href="ch1.html#lem-1-6"><span class="rid">R06</span></a>).</li>
+<li><var>&theta;</var> (bare, no subscript) &mdash; the rotation-angle argument of the Park transform <strong>T</strong><sub>P</sub>(<var>&theta;</var>) in equation (2.2), in rad. The book table gives <var>&theta;</var> without a subscript to the internal angle state of a grid-forming converter in Chapter 3; this chapter uses it only as that transform argument.</li>
+<li><var>s</var> &mdash; Laplace variable, in 1/s.</li>
+<li><var>k</var><sub>p,c</sub>, <var>k</var><sub>i,c</sub> &mdash; proportional and integral gains of the inner current controller. With <var>k</var><sub>p,c</sub> = <var>&alpha;</var><sub>c</sub><var>L</var><sub>f</sub> and <var>k</var><sub>i,c</sub> = <var>&alpha;</var><sub>c</sub><var>R</var><sub>f</sub> their SI units are &Omega; and &Omega;/s; in per unit they are pu and pu/s when <var>L</var><sub>f</sub>, <var>R</var><sub>f</sub> and the gains share the converter base and <var>&alpha;</var><sub>c</sub> is in rad/s.</li>
+<li><var>&tau;</var><sub>c</sub> &mdash; closed-loop time constant of the inner current control, 1/<var>&alpha;</var><sub>c</sub>, in s.</li>
+<li><var>f</var><sub>sw</sub> &mdash; converter switching frequency, in Hz.</li>
+<li><var>p</var> &mdash; instantaneous three-phase active power in SI units, in W. Used only in Exercise 2.</li>
+<li><var>v</var><sub>a</sub>, <var>v</var><sub>b</sub>, <var>v</var><sub>c</sub>, <var>i</var><sub>a</sub>, <var>i</var><sub>b</sub>, <var>i</var><sub>c</sub> &mdash; the individual phase quantities of the sets named a, b, c in the book table, in pu.</li>
+<li><var>v</var><sub>&alpha;</sub>, <var>v</var><sub>&beta;</sub>, <var>i</var><sub>&alpha;</sub>, <var>i</var><sub>&beta;</sub> &mdash; the individual components of the stationary two-axis quantities named &alpha;, &beta; in the book table, in pu.</li>
+<li><var>v</var><sub>d,conv</sub>, <var>v</var><sub>q,conv</sub> &mdash; the voltage the converter bridge applies at its alternating-current terminals, in pu. Distinct from <var>v</var><sub>d</sub>, <var>v</var><sub>q</sub>, which are measured at the point of connection.</li>
+<li><var>j</var> &mdash; the imaginary unit, <var>j</var><sup>2</sup> = &minus;1. Book-wide.</li>
+<li><var>t</var> &mdash; time, in s. Book-wide.</li>
+<li>Superscript T &mdash; transpose of a vector or matrix, as in equation (2.1).</li>
+<li><var>V</var><sub>pk,base</sub> &mdash; peak phase-voltage base, &radic;2 <var>V</var><sub>base</sub>/&radic;3, in V. Used in &sect;2.2 (R8) and Exercise 2 (R10) only.</li>
+</ul>
+</div>
+
+<h2 id="s21">2.1 The dq frame and the Park transform</h2>
+
+<p>A three-phase converter deals in sinusoids. A controller deals in set points. The dq frame is the device that turns the first into the second. Introduce it before anything else, because every model after this point is written in it.</p>
+
+<p>Start with three phase quantities <var>v</var><sub>a</sub>, <var>v</var><sub>b</sub>, <var>v</var><sub>c</sub>. Call them the natural frame, labelled a, b, c. Assume the set is balanced: the three add to zero at every instant.</p>
+
+<div class="def" id="def-2-1" data-rid="R12">
+<span class="rlabel">Definition 2.1 &mdash; Clarke and Park transforms, amplitude-invariant form <span class="rid">(R12)</span></span>
+<p>The <strong>Clarke transform</strong> <strong>T</strong><sub>C</sub> maps a balanced three-phase set onto two stationary axes &alpha; and &beta;:</p>
+<div class="eqn"><div class="eqbody">[<var>v</var><sub>&alpha;</sub>&nbsp; <var>v</var><sub>&beta;</sub>]<sup>T</sup> = (2/3) &middot; [[1, &minus;1/2, &minus;1/2], [0, &radic;3/2, &minus;&radic;3/2]] &middot; [<var>v</var><sub>a</sub>&nbsp; <var>v</var><sub>b</sub>&nbsp; <var>v</var><sub>c</sub>]<sup>T</sup></div><div class="eqno">(2.1)</div></div>
+<p>The <strong>Park transform</strong> <strong>T</strong><sub>P</sub>(<var>&theta;</var>) rotates those two axes by an angle <var>&theta;</var> onto the direct axis d and the quadrature axis q:</p>
+<div class="eqn"><div class="eqbody">[<var>v</var><sub>d</sub>&nbsp; <var>v</var><sub>q</sub>]<sup>T</sup> = [[cos <var>&theta;</var>, sin <var>&theta;</var>], [&minus;sin <var>&theta;</var>, cos <var>&theta;</var>]] &middot; [<var>v</var><sub>&alpha;</sub>&nbsp; <var>v</var><sub>&beta;</sub>]<sup>T</sup></div><div class="eqno">(2.2)</div></div>
+<p><strong>Conventions fixed here and used for the whole book.</strong></p>
+<ol>
+<li>The factor in equation (2.1) is 2/3. This makes the transform <em>amplitude-invariant</em>: a phase quantity of peak value 1 pu gives &radic;(<var>v</var><sub>d</sub><sup>2</sup>+<var>v</var><sub>q</sub><sup>2</sup>) = 1 pu. The alternative factor &radic;(2/3) is power-invariant and is not used here.</li>
+<li>The d axis lies on the <em>measured voltage vector</em>. When the phase-locked loop of Definition 2.4 is locked, <var>v</var><sub>q</sub> = 0 and <var>v</var><sub>d</sub> = |<var>v</var>|.</li>
+<li>In per unit, active and reactive power at the point of connection are <var>P</var> = <var>v</var><sub>d</sub><var>i</var><sub>d</sub> + <var>v</var><sub>q</sub><var>i</var><sub>q</sub> and <var>Q</var> = <var>v</var><sub>q</sub><var>i</var><sub>d</sub> &minus; <var>v</var><sub>d</sub><var>i</var><sub>q</sub>, with <em>no</em> factor 3/2. The factor 3/2 appears only in SI units. Exercise 2 shows where it goes.</li>
+</ol>
+<span class="status">Status: definition, stated here. Convention follows <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 4 &mdash; verify]</span>.</span>
+</div>
+
+<p>Apply the two transforms in sequence to a balanced set at the rated angular frequency <var>&omega;</var><sub>0</sub>, and choose the rotation angle <var>&theta;</var> = <var>&omega;</var><sub>0</sub><var>t</var>. Put <var>v</var><sub>a</sub> = <var>V</var><sub>m</sub> cos(<var>&omega;</var><sub>0</sub><var>t</var>), with <var>v</var><sub>b</sub> and <var>v</var><sub>c</sub> lagging by 120&deg; and 240&deg;. Here <var>V</var><sub>m</sub> is the peak value of the set, in pu. The result is two constants:</p>
+
+<div class="eqn"><div class="eqbody"><var>v</var><sub>d</sub> = <var>V</var><sub>m</sub>,&nbsp;&nbsp;&nbsp; <var>v</var><sub>q</sub> = 0,&nbsp;&nbsp;&nbsp; for all <var>t</var></div><div class="eqno">(2.3)</div></div>
+
+<p>Equation (2.3) is the whole point of the construction. Three time-varying signals become two numbers that do not move. A proportional-integral controller can then drive a sinusoid to zero steady-state error, which it cannot do on the sinusoid itself.</p>
+
+<p>Check equation (2.3) numerically at three instants, at <var>f</var><sub>0</sub> = 50 Hz and <var>V</var><sub>m</sub> = 1 pu. At <var>t</var> = 0 ms the phases read +1.0000, &minus;0.5000, &minus;0.5000 pu, and the Clarke transform gives <var>v</var><sub>&alpha;</sub> = +1.0000, <var>v</var><sub>&beta;</sub> = 0.0000 pu. At <var>t</var> = 4 ms they read +0.3090, +0.6691, &minus;0.9781 pu, and the Clarke transform gives <var>v</var><sub>&alpha;</sub> = +0.3090, <var>v</var><sub>&beta;</sub> = +0.9511 pu. At <var>t</var> = 8 ms they read &minus;0.8090, +0.9135, &minus;0.1045 pu, giving <var>v</var><sub>&alpha;</sub> = &minus;0.8090, <var>v</var><sub>&beta;</sub> = +0.5878 pu. Rotating each pair by <var>&theta;</var> = <var>&omega;</var><sub>0</sub><var>t</var> returns <var>v</var><sub>d</sub> = 1.0000 pu and <var>v</var><sub>q</sub> = 0.0000 pu at all three instants, as equation (2.3) requires. Figure 2.1 draws the same statement.</p>
+
+<figure id="fig-2-1">
+<svg viewBox="0 0 620 260" role="img" aria-label="Three balanced phase voltages against time beside the same signal in the dq frame.">
+  <rect x="0" y="0" width="620" height="260" fill="#1e293b"/>
+  <!-- panel A -->
+  <text x="60" y="26" class="svgtxt" fill="#fb923c" font-size="12">Natural frame (a, b, c)</text>
+  <line x1="60" y1="130" x2="295" y2="130" stroke="#334155" stroke-width="1"/>
+  <line x1="60" y1="45" x2="60" y2="215" stroke="#334155" stroke-width="1"/>
+  <line x1="60" y1="55" x2="295" y2="55" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="60" y1="205" x2="295" y2="205" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="34" y="59" class="svgtxt" fill="#94a3b8" font-size="10">+1</text>
+  <text x="42" y="134" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="34" y="209" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;1</text>
+  <polyline fill="none" stroke="#e2e8f0" stroke-width="2" points="60.0,55.0 64.6,55.6 69.2,57.4 73.8,60.3 78.4,64.3 83.0,69.3 87.6,75.3 92.2,82.2 96.8,89.8 101.4,98.1 106.0,106.8 110.6,115.9 115.2,125.3 119.8,134.7 124.4,144.1 129.0,153.2 133.6,161.9 138.2,170.2 142.8,177.8 147.4,184.7 152.0,190.7 156.6,195.7 161.2,199.7 165.8,202.6 170.4,204.4 175.0,205.0 179.6,204.4 184.2,202.6 188.8,199.7 193.4,195.7 198.0,190.7 202.6,184.7 207.2,177.8 211.8,170.2 216.4,161.9 221.0,153.2 225.6,144.1 230.2,134.7 234.8,125.3 239.4,115.9 244.0,106.8 248.6,98.1 253.2,89.8 257.8,82.2 262.4,75.3 267.0,69.3 271.6,64.3 276.2,60.3 280.8,57.4 285.4,55.6 290.0,55.0"/>
+  <polyline fill="none" stroke="#fb923c" stroke-width="2" points="60.0,167.5 64.6,159.1 69.2,150.2 73.8,141.0 78.4,131.6 83.0,122.2 87.6,112.9 92.2,103.9 96.8,95.3 101.4,87.2 106.0,79.8 110.6,73.2 115.2,67.5 119.8,62.8 124.4,59.2 129.0,56.6 133.6,55.3 138.2,55.1 142.8,56.1 147.4,58.2 152.0,61.5 156.6,65.8 161.2,71.2 165.8,77.5 170.4,84.7 175.0,92.5 179.6,100.9 184.2,109.8 188.8,119.0 193.4,128.4 198.0,137.8 202.6,147.1 207.2,156.1 211.8,164.7 216.4,172.8 221.0,180.2 225.6,186.8 230.2,192.5 234.8,197.2 239.4,200.8 244.0,203.4 248.6,204.7 253.2,204.9 257.8,203.9 262.4,201.8 267.0,198.5 271.6,194.2 276.2,188.8 280.8,182.5 285.4,175.3 290.0,167.5"/>
+  <polyline fill="none" stroke="#2dd4bf" stroke-width="2" points="60.0,167.5 64.6,175.3 69.2,182.5 73.8,188.8 78.4,194.2 83.0,198.5 87.6,201.8 92.2,203.9 96.8,204.9 101.4,204.7 106.0,203.4 110.6,200.8 115.2,197.2 119.8,192.5 124.4,186.8 129.0,180.2 133.6,172.8 138.2,164.7 142.8,156.1 147.4,147.1 152.0,137.8 156.6,128.4 161.2,119.0 165.8,109.8 170.4,100.9 175.0,92.5 179.6,84.7 184.2,77.5 188.8,71.2 193.4,65.8 198.0,61.5 202.6,58.2 207.2,56.1 211.8,55.1 216.4,55.3 221.0,56.6 225.6,59.2 230.2,62.8 234.8,67.5 239.4,73.2 244.0,79.8 248.6,87.2 253.2,95.3 257.8,103.9 262.4,112.9 267.0,122.2 271.6,131.6 276.2,141.0 280.8,150.2 285.4,159.1 290.0,167.5"/>
+  <text x="296" y="59" class="svgtxt" fill="#e2e8f0" font-size="11">v_a</text>
+  <text x="296" y="171" class="svgtxt" fill="#fb923c" font-size="11">v_b</text>
+  <text x="296" y="183" class="svgtxt" fill="#2dd4bf" font-size="11">v_c</text>
+  <text x="60" y="232" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="168" y="232" class="svgtxt" fill="#94a3b8" font-size="10">10 ms</text>
+  <text x="272" y="232" class="svgtxt" fill="#94a3b8" font-size="10">20 ms</text>
+  <text x="130" y="250" class="svgtxt" fill="#94a3b8" font-size="10">time</text>
+  <!-- panel B -->
+  <text x="350" y="26" class="svgtxt" fill="#fb923c" font-size="12">Rotating frame (d, q), locked</text>
+  <line x1="350" y1="130" x2="585" y2="130" stroke="#334155" stroke-width="1"/>
+  <line x1="350" y1="45" x2="350" y2="215" stroke="#334155" stroke-width="1"/>
+  <line x1="350" y1="55" x2="585" y2="55" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="350" y1="205" x2="585" y2="205" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="324" y="59" class="svgtxt" fill="#94a3b8" font-size="10">+1</text>
+  <text x="332" y="134" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="324" y="209" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;1</text>
+  <line x1="350" y1="55" x2="580" y2="55" stroke="#e2e8f0" stroke-width="2.5"/>
+  <line x1="350" y1="130" x2="580" y2="130" stroke="#2dd4bf" stroke-width="2.5"/>
+  <text x="440" y="48" class="svgtxt" fill="#e2e8f0" font-size="11">v_d = 1.0000 pu</text>
+  <text x="440" y="146" class="svgtxt" fill="#2dd4bf" font-size="11">v_q = 0.0000 pu</text>
+  <text x="420" y="232" class="svgtxt" fill="#94a3b8" font-size="10">time</text>
+  <text x="350" y="232" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="562" y="232" class="svgtxt" fill="#94a3b8" font-size="10">20 ms</text>
+</svg>
+<figcaption><b>Fig. 2.1</b> Left: three balanced phase voltages of 1 pu peak at 50 Hz over one 20 ms cycle. Right: the same signal after the Clarke and Park transforms of Definition 2.1, with the rotation angle set to <var>&theta;</var> = <var>&omega;</var><sub>0</sub><var>t</var>. Two constants replace three sinusoids: <var>v</var><sub>d</sub> = 1.0000 pu and <var>v</var><sub>q</sub> = 0.0000 pu, checked in the text at 0 ms, 4 ms and 8 ms. Illustrates Definition 2.1 (<span class="rid">R12</span>) and equation (2.3). A phase-locked loop turns a rotating problem into a stationary one; this figure is what "locked" means.</figcaption>
+</figure>
+
+<p>One caution before proceeding. Equation (2.3) holds only because the rotation angle matched the true angle of the set. If the two differ by an error angle, <var>v</var><sub>q</sub> is not zero. The size of <var>v</var><sub>q</sub> per unit of angle error is the quantity this chapter tracks. Section 2.5 names it <var>K</var><sub>pll</sub>.</p>
+
+<h2 id="s22">2.2 The averaged converter model</h2>
+
+<p>A two-level voltage-source converter has six switches. Each switch is either on or off. The bridge output voltage is therefore a train of rectangular pulses, not a sinusoid. Modelling every pulse is expensive and, for this chapter, unnecessary.</p>
+
+<p>Replace the pulse train by its average over one switching period. Write that average as a modulation index times half the direct-current-link voltage. The modulation index components are <var>m</var><sub>d</sub> and <var>m</var><sub>q</sub>. The converter alternating-current terminal voltage is then <var>v</var><sub>d,conv</sub> = <var>m</var><sub>d</sub><var>v</var><sub>dc</sub>/2 and <var>v</var><sub>q,conv</sub> = <var>m</var><sub>q</sub><var>v</var><sub>dc</sub>/2 in SI, or, in per unit, <var>v</var><sub>d,conv</sub> = <var>m</var><sub>d</sub><var>v</var><sub>dc</sub>/(2<var>V</var><sub>pk,base</sub>) with <var>V</var><sub>pk,base</sub> the peak phase-voltage base, &radic;2 <var>V</var><sub>base</sub>/&radic;3 from <a href="ch1.html#def-1-1"><span class="rid">R01</span></a>.</p>
+
+<div class="model" id="model-2-2" data-rid="R13">
+<span class="rlabel">Model 2.2 &mdash; Averaged two-level converter with an L filter, in dq <span class="rid">(R13)</span></span>
+<p>Let <var>L</var><sub>f</sub> and <var>R</var><sub>f</sub> be the filter inductance and resistance between the converter bridge and the point of connection. Let <var>v</var><sub>d</sub>, <var>v</var><sub>q</sub> be the point-of-connection voltage and <var>i</var><sub>d</sub>, <var>i</var><sub>q</sub> the current the converter injects. In a frame rotating at <var>&omega;</var><sub>0</sub>, the filter obeys</p>
+<div class="eqn"><div class="eqbody"><var>L</var><sub>f</sub> d<var>i</var><sub>d</sub>/d<var>t</var> = <var>v</var><sub>d,conv</sub> &minus; <var>v</var><sub>d</sub> &minus; <var>R</var><sub>f</sub><var>i</var><sub>d</sub> + <var>&omega;</var><sub>0</sub><var>L</var><sub>f</sub><var>i</var><sub>q</sub><br><var>L</var><sub>f</sub> d<var>i</var><sub>q</sub>/d<var>t</var> = <var>v</var><sub>q,conv</sub> &minus; <var>v</var><sub>q</sub> &minus; <var>R</var><sub>f</sub><var>i</var><sub>q</sub> &minus; <var>&omega;</var><sub>0</sub><var>L</var><sub>f</sub><var>i</var><sub>d</sub></div><div class="eqno">(2.4)</div></div>
+<p>The terms &plusmn;<var>&omega;</var><sub>0</sub><var>L</var><sub>f</sub><var>i</var> are the <strong>cross-coupling terms</strong>. They exist because the frame rotates, not because the circuit couples the axes. A stationary inductor has no such term.</p>
+<p><strong>Assumptions.</strong> (1) The three phases are balanced. (2) The switching average is taken over one switching period, so the model is valid only for signals well below <var>f</var><sub>sw</sub>. (3) The direct-current-link voltage <var>v</var><sub>dc</sub> is held at <var>v</var><sub>dc0</sub> by a source behind the capacitor <var>C</var><sub>dc</sub>, and its dynamics are outside the loops studied here.</p>
+<p><strong>Omissions.</strong> Switching harmonics and their sidebands; dead time; converter losses other than <var>R</var><sub>f</sub>; any LCL filter resonance; unbalance and negative-sequence components; direct-current-link dynamics. Chapter 3 returns to <var>C</var><sub>dc</sub> and <var>v</var><sub>dc</sub>, because matching control makes the capacitor a state.</p>
+<span class="status">Status: model, derived here from Kirchhoff's voltage law in a rotating frame. Structure follows <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 8 &mdash; verify]</span>.</span>
+</div>
+
+<p>When does the averaging assumption fail? The usual engineering rule keeps the closed-loop bandwidth of anything built on this model about one decade below the switching frequency. A converter switching at <var>f</var><sub>sw</sub> = 2500 Hz with a current loop at 500 Hz has a ratio of 5.0, which is already tight; a ratio near 10 is the common design target <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 8 &mdash; verify]</span>. Below that ratio the average stops representing the pulse train, and a study must move to an electromagnetic-transient simulation. That move is out of scope for this book.</p>
+
+<h2 id="s23">2.3 Inner current control</h2>
+
+<p>Equation (2.4) has one control input on each axis. The bridge voltage <var>v</var><sub>d,conv</sub> is a command. The current <var>i</var><sub>d</sub> is the state. Design a controller that makes <var>i</var><sub>d</sub> follow a reference <var>i</var><sub>d,ref</sub>.</p>
+
+<p>Two obstacles sit in the way. The cross-coupling terms tie the two axes together. The point-of-connection voltage <var>v</var><sub>d</sub> acts as a disturbance. Cancel both by feeding them forward.</p>
+
+<div class="model" id="model-2-3" data-rid="R14">
+<span class="rlabel">Model 2.3 &mdash; Inner current control with decoupling; the first-order closed loop <span class="rid">(R14)</span></span>
+<p>Apply the control law</p>
+<div class="eqn"><div class="eqbody"><var>v</var><sub>d,conv</sub> = <var>k</var><sub>p,c</sub>(<var>i</var><sub>d,ref</sub> &minus; <var>i</var><sub>d</sub>) + <var>k</var><sub>i,c</sub>&int;(<var>i</var><sub>d,ref</sub> &minus; <var>i</var><sub>d</sub>)d<var>t</var> + <var>v</var><sub>d</sub> &minus; <var>&omega;</var><sub>0</sub><var>L</var><sub>f</sub><var>i</var><sub>q</sub></div><div class="eqno">(2.5)</div></div>
+<p>and the mirror law on the q axis. The last two terms cancel the disturbance and the cross-coupling in equation (2.4). What remains on each axis is a first-order plant 1/(<var>sL</var><sub>f</sub> + <var>R</var><sub>f</sub>) under proportional-integral control. Choose <var>k</var><sub>p,c</sub> = <var>&alpha;</var><sub>c</sub><var>L</var><sub>f</sub> and <var>k</var><sub>i,c</sub> = <var>&alpha;</var><sub>c</sub><var>R</var><sub>f</sub>. The controller zero then cancels the plant pole, and the closed loop becomes exactly first order:</p>
+<div class="eqn"><div class="eqbody"><var>i</var><sub>d</sub>(<var>s</var>) / <var>i</var><sub>d,ref</sub>(<var>s</var>) = <var>&alpha;</var><sub>c</sub> / (<var>s</var> + <var>&alpha;</var><sub>c</sub>)</div><div class="eqno">(2.6)</div></div>
+<p><var>&alpha;</var><sub>c</sub> is the closed-loop bandwidth of the inner current control, in rad/s. Its time constant is <var>&tau;</var><sub>c</sub> = 1/<var>&alpha;</var><sub>c</sub>.</p>
+<p><strong>Assumptions.</strong> (1) The feedforward terms in equation (2.5) are exact. (2) <var>L</var><sub>f</sub> and <var>R</var><sub>f</sub> are known. (3) Modulation and measurement delays are neglected. (4) The command never hits the current limit.</p>
+<p><strong>Omissions.</strong> Pole-zero cancellation is never exact, so a real loop keeps a slow residual pole. Computation and pulse-width-modulation delay add about 1.5 sample periods of lag <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 8, location unconfirmed &mdash; verify]</span>. Both matter for Cited Result 2.9; neither changes the steady-state results of &sect;2.5.</p>
+<span class="status">Status: model, derived here. Design rule follows <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 8 &mdash; verify]</span>.</span>
+</div>
+
+<p>Take a worked tuning. Set <var>&alpha;</var><sub>c</sub> = 2&pi; &middot; 500 Hz = 3141.59 rad/s. The time constant is <var>&tau;</var><sub>c</sub> = 1/3141.59 = 0.318 ms. The phase-locked loop of &sect;2.4 will be designed at 10 Hz. The ratio of the two bandwidths is 500/10 = 50. That ratio is the <strong>timescale separation</strong> this chapter relies on. It lets &sect;2.5 treat the injected current as an algebraic constant while the angle loop moves.</p>
+
+<p>Timescale separation is an assumption, not a law. Section 2.6 states where it breaks.</p>
+
+<h3>2.3.1 The current limit</h3>
+
+<p>A semiconductor switch has a maximum junction temperature and a maximum instantaneous current. Exceeding either destroys the device within a fraction of one fundamental cycle; the device physics behind that time is out of scope (plan &sect;1.4). Every converter therefore carries a hard current limit <var>I</var><sub>max</sub>, enforced by clamping the reference:</p>
+
+<div class="eqn"><div class="eqbody">&radic;(<var>i</var><sub>d,ref</sub><sup>2</sup> + <var>i</var><sub>q,ref</sub><sup>2</sup>) &le; <var>I</var><sub>max</sub>,&nbsp;&nbsp; typically <var>I</var><sub>max</sub> &asymp; 1.1 to 1.3 pu</div><div class="eqno">(2.7)</div></div>
+
+<p>The quoted range is an industry figure, not a computed one <span class="cite">[S18, IEEE Std 2800-2022, <i>Standard for Interconnection and Interoperability of Inverter-Based Resources</i>, current-injection clauses; S18 states requirements, not device ratings, so a human must confirm or replace this source &mdash; verify]</span>. Compare it with a synchronous machine. A machine delivers 5 to 7 times rated current into a close fault, set by its subtransient reactance and limited only by heating over seconds <span class="cite">[S01, Kundur 1994, <i>Power System Stability and Control</i>, Ch. 3; locator doubtful, verifier to confirm &mdash; verify]</span>. Compare the two directly: 1.1 to 1.3 pu against 5 to 7 pu. The converter's fault current is between 0.157 (1.1/7) and 0.260 (1.3/5) of the machine's. Measured as headroom above rating, it is 0.1 to 0.3 pu against 4 to 6 pu. The converter also has no thermal buffer: the limit is a junction temperature reached within a fraction of a cycle, not a winding temperature reached over seconds.</p>
+
+<p>Equation (2.7) is the single most consequential difference between the two device classes. It returns in Chapter 3 as a hard bound on how much inertia a grid-forming converter can supply (<span class="rid">R33</span>), and in Chapter 4 as a sizing constraint (<span class="rid">R39</span>).</p>
+
+<h2 id="s24">2.4 The phase-locked loop</h2>
+
+<p>Section 2.1 fixed the convention that the d axis lies on the measured voltage. Something must enforce that convention in real time. That something is the phase-locked loop.</p>
+
+<p>The idea is one sentence. Rotate the frame at an estimated frequency. Measure <var>v</var><sub>q</sub>. If <var>v</var><sub>q</sub> is not zero, the frame is not aligned, so correct the estimated frequency.</p>
+
+<div class="def" id="def-2-4" data-rid="R15">
+<span class="rlabel">Definition 2.4 &mdash; Synchronous-reference-frame phase-locked loop <span class="rid">(R15)</span></span>
+<p>The loop has two states: the estimated angle <var>&theta;</var><sub>pll</sub> and the integrator output that forms the estimated frequency <var>&omega;</var><sub>pll</sub>. With proportional gain <var>k</var><sub>p,pll</sub> and integral gain <var>k</var><sub>i,pll</sub>, the loop obeys</p>
+<div class="eqn"><div class="eqbody">d<var>&theta;</var><sub>pll</sub>/d<var>t</var> = <var>&omega;</var><sub>pll</sub> = <var>&omega;</var><sub>0</sub> + <var>k</var><sub>p,pll</sub><var>v</var><sub>q</sub> + <var>k</var><sub>i,pll</sub>&int;<var>v</var><sub>q</sub> d<var>t</var></div><div class="eqno">(2.8)</div></div>
+<p>The measured <var>v</var><sub>q</sub> is the error signal. The loop drives it to zero. <var>k</var><sub>p,pll</sub> has unit 1/s and <var>k</var><sub>i,pll</sub> has unit 1/s<sup>2</sup>, because <var>v</var><sub>q</sub> is in per unit.</p>
+<p><strong>Assumptions.</strong> (1) The voltage set is balanced, so no second-harmonic term appears in <var>v</var><sub>q</sub>. (2) The measurement is noise-free. (3) The loop starts inside its capture range.</p>
+<p><strong>Omissions.</strong> Unbalance rejection, harmonic filtering, and frequency-limiting logic. All exist in a real product. None changes the small-signal result of Theorem 2.8.</p>
+<span class="status">Status: definition, stated here. Structure follows <span class="cite">[S06, Yazdani and Iravani 2010, <i>Voltage-Sourced Converters in Power Systems</i>, Ch. 8 &mdash; verify]</span>.</span>
+</div>
+
+<h3>2.4.1 The stiff-grid case</h3>
+
+<p>Take the stiff-grid case first. Let the grid behind the point of connection be stiff, so the point-of-connection voltage is a fixed phasor of magnitude <var>V</var><sub>g</sub> at angle <var>&theta;</var><sub>g</sub> in the stationary frame, whatever current the converter injects. Let the grid run at rated frequency: d<var>&theta;</var><sub>g</sub>/d<var>t</var> = <var>&omega;</var><sub>0</sub>. Let <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>pll</sub> &minus; <var>&theta;</var><sub>g</sub> be the angle of the loop's frame measured from that phasor, so that d<var>&theta;</var><sub>p</sub>/d<var>t</var> = <var>&omega;</var><sub>pll</sub> &minus; <var>&omega;</var><sub>0</sub>.</p>
+<p>Apply the Park transform (2.2) with <var>&theta;</var> = <var>&theta;</var><sub>pll</sub> to the phasor <var>v</var><sub>&alpha;</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>g</sub>, <var>v</var><sub>&beta;</sub> = <var>V</var><sub>g</sub> sin <var>&theta;</var><sub>g</sub>. The second row gives <var>v</var><sub>q</sub> = <var>V</var><sub>g</sub>(&minus;sin <var>&theta;</var><sub>pll</sub> cos <var>&theta;</var><sub>g</sub> + cos <var>&theta;</var><sub>pll</sub> sin <var>&theta;</var><sub>g</sub>) = <var>V</var><sub>g</sub> sin(<var>&theta;</var><sub>g</sub> &minus; <var>&theta;</var><sub>pll</sub>) = &minus;<var>V</var><sub>g</sub> sin <var>&theta;</var><sub>p</sub>. For small <var>&theta;</var><sub>p</sub>, <var>v</var><sub>q</sub> &asymp; &minus;<var>V</var><sub>g</sub><var>&theta;</var><sub>p</sub>.</p>
+<p>Subtract <var>&omega;</var><sub>0</sub> from both sides of equation (2.8). The left side becomes d<var>&theta;</var><sub>p</sub>/d<var>t</var>:</p>
+<p style="padding-left:.5rem">d<var>&theta;</var><sub>p</sub>/d<var>t</var> = <var>k</var><sub>p,pll</sub><var>v</var><sub>q</sub> + <var>k</var><sub>i,pll</sub>&int;<var>v</var><sub>q</sub> d<var>t</var>.</p>
+<p>Substitute <var>v</var><sub>q</sub> &asymp; &minus;<var>V</var><sub>g</sub><var>&theta;</var><sub>p</sub> and differentiate once with respect to time: d<sup>2</sup><var>&theta;</var><sub>p</sub>/d<var>t</var><sup>2</sup> + <var>V</var><sub>g</sub><var>k</var><sub>p,pll</sub> d<var>&theta;</var><sub>p</sub>/d<var>t</var> + <var>V</var><sub>g</sub><var>k</var><sub>i,pll</sub><var>&theta;</var><sub>p</sub> = 0. With &Delta;<var>&theta;</var><sub>p</sub> the deviation of <var>&theta;</var><sub>p</sub> from zero, the closed loop has the characteristic polynomial</p>
+
+<div class="eqn"><div class="eqbody"><var>s</var><sup>2</sup> + <var>V</var><sub>g</sub><var>k</var><sub>p,pll</sub> <var>s</var> + <var>V</var><sub>g</sub><var>k</var><sub>i,pll</sub> = 0</div><div class="eqno">(2.9)</div></div>
+
+<p>Equation (2.9) is a clean second-order system. With <var>V</var><sub>g</sub> = 1 pu it reads <var>s</var><sup>2</sup> + <var>k</var><sub>p,pll</sub><var>s</var> + <var>k</var><sub>i,pll</sub> = 0, so the designer picks a natural frequency and a damping ratio directly:</p>
+
+<div class="eqn"><div class="eqbody"><var>k</var><sub>i,pll</sub> = <var>&omega;</var><sub>n,pll</sub><sup>2</sup>,&nbsp;&nbsp;&nbsp; <var>k</var><sub>p,pll</sub> = 2<var>&zeta;</var><sub>pll</sub><var>&omega;</var><sub>n,pll</sub></div><div class="eqno">(2.10)</div></div>
+
+<p>Design the loop for <var>&omega;</var><sub>n,pll</sub> = 2&pi; &middot; 10 Hz = 62.8319 rad/s and <var>&zeta;</var><sub>pll</sub> = 1/&radic;2 = 0.7071. Equation (2.10) gives <var>k</var><sub>i,pll</sub> = 62.8319<sup>2</sup> = 3947.84 1/s<sup>2</sup>, which this chapter prints as 3948 1/s<sup>2</sup>, and <var>k</var><sub>p,pll</sub> = 2 &middot; 0.7071 &middot; 62.8319 = 88.86 1/s. These two gains are fixed for the rest of the chapter. Nothing in &sect;2.5 or &sect;2.6 changes them. That is the point: the designer sets them once, and the grid then moves the loop underneath them.</p>
+
+<p>Equation (2.9) also carries the warning. The coefficient in front of both gains is <var>V</var><sub>g</sub>, the voltage the loop actually sees. On a stiff grid that voltage is 1 pu and can be forgotten. On a weak grid it is not, and it cannot.</p>
+<h2 id="s25">2.5 Grid strength and the existence bound</h2>
+
+<p>Everything so far assumed a stiff grid. Remove that assumption now. Replace the ideal voltage source at the point of connection by a Thevenin equivalent: a source of magnitude <var>V</var><sub>g</sub> behind an impedance. First, measure the strength of that equivalent.</p>
+
+<div class="def" id="def-2-5" data-rid="R16">
+<span class="rlabel">Definition 2.5 &mdash; Short-circuit ratio and grid strength <span class="rid">(R16)</span></span>
+<p>Let <var>S</var><sub>sc</sub> be the three-phase short-circuit apparent power at the point of connection with the converter disconnected. Let <var>S</var><sub>rated</sub> be the rated apparent power of the converter. The <strong>short-circuit ratio</strong> is</p>
+<div class="eqn"><div class="eqbody">SCR = <var>S</var><sub>sc</sub> / <var>S</var><sub>rated</sub></div><div class="eqno">(2.11)</div></div>
+<p>Take the grid Thevenin impedance to be purely inductive, so <var>R</var><sub>g</sub> = 0 and <var>Z</var><sub>g</sub> = <var>X</var><sub>g</sub>. The short-circuit level is computed at the <em>nominal</em> voltage of the point of connection, which is 1 pu on the converter base, not at the actual source magnitude <var>V</var><sub>g</sub>. Express <var>X</var><sub>g</sub> in per unit on the converter base <var>S</var><sub>rated</sub>. Then <var>S</var><sub>sc</sub> = 1<sup>2</sup>/<var>X</var><sub>g</sub> = 1/<var>X</var><sub>g</sub> in per unit, and <var>S</var><sub>rated</sub> = 1 pu, so</p>
+<div class="eqn"><div class="eqbody"><var>X</var><sub>g</sub> = 1 / SCR&nbsp;&nbsp; (per unit, on the converter base; <var>S</var><sub>sc</sub> taken at nominal voltage 1 pu)</div><div class="eqno">(2.12)</div></div>
+<p>Equation (2.12) holds whatever the actual value of <var>V</var><sub>g</sub>, because the definition of <var>S</var><sub>sc</sub> uses the nominal voltage and not <var>V</var><sub>g</sub>. The theorems of this chapter therefore carry <var>V</var><sub>g</sub> as a symbol; the examples set <var>V</var><sub>g</sub> = 1 pu. The nominal-voltage definition follows <span class="cite">[S19, IEEE Std 1204-1997, <i>Guide for Planning DC Links Terminating at AC Locations Having Low Short-Circuit Capacities</i>, definition of short-circuit ratio &mdash; verify]</span>.</p>
+<p>Equation (2.11) is the planner's number and equation (2.12) is the control engineer's. A planner reports a short-circuit level in megavolt-amperes. A control engineer needs a per-unit reactance. Equation (2.12) converts one into the other.</p>
+<p><strong>Strength classes.</strong> One common convention groups connections as high short-circuit ratio above 3, low between 2 and 3, and very low below 2 <span class="cite">[S19, IEEE Std 1204-1997, <i>Guide for Planning DC Links Terminating at AC Locations Having Low Short-Circuit Capacities</i>, strength-classification clause &mdash; verify]</span>. The boundaries are conventions, not physics. This chapter computes what happens at each value instead of arguing about labels.</p>
+<span class="status">Status: definition, stated here. Class boundaries cited, not derived.</span>
+</div>
+
+<h3>2.5.1 The current-source model</h3>
+
+<p>Now place the converter behind that impedance. Section 2.3 showed that the inner current loop is about 50 times faster than the angle loop. Exploit that ratio. On the angle-loop timescale, treat the injected current as constant and equal to its reference.</p>
+
+<div class="model" id="model-2-6" data-rid="R17">
+<span class="rlabel">Model 2.6 &mdash; Grid-following converter as a current source behind <var>jX</var><sub>g</sub> <span class="rid">(R17)</span></span>
+<p>The converter injects a constant current in its own phase-locked-loop frame: <var>I</var><sub>d</sub> on the d axis and <var>I</var><sub>q</sub> = 0 on the q axis. Operation is therefore at unity power factor <em>as the loop sees it</em>. The grid is a source of magnitude <var>V</var><sub>g</sub> at angle <var>&theta;</var><sub>g</sub> in the stationary frame, behind a reactance <var>X</var><sub>g</sub> = 1/SCR. The loop's frame sits at angle <var>&theta;</var><sub>pll</sub>. Let <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>pll</sub> &minus; <var>&theta;</var><sub>g</sub> be the angle of the loop's frame measured from the grid source phasor.</p>
+<p><strong>Derivation of the point-of-connection voltage.</strong> Three lines give it.</p>
+<ol>
+<li><em>The Park transform in complex form.</em> Multiply the second row of equation (2.2) by <var>j</var> and add it to the first row: <var>v</var><sub>d</sub> + <var>jv</var><sub>q</sub> = (cos <var>&theta;</var> &minus; <var>j</var> sin <var>&theta;</var>)(<var>v</var><sub>&alpha;</sub> + <var>jv</var><sub>&beta;</sub>) = e<sup>&minus;<var>j&theta;</var></sup>(<var>v</var><sub>&alpha;</sub> + <var>jv</var><sub>&beta;</sub>). A dq pair is the stationary complex phasor rotated back by the frame angle. The rotation is linear, so a sum of phasors rotates term by term.</li>
+<li><em>The grid source in the loop frame.</em> A balanced set of peak value <var>V</var><sub>g</sub> at angle <var>&theta;</var><sub>g</sub> has <var>v</var><sub>&alpha;</sub> + <var>jv</var><sub>&beta;</sub> = <var>V</var><sub>g</sub>e<sup><var>j&theta;</var><sub>g</sub></sup> by equation (2.1); &sect;2.1 checked this at three instants. Line 1 with <var>&theta;</var> = <var>&theta;</var><sub>pll</sub> gives <var>V</var><sub>g</sub>e<sup><var>j</var>(<var>&theta;</var><sub>g</sub> &minus; <var>&theta;</var><sub>pll</sub>)</sup> = <var>V</var><sub>g</sub>e<sup>&minus;<var>j&theta;</var><sub>p</sub></sup>.</li>
+<li><em>Kirchhoff's voltage law across <var>X</var><sub>g</sub>.</em> The current flows from the converter through <var>X</var><sub>g</sub> into the source. In the loop frame that current is the real number <var>I</var><sub>d</sub>. The voltage across a reactance is <var>j</var> times the reactance times the current, so the point-of-connection voltage exceeds the source voltage by <var>jX</var><sub>g</sub><var>I</var><sub>d</sub>.</li>
+</ol>
+<p>Add lines 2 and 3. The point-of-connection voltage in the loop's frame is</p>
+<div class="eqn"><div class="eqbody"><var>v</var><sub>d</sub> + <var>jv</var><sub>q</sub> = <var>V</var><sub>g</sub>e<sup>&minus;<var>j&theta;</var><sub>p</sub></sup> + <var>jX</var><sub>g</sub><var>I</var><sub>d</sub></div><div class="eqno">(2.13)</div></div>
+<p><strong>Assumptions.</strong> (1) The inner current loop is infinitely fast, so <var>i</var><sub>d</sub> = <var>I</var><sub>d</sub> at every instant (timescale separation, &sect;2.3). (2) The grid impedance is purely inductive. (3) The converter provides no reactive current: <var>I</var><sub>q</sub> = 0. (4) The system is balanced and at fundamental frequency. (5) The grid source runs at the rated frequency, so d<var>&theta;</var><sub>g</sub>/d<var>t</var> = <var>&omega;</var><sub>0</sub> and d<var>&theta;</var><sub>p</sub>/d<var>t</var> = <var>&omega;</var><sub>pll</sub> &minus; <var>&omega;</var><sub>0</sub>.</p>
+<p><strong>Omissions, in order of consequence.</strong></p>
+<ol>
+<li><strong>Reactive support.</strong> Assumption (3) is the heaviest. With <var>I</var><sub>q</sub> = 0 the converter does nothing to hold its terminal voltage up, so the terminal voltage falls to <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> as loading rises. A plant that <em>does</em> inject reactive current can hold |<var>v</var>| near 1 pu, and the literature then quotes the higher transfer limit <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub> &middot; |<var>v</var>| <span class="cite">[S07, Zhang, Harnefors and Nee 2010, "Power-Synchronization Control of Grid-Connected Voltage-Source Converters," <i>IEEE Trans. Power Systems</i> 25(2), 809&ndash;820, weak-grid limit section &mdash; verify]</span> <span class="cite">[S08, Zhou, Ding, Fan, Zhang and Gole 2014, "Impact of Short-Circuit Ratio and PLL Parameters on the Small-Signal Behavior of a VSC-HVDC Converter," <i>IEEE Trans. Power Delivery</i> 29(5), 2287&ndash;2296, operating-limit section &mdash; verify]</span>. That figure and the <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 of Theorem 2.7 describe two different plants, not two opinions about one plant.</li>
+<li><strong>Current-loop dynamics.</strong> Assumption (1) throws away the pole at <var>&alpha;</var><sub>c</sub> of equation (2.6). Cited Result 2.9 in &sect;2.6 repays that omission.</li>
+<li><strong>Grid resistance.</strong> A real weak connection often has <var>R</var><sub>g</sub> comparable to <var>X</var><sub>g</sub>, which rotates the phasor diagram and couples active and reactive channels.</li>
+<li><strong>Outer loops.</strong> Direct-current-link voltage control and plant-level control set <var>I</var><sub>d</sub>; here <var>I</var><sub>d</sub> is a given constant.</li>
+</ol>
+<span class="status">Status: model, derived here from Definition 2.1, Definition 2.5, equation (2.6) and Kirchhoff's voltage law. Omissions 1 and 2 are repaid later in this chapter.</span>
+</div>
+
+<p>Split equation (2.13) into real and imaginary parts. The real part gives the terminal voltage on the d axis; the imaginary part gives the loop's own error signal:</p>
+
+<div class="eqn"><div class="eqbody"><var>v</var><sub>d</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>p</sub>,&nbsp;&nbsp;&nbsp;&nbsp; <var>v</var><sub>q</sub> = <var>X</var><sub>g</sub><var>I</var><sub>d</sub> &minus; <var>V</var><sub>g</sub> sin <var>&theta;</var><sub>p</sub></div><div class="eqno">(2.14)</div></div>
+
+<p>The second half of equation (2.14) is the <strong>loop equation</strong>. It is the whole of &sect;2.5 and &sect;2.6 in one line. Read it slowly. The loop drives <var>v</var><sub>q</sub> to zero. The term <var>V</var><sub>g</sub> sin <var>&theta;</var><sub>p</sub> is the only term it can use to cancel <var>X</var><sub>g</sub><var>I</var><sub>d</sub>. That term is bounded above by <var>V</var><sub>g</sub>.</p>
+
+<figure id="fig-2-2">
+<svg viewBox="0 0 620 250" role="img" aria-label="Phasor diagrams at the point of connection for short-circuit ratio 10 and 1.2.">
+  <rect x="0" y="0" width="620" height="250" fill="#1e293b"/>
+  <text x="20" y="24" class="svgtxt" fill="#fb923c" font-size="12">SCR = 10 (X_g = 0.1000 pu)</text>
+  <text x="330" y="24" class="svgtxt" fill="#fb923c" font-size="12">SCR = 1.2 (X_g = 0.8333 pu)</text>
+  <text x="20" y="40" class="svgtxt" fill="#94a3b8" font-size="10">scale: 110 px = 1 pu</text>
+  <!-- left panel -->
+  <line x1="70" y1="110" x2="200" y2="110" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="70" y1="110" x2="179.4" y2="121.0" stroke="#94a3b8" stroke-width="2.5"/>
+  <line x1="179.4" y1="121.0" x2="179.4" y2="110.0" stroke="#2dd4bf" stroke-width="2.5"/>
+  <line x1="70" y1="110" x2="179.4" y2="110" stroke="#e2e8f0" stroke-width="3"/>
+  <circle cx="70" cy="110" r="3" fill="#fb923c"/>
+  <text x="108" y="137" class="svgtxt" fill="#94a3b8" font-size="11">V_g = 1.0000</text>
+  <text x="184" y="118" class="svgtxt" fill="#2dd4bf" font-size="11">jX_g I</text>
+  <text x="90" y="102" class="svgtxt" fill="#e2e8f0" font-size="11">|v| = 0.9950</text>
+  <text x="74" y="127" class="svgtxt" fill="#fb923c" font-size="11">&#952;&#8320; = 5.74&#176;</text>
+  <!-- right panel -->
+  <line x1="380" y1="110" x2="500" y2="110" stroke="#334155" stroke-width="1" stroke-dasharray="3 4"/>
+  <line x1="380" y1="110" x2="440.8" y2="201.7" stroke="#94a3b8" stroke-width="2.5"/>
+  <line x1="440.8" y1="201.7" x2="440.8" y2="110.0" stroke="#2dd4bf" stroke-width="2.5"/>
+  <line x1="380" y1="110" x2="440.8" y2="110" stroke="#e2e8f0" stroke-width="3"/>
+  <circle cx="380" cy="110" r="3" fill="#fb923c"/>
+  <path d="M 420 110 A 40 40 0 0 1 402.1 143.4" fill="none" stroke="#fb923c" stroke-width="1.5"/>
+  <text x="424" y="150" class="svgtxt" fill="#fb923c" font-size="11">&#952;&#8320; = 56.44&#176;</text>
+  <text x="378" y="220" class="svgtxt" fill="#94a3b8" font-size="11">V_g = 1.0000</text>
+  <text x="446" y="160" class="svgtxt" fill="#2dd4bf" font-size="11">jX_g I = 0.8333</text>
+  <text x="382" y="102" class="svgtxt" fill="#e2e8f0" font-size="11">|v| = 0.5528</text>
+  <text x="20" y="243" class="svgtxt" fill="#94a3b8" font-size="10">Both panels: V_g = 1 pu, I_d = 1 pu, I_q = 0. All values in per unit.</text>
+</svg>
+<figcaption><b>Fig. 2.2</b> Phasor diagram of equation (2.13) at the point of connection, drawn to scale for <var>V</var><sub>g</sub> = 1 pu and <var>I</var><sub>d</sub> = 1 pu. Left: SCR = 10, where the converter's own voltage drop <var>X</var><sub>g</sub><var>I</var><sub>d</sub> = 0.1000 pu tilts the terminal voltage by only 5.74&deg; and leaves |<var>v</var>| = 0.9950 pu. Right: SCR = 1.2, where <var>X</var><sub>g</sub><var>I</var><sub>d</sub> = 0.8333 pu tilts it by 56.44&deg; and drops |<var>v</var>| to 0.5528 pu. Illustrates Model 2.6 (<span class="rid">R17</span>) and Theorem 2.7 (<span class="rid">R18</span>). On a weak grid, almost the whole angle the loop measures comes from the converter's own current.</figcaption>
+</figure>
+
+<h3>2.5.2 The existence bound</h3>
+
+<div class="thm" id="thm-2-7" data-rid="R18">
+<span class="rlabel">Theorem 2.7 &mdash; Existence bound, power curve, and loop gain <span class="rid">(R18)</span></span>
+<p>Under Model 2.6, with <var>V</var><sub>g</sub> &gt; 0 and <var>I</var><sub>d</sub> &ge; 0:</p>
+<ol>
+<li><strong>Existence.</strong> A locked steady state (<var>v</var><sub>q</sub> = 0) exists exactly when <var>X</var><sub>g</sub><var>I</var><sub>d</sub> &le; <var>V</var><sub>g</sub>, that is <var>I</var><sub>d</sub> &le; SCR &middot; <var>V</var><sub>g</sub> in per unit. This is a bound on <em>current</em>.</li>
+<li><strong>Operating point.</strong> When the bound holds, the operable steady state is <var>&theta;</var><sub>0</sub> = arcsin(<var>X</var><sub>g</sub><var>I</var><sub>d</sub>/<var>V</var><sub>g</sub>) with <var>&theta;</var><sub>0</sub> &isin; [0, 90&deg;], and the terminal voltage magnitude is |<var>v</var>| = <var>v</var><sub>d</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub>.</li>
+<li><strong>Power.</strong> Delivered active power is <var>P</var> = (<var>V</var><sub>g</sub><sup>2</sup>/(2<var>X</var><sub>g</sub>)) sin(2<var>&theta;</var><sub>0</sub>). It reaches <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 at <var>&theta;</var><sub>0</sub> = 45&deg;, then <em>falls</em> as <var>I</var><sub>d</sub> rises further, and reaches zero at the current bound.</li>
+<li><strong>Loop gain.</strong> The small-signal gain from angle error to <var>v</var><sub>q</sub> is <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub>. It equals the terminal voltage magnitude, and it reaches zero exactly at the current bound.</li>
+</ol>
+<div class="proof">
+<span class="ph">Proof</span>
+<p><em>Part 1 and 2.</em> Set <var>v</var><sub>q</sub> = 0 in equation (2.14). This gives sin <var>&theta;</var><sub>p</sub> = <var>X</var><sub>g</sub><var>I</var><sub>d</sub>/<var>V</var><sub>g</sub>. The sine function has range [&minus;1, 1]. A real solution therefore exists if and only if <var>X</var><sub>g</sub><var>I</var><sub>d</sub>/<var>V</var><sub>g</sub> &le; 1, that is <var>X</var><sub>g</sub><var>I</var><sub>d</sub> &le; <var>V</var><sub>g</sub>. Substitute <var>X</var><sub>g</sub> = 1/SCR from equation (2.12) to get <var>I</var><sub>d</sub> &le; SCR &middot; <var>V</var><sub>g</sub>.</p>
+<p>When the bound holds strictly, the equation has two solutions in [0, 180&deg;): <var>&theta;</var><sub>0</sub> = arcsin(&middot;) and 180&deg; &minus; arcsin(&middot;). Part 4 shows that the second has <var>K</var><sub>pll</sub> &lt; 0, so the loop's negative feedback becomes positive feedback there and the point is not operable. The first branch, with cos <var>&theta;</var><sub>0</sub> &gt; 0, is the operating point. At equality the two branches merge at <var>&theta;</var><sub>0</sub> = 90&deg;, where <var>K</var><sub>pll</sub> = 0. Above equality no steady state exists at all.</p>
+<p><em>Part 3.</em> Delivered active power in the loop frame is <var>P</var> = <var>v</var><sub>d</sub><var>I</var><sub>d</sub> + <var>v</var><sub>q</sub><var>I</var><sub>q</sub> by Definition 2.1. At the locked point <var>v</var><sub>q</sub> = 0 and <var>I</var><sub>q</sub> = 0, so <var>P</var> = <var>v</var><sub>d</sub><var>I</var><sub>d</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> &middot; <var>I</var><sub>d</sub>. Substitute <var>I</var><sub>d</sub> = <var>V</var><sub>g</sub> sin <var>&theta;</var><sub>0</sub>/<var>X</var><sub>g</sub> from Part 1:</p>
+<div class="eqn"><div class="eqbody"><var>P</var> = (<var>V</var><sub>g</sub><sup>2</sup>/<var>X</var><sub>g</sub>) sin <var>&theta;</var><sub>0</sub> cos <var>&theta;</var><sub>0</sub> = (<var>V</var><sub>g</sub><sup>2</sup>/(2<var>X</var><sub>g</sub>)) sin(2<var>&theta;</var><sub>0</sub>)</div><div class="eqno">(2.15)</div></div>
+<p>sin(2<var>&theta;</var><sub>0</sub>) peaks at 1 when 2<var>&theta;</var><sub>0</sub> = 90&deg;, that is <var>&theta;</var><sub>0</sub> = 45&deg;. There <var>P</var> = <var>V</var><sub>g</sub><sup>2</sup>/(2<var>X</var><sub>g</sub>) = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 by equation (2.12). Beyond <var>&theta;</var><sub>0</sub> = 45&deg;, sin(2<var>&theta;</var><sub>0</sub>) decreases, so <var>P</var> decreases although <var>I</var><sub>d</sub> keeps rising. At <var>&theta;</var><sub>0</sub> = 90&deg;, sin(2<var>&theta;</var><sub>0</sub>) = 0 and <var>P</var> = 0.</p>
+<p><em>Part 4.</em> Differentiate the loop equation of (2.14) with respect to <var>&theta;</var><sub>p</sub> at <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>0</sub>. <var>X</var><sub>g</sub><var>I</var><sub>d</sub> is constant on the angle-loop timescale by Model 2.6, so it contributes nothing:</p>
+<div class="eqn"><div class="eqbody">&part;<var>v</var><sub>q</sub>/&part;<var>&theta;</var><sub>p</sub> |<sub><var>&theta;</var><sub>0</sub></sub> = &minus;<var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> &nbsp;&equiv;&nbsp; &minus;<var>K</var><sub>pll</sub></div><div class="eqno">(2.16)</div></div>
+<p>The minus sign is the negative feedback the loop needs, and <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> is its magnitude. Both <var>K</var><sub>s</sub> and <var>K</var><sub>pll</sub> are dimensionless per-unit numbers once the angle is in radians. Part 2 gave the terminal voltage as <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub>, the same expression. At <var>&theta;</var><sub>0</sub> = 90&deg;, which is the current bound, cos <var>&theta;</var><sub>0</sub> = 0 and <var>K</var><sub>pll</sub> = 0. On the second branch, <var>&theta;</var><sub>0</sub> &gt; 90&deg;, cos <var>&theta;</var><sub>0</sub> &lt; 0, so <var>K</var><sub>pll</sub> &lt; 0 and the feedback sign flips. <span class="qed">&#9633;</span></p>
+</div>
+<span class="status">Status: proved here, under the assumptions of Model 2.6.</span>
+</div>
+
+<h3>2.5.3 What Theorem 2.7 says and does not say</h3>
+
+<p>Three readings are worth making explicit.</p>
+
+<p><strong>First: the bound is on current, and the power limit arrives earlier.</strong> A plant operator thinks in megawatts. The theorem does not bound megawatts at SCR &middot; <var>V</var><sub>g</sub>. It bounds amperes. Power peaks at <var>&theta;</var><sub>0</sub> = 45&deg;, which by Part 2 is the current <var>I</var><sub>d</sub> = <var>V</var><sub>g</sub> sin 45&deg;/<var>X</var><sub>g</sub> = SCR &middot; <var>V</var><sub>g</sub>/&radic;2. At SCR = 1.2 and <var>V</var><sub>g</sub> = 1 pu that is <var>I</var><sub>d</sub> = 1.2/1.4142 = 0.8485 pu, against the current bound of 1.2000 pu. Push current past 0.8485 pu and delivered power goes <em>down</em>. A control loop that commands more current to get more power therefore commands more current and receives less power.</p>
+
+<p><strong>Second: <var>K</var><sub>pll</sub> is the twin of <var>K</var><sub>s</sub>.</strong> Set the two side by side.</p>
+
+<div class="tw">
+<table>
+<caption>Table 2.1 &mdash; The structural parallel between Chapter 1 and Chapter 2.</caption>
+<thead><tr><th>Quantity</th><th>Synchronous machine (<a href="ch1.html#lem-1-6"><span class="rid">R06</span></a>)</th><th>Grid-following converter (<span class="rid">R18</span>)</th></tr></thead>
+<tbody>
+<tr><td>Angle variable</td><td><var>&delta;</var>, a physical rotor position</td><td><var>&theta;</var><sub>p</sub>, an estimate inside a controller</td></tr>
+<tr><td>Restoring coefficient</td><td><var>K</var><sub>s</sub> = (<var>E</var>&prime;<var>V</var><sub>inf</sub>/<var>X</var>) cos <var>&delta;</var><sub>0</sub></td><td><var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub></td></tr>
+<tr><td>Sign condition</td><td><var>K</var><sub>s</sub> &gt; 0 iff |<var>&delta;</var><sub>0</sub>| &lt; 90&deg;</td><td><var>K</var><sub>pll</sub> &gt; 0 iff |<var>&theta;</var><sub>0</sub>| &lt; 90&deg;</td></tr>
+<tr><td>What it restores</td><td>Power balance on a shaft</td><td>Alignment of a measurement frame</td></tr>
+<tr><td>What it carries</td><td><var>&omega;</var><sub>n</sub> = &radic;(<var>K</var><sub>s</sub><var>&omega;</var><sub>0</sub>/(2<var>H</var>)) (<a href="ch1.html#thm-1-7"><span class="rid">R07</span></a>)</td><td><var>&omega;</var><sub>n,pll</sub> = &radic;(<var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub>) (Theorem 2.8)</td></tr>
+<tr><td>Energy behind it</td><td><var>H</var> &middot; <var>S</var><sub>base</sub>; for <var>H</var> = 3.5 s on 200 MVA that is 700 MJ (Chapter 1, <a href="ch1.html#def-1-3"><span class="rid">R03</span></a>)</td><td>None. The loop is a computation.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The algebra matches line for line. The last row does not. A machine's angle is backed by kinetic energy. A phase-locked loop's angle is backed by nothing. That difference is what Corollary 2.10 makes precise and what Chapter 3 sets out to repair.</p>
+
+<p><strong>Third: this is a static result.</strong> Theorem 2.7 asks whether a steady state exists. It does not ask whether the loop reaches that state, or stays there. Section 2.6 takes the next step; Cited Result 2.9 states plainly that the static bound is not the operating limit a real plant meets.</p>
+<h2 id="s26">2.6 Why following fails on a weak grid</h2>
+
+<p>Theorem 2.7 delivered one scalar, <var>K</var><sub>pll</sub>. Section 2.4 built a loop whose behaviour depends on the voltage it sees. Join the two.</p>
+
+<div class="thm" id="thm-2-8" data-rid="R19">
+<span class="rlabel">Theorem 2.8 &mdash; The linearised phase-locked loop on a grid of finite strength <span class="rid">(R19)</span></span>
+<p>Linearise the loop of Definition 2.4 about the operating point of Theorem 2.7, under Model 2.6 including assumption (5), with fixed gains <var>k</var><sub>p,pll</sub> and <var>k</var><sub>i,pll</sub>. The closed-loop characteristic polynomial in the angle deviation &Delta;<var>&theta;</var><sub>p</sub> is</p>
+<div class="eqn"><div class="eqbody"><var>s</var><sup>2</sup> + <var>K</var><sub>pll</sub><var>k</var><sub>p,pll</sub> <var>s</var> + <var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub> = 0</div><div class="eqno">(2.17)</div></div>
+<p>so that</p>
+<div class="eqn"><div class="eqbody"><var>&omega;</var><sub>n,pll</sub> = &radic;(<var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub>),&nbsp;&nbsp;&nbsp;&nbsp; <var>&zeta;</var><sub>pll</sub> = <var>K</var><sub>pll</sub><var>k</var><sub>p,pll</sub> / (2<var>&omega;</var><sub>n,pll</sub>)</div><div class="eqno">(2.18)</div></div>
+<p>Both fall as <var>K</var><sub>pll</sub> falls, and <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> falls as the short-circuit ratio falls at fixed <var>I</var><sub>d</sub>. <strong><var>K</var><sub>pll</sub> is the only channel through which grid strength enters the loop.</strong> Eliminating <var>&omega;</var><sub>n,pll</sub> between the two parts of equation (2.18) gives the scaling law</p>
+<div class="eqn"><div class="eqbody"><var>&zeta;</var><sub>pll</sub> = (<var>k</var><sub>p,pll</sub> / (2&radic;<var>k</var><sub>i,pll</sub>)) &middot; &radic;<var>K</var><sub>pll</sub>&nbsp;&nbsp; &#8658;&nbsp;&nbsp; <var>&zeta;</var><sub>pll</sub> &#8733; &radic;<var>K</var><sub>pll</sub></div><div class="eqno">(2.19)</div></div>
+<div class="proof">
+<span class="ph">Proof</span>
+<p>Write <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>0</sub> + &Delta;<var>&theta;</var><sub>p</sub> and <var>v</var><sub>q</sub> = 0 + &Delta;<var>v</var><sub>q</sub>. Equation (2.16) gives &Delta;<var>v</var><sub>q</sub> = &minus;<var>K</var><sub>pll</sub>&Delta;<var>&theta;</var><sub>p</sub> to first order. By Model 2.6 assumption (5), d<var>&theta;</var><sub>p</sub>/d<var>t</var> = <var>&omega;</var><sub>pll</sub> &minus; <var>&omega;</var><sub>0</sub>. At the operating point <var>v</var><sub>q</sub> = 0, <var>&omega;</var><sub>pll</sub> = <var>&omega;</var><sub>0</sub>, and the integrator output in equation (2.8) is zero. Subtract that operating point from equation (2.8). The loop reads, in deviation form,</p>
+<p style="padding-left:.5rem">d(&Delta;<var>&theta;</var><sub>p</sub>)/d<var>t</var> = <var>k</var><sub>p,pll</sub>&Delta;<var>v</var><sub>q</sub> + <var>k</var><sub>i,pll</sub>&int;&Delta;<var>v</var><sub>q</sub> d<var>t</var>.</p>
+<p>Substitute &Delta;<var>v</var><sub>q</sub> = &minus;<var>K</var><sub>pll</sub>&Delta;<var>&theta;</var><sub>p</sub> and differentiate once with respect to time:</p>
+<p style="padding-left:.5rem">d<sup>2</sup>(&Delta;<var>&theta;</var><sub>p</sub>)/d<var>t</var><sup>2</sup> + <var>K</var><sub>pll</sub><var>k</var><sub>p,pll</sub> d(&Delta;<var>&theta;</var><sub>p</sub>)/d<var>t</var> + <var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub> &Delta;<var>&theta;</var><sub>p</sub> = 0.</p>
+<p>Its characteristic polynomial is equation (2.17). Compare with the standard form <var>s</var><sup>2</sup> + 2<var>&zeta;&omega;</var><sub>n</sub><var>s</var> + <var>&omega;</var><sub>n</sub><sup>2</sup> and read off equation (2.18). Then substitute <var>&omega;</var><sub>n,pll</sub> = &radic;(<var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub>) into the expression for <var>&zeta;</var><sub>pll</sub>: the factor <var>K</var><sub>pll</sub> in the numerator divides by &radic;<var>K</var><sub>pll</sub> in the denominator and leaves &radic;<var>K</var><sub>pll</sub>, which is equation (2.19).</p>
+<p>Note also that for any <var>K</var><sub>pll</sub> &gt; 0 the polynomial (2.17) has both coefficients positive, so both roots lie strictly in the left half-plane. This linearised loop never becomes unstable; it only gets slower and less damped. Cited Result 2.9 addresses what is missing. <span class="qed">&#9633;</span></p>
+</div>
+<span class="status">Status: proved here, under the assumptions of Model 2.6 and Definition 2.4.</span>
+</div>
+
+<h3>2.6.1 One operating point, worked</h3>
+
+<div class="ex" id="ex-2-1" data-rid="R20">
+<span class="rlabel">Example 2.1 &mdash; A converter at SCR = 1.2 <span class="rid">(R20)</span></span>
+<p><strong>Given.</strong> SCR = 1.2. <var>V</var><sub>g</sub> = 1.0 pu. <var>I</var><sub>d</sub> = 1.0 pu, <var>I</var><sub>q</sub> = 0 (unity power factor in the loop frame). Phase-locked-loop gains from &sect;2.4: <var>k</var><sub>i,pll</sub> = 3948 1/s<sup>2</sup>, <var>k</var><sub>p,pll</sub> = 88.86 1/s.</p>
+<p><strong>Step 1 &mdash; grid reactance.</strong> Equation (2.12): <var>X</var><sub>g</sub> = 1/SCR = 1/1.2 = 0.8333 pu.</p>
+<p><strong>Step 2 &mdash; operating angle.</strong> Theorem 2.7 Part 2: sin <var>&theta;</var><sub>0</sub> = <var>X</var><sub>g</sub><var>I</var><sub>d</sub>/<var>V</var><sub>g</sub> = 0.8333 &middot; 1.0 / 1.0 = 0.8333. So <var>&theta;</var><sub>0</sub> = arcsin(0.8333) = 0.9851 rad = 56.44&deg;.</p>
+<p>Check the bound first: <var>X</var><sub>g</sub><var>I</var><sub>d</sub> = 0.8333 &le; <var>V</var><sub>g</sub> = 1.0000, so a steady state exists. Equivalently <var>I</var><sub>d</sub> = 1.0000 &le; SCR &middot; <var>V</var><sub>g</sub> = 1.2000 pu.</p>
+<p><strong>Step 3 &mdash; terminal voltage.</strong> |<var>v</var>| = <var>v</var><sub>d</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> = 1.0 &middot; cos(56.44&deg;) = 0.5528 pu. Cross-check without the angle: cos <var>&theta;</var><sub>0</sub> = &radic;(1 &minus; 0.8333<sup>2</sup>) = &radic;(1 &minus; 0.6944) = &radic;0.3056 = 0.5528. The two agree.</p>
+<p><strong>Step 4 &mdash; delivered power.</strong> <var>P</var> = <var>v</var><sub>d</sub><var>I</var><sub>d</sub> = 0.5528 &middot; 1.0 = 0.5528 pu. Cross-check with equation (2.15): (<var>V</var><sub>g</sub><sup>2</sup>/(2<var>X</var><sub>g</sub>)) sin(2 &middot; 56.44&deg;) = (1/1.6667) &middot; sin(112.89&deg;) = 0.6000 &middot; 0.9213 = 0.5528 pu. The two agree.</p>
+<p><strong>Step 5 &mdash; the model's power ceiling.</strong> Theorem 2.7 Part 3: <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 = 1.2 &middot; 1.0/2 = 0.6000 pu, reached at <var>&theta;</var><sub>0</sub> = 45&deg;, which is <var>I</var><sub>d</sub> = 1.2/&radic;2 = 0.8485 pu. The plant is already <em>past</em> the peak: it carries 1.0000 pu of current and gets 0.5528 pu of power, where 0.8485 pu of current would have given 0.6000 pu.</p>
+<p><strong>Step 6 &mdash; the loop gain.</strong> <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> = 0.5528 pu. This is the same number as the terminal voltage of Step 3 and the power of Step 4. That is Theorem 2.7 Part 4, not a coincidence of rounding.</p>
+<p><strong>Step 7 &mdash; what the loop now does.</strong> Equation (2.18) with the unchanged gains:</p>
+<p style="padding-left:.5rem"><var>&omega;</var><sub>n,pll</sub> = &radic;(<var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub>) = &radic;(0.552771 &middot; 3947.84) = &radic;2182.25 = 46.71 rad/s<br>
+in hertz: 46.71 / (2&pi;) = 7.435 Hz<br>
+<var>&zeta;</var><sub>pll</sub> = 0.7071 &middot; &radic;0.5528 = 0.7071 &middot; 0.7435 = 0.5257&nbsp;&nbsp; (scaling law (2.19))</p>
+<p>Cross-check the damping ratio against the second half of equation (2.18), carrying full precision: <var>K</var><sub>pll</sub><var>k</var><sub>p,pll</sub>/(2<var>&omega;</var><sub>n,pll</sub>) = 0.552771 &middot; 88.8577 / (2 &middot; 46.7146) = 49.1180 / 93.4292 = 0.5257. The two agree.</p>
+<p><strong>Result.</strong> The loop was designed for 10.00 Hz and <var>&zeta;</var><sub>pll</sub> = 0.7071. It now runs at 7.435 Hz and <var>&zeta;</var><sub>pll</sub> = 0.5257. Bandwidth fell by 25.7 %. Damping ratio fell by the same 25.7 %, because equation (2.19) makes both scale as &radic;<var>K</var><sub>pll</sub>.</p>
+<p><strong>Conclusion in words.</strong> The designer changed nothing. The grid moved the loop.</p>
+<p><em>Rounding note.</em> Carrying the four-digit intermediates 0.5528 and 3948 into the square root returns &radic;2182.45 = 46.72 rad/s and 7.44 Hz. Carrying the six-digit factors 0.552771 and 3947.84, as Step 7 does, returns 46.71 rad/s and 7.435 Hz. The difference is rounding, not physics. This chapter prints the full-precision values throughout.</p>
+<span class="status">Status: computed here from Theorem 2.7 and Theorem 2.8. No external number is used.</span>
+</div>
+
+<h3>2.6.2 The sweep: where the decline becomes steep</h3>
+
+<div class="ex" id="ex-2-2" data-rid="R21">
+<span class="rlabel">Example 2.2 &mdash; Short-circuit ratio swept from 10 to 1.05 <span class="rid">(R21)</span></span>
+<p><strong>Given.</strong> <var>V</var><sub>g</sub> = 1.0 pu, <var>I</var><sub>d</sub> = 1.0 pu, <var>I</var><sub>q</sub> = 0, and the same fixed gains <var>k</var><sub>i,pll</sub> = 3948 1/s<sup>2</sup>, <var>k</var><sub>p,pll</sub> = 88.86 1/s. Every row repeats Steps 1 to 7 of Example 2.1 at a different SCR.</p>
+<div class="tw">
+<table>
+<caption>Table 2.2 &mdash; Example 2.2. Each row is computed from equations (2.12), (2.14), (2.15), (2.16) and (2.18). Recomputed in full precision; printed to four decimals.</caption>
+<thead><tr>
+<th>SCR</th><th><var>X</var><sub>g</sub> (pu)</th><th><var>&theta;</var><sub>0</sub> (deg)</th>
+<th><var>K</var><sub>pll</sub> (pu)</th><th><var>&omega;</var><sub>n,pll</sub> (rad/s)</th>
+<th><var>&zeta;</var><sub>pll</sub></th><th><var>P</var> at <var>I</var><sub>d</sub>=1 (pu)</th><th><var>P</var><sub>max</sub> (pu)</th>
+</tr></thead>
+<tbody>
+<tr><td>10</td><td>0.1000</td><td>5.7392</td><td>0.9950</td><td>62.6742</td><td>0.7053</td><td>0.9950</td><td>5.0000</td></tr>
+<tr><td>3</td><td>0.3333</td><td>19.4712</td><td>0.9428</td><td>61.0087</td><td>0.6866</td><td>0.9428</td><td>1.5000</td></tr>
+<tr><td>2</td><td>0.5000</td><td>30.0000</td><td>0.8660</td><td>58.4716</td><td>0.6580</td><td>0.8660</td><td>1.0000</td></tr>
+<tr><td>1.2</td><td>0.8333</td><td>56.4427</td><td>0.5528</td><td>46.7146</td><td>0.5257</td><td>0.5528</td><td>0.6000</td></tr>
+<tr><td>1.05</td><td>0.9524</td><td>72.2472</td><td>0.3049</td><td>34.6949</td><td>0.3905</td><td>0.3049</td><td>0.5250</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Reading 1 &mdash; the two power columns are different objects.</strong> Column <var>P</var> is what this plant delivers at its rated current. Column <var>P</var><sub>max</sub> is the largest power the model can deliver at <em>any</em> current. At SCR = 10 the plant delivers 0.9950 pu against a ceiling of 5.0000 pu, so current is the binding constraint. At SCR = 1.2 it delivers 0.5528 pu against a ceiling of 0.6000 pu, so the ceiling binds. The crossover, where <var>P</var><sub>max</sub> = 1.0000 pu, is exactly SCR = 2.</p>
+<p><strong>Reading 2 &mdash; <var>P</var> and <var>K</var><sub>pll</sub> are the same column.</strong> Both equal <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> at <var>I</var><sub>d</sub> = 1 pu. This is not a coincidence in the table; it is Theorem 2.7 Parts 2, 3 and 4 in one place. The consequence: a plant that loses export power on a weak grid loses loop bandwidth and damping ratio at the same moment, by the square root of the same factor, equation (2.19). At SCR = 1.2 the terminal voltage and the power are down 44.7 % (1 &minus; 0.5528) from the stiff-grid value, and the bandwidth and the damping ratio are down 25.7 % (1 &minus; &radic;0.5528 = 1 &minus; 0.7435), as Example 2.1 prints.</p>
+<p><strong>Reading 3 &mdash; the decline is slow, then steep.</strong> From SCR = 10 to SCR = 2, <var>&zeta;</var><sub>pll</sub> falls from 0.7053 to 0.6580. That is (0.7053 &minus; 0.6580)/0.7053 = 0.0671, or 6.7 %, over a factor of five in grid strength. From SCR = 2 to SCR = 1.05, <var>&zeta;</var><sub>pll</sub> falls from 0.6580 to 0.3905. That is (0.6580 &minus; 0.3905)/0.6580 = 0.4066, or 40.7 %, over a factor of under two. The square-root law (2.19) explains the shape: &radic;<var>K</var><sub>pll</sub> is flat near <var>K</var><sub>pll</sub> = 1 and steep near <var>K</var><sub>pll</sub> = 0.</p>
+<p><strong>Reading 4 &mdash; the warning to the planner.</strong> A margin study at SCR = 3 sees a loop 2.9 % off its design damping ratio and reports no problem. The same study at SCR = 1.2 sees 25.7 % off. Linear extrapolation from the strong-grid region underestimates the weak-grid result. Sample the low end of the range, not the middle.</p>
+<p><em>Deviation note.</em> The chapter plan prints <var>K</var><sub>pll</sub> = 0.3047 and <var>&zeta;</var><sub>pll</sub> = 0.3903 at SCR = 1.05, and <var>&zeta;</var><sub>pll</sub> = 0.6865 at SCR = 3. Full-precision recomputation returns 0.3049, 0.3905 and 0.6866. The table above prints the recomputed values, as the drafting rule requires.</p>
+<span class="status">Status: computed here. Every entry follows from Theorem 2.7 and Theorem 2.8.</span>
+</div>
+
+<figure id="fig-2-3">
+<svg viewBox="0 0 620 300" role="img" aria-label="Loop gain and maximum power against short-circuit ratio.">
+  <rect x="0" y="0" width="620" height="300" fill="#1e293b"/>
+  <text x="70" y="22" class="svgtxt" fill="#fb923c" font-size="12">K_pll (left axis) and P_max (right axis) against SCR</text>
+  <line x1="70" y1="250" x2="570" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <line x1="70" y1="40" x2="70" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <line x1="570" y1="40" x2="570" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <line x1="70" y1="197.5" x2="570" y2="197.5" stroke="#334155" stroke-width=".7" stroke-dasharray="2 5"/>
+  <line x1="70" y1="145" x2="570" y2="145" stroke="#334155" stroke-width=".7" stroke-dasharray="2 5"/>
+  <line x1="70" y1="92.5" x2="570" y2="92.5" stroke="#334155" stroke-width=".7" stroke-dasharray="2 5"/>
+  <line x1="70" y1="40" x2="570" y2="40" stroke="#334155" stroke-width=".7" stroke-dasharray="2 5"/>
+  <text x="40" y="254" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="26" y="201" class="svgtxt" fill="#94a3b8" font-size="10">0.25</text>
+  <text x="34" y="149" class="svgtxt" fill="#94a3b8" font-size="10">0.5</text>
+  <text x="26" y="96" class="svgtxt" fill="#94a3b8" font-size="10">0.75</text>
+  <text x="34" y="44" class="svgtxt" fill="#94a3b8" font-size="10">1.0</text>
+  <text x="576" y="254" class="svgtxt" fill="#2dd4bf" font-size="10">0</text>
+  <text x="576" y="212" class="svgtxt" fill="#2dd4bf" font-size="10">0.5</text>
+  <text x="576" y="170" class="svgtxt" fill="#2dd4bf" font-size="10">1.0</text>
+  <text x="576" y="128" class="svgtxt" fill="#2dd4bf" font-size="10">1.5</text>
+  <text x="576" y="86" class="svgtxt" fill="#2dd4bf" font-size="10">2.0</text>
+  <text x="576" y="44" class="svgtxt" fill="#2dd4bf" font-size="10">2.5</text>
+  <text x="66" y="268" class="svgtxt" fill="#94a3b8" font-size="10">1</text>
+  <text x="121" y="268" class="svgtxt" fill="#94a3b8" font-size="10">2</text>
+  <text x="232" y="268" class="svgtxt" fill="#94a3b8" font-size="10">4</text>
+  <text x="343" y="268" class="svgtxt" fill="#94a3b8" font-size="10">6</text>
+  <text x="454" y="268" class="svgtxt" fill="#94a3b8" font-size="10">8</text>
+  <text x="562" y="268" class="svgtxt" fill="#94a3b8" font-size="10">10</text>
+  <text x="290" y="286" class="svgtxt" fill="#94a3b8" font-size="11">SCR</text>
+  <line x1="70" y1="166" x2="570" y2="166" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="300" y="162" class="svgtxt" fill="#94a3b8" font-size="10">P_max = 1.0 pu (plant rating)</text>
+  <polyline fill="none" stroke="#e2e8f0" stroke-width="2.5" points="71.1,208.6 75.6,162.5 80.0,138.5 84.4,122.2 88.9,110.2 93.3,100.9 97.8,93.5 102.2,87.4 106.7,82.4 111.1,78.1 115.6,74.5 120.0,71.4 124.4,68.8 128.9,66.4 133.3,64.3 137.8,62.5 142.2,60.9 146.7,59.4 151.1,58.1 155.6,57.0 160.0,55.9 164.4,54.9 168.9,54.1 173.3,53.3 177.8,52.5 182.2,51.8 186.7,51.2 191.1,50.7 195.6,50.1 200.0,49.6 208.9,48.8 217.8,48.0 226.7,47.3 235.6,46.7 244.4,46.2 253.3,45.8 262.2,45.3 271.1,45.0 280.0,44.6 288.9,44.3 297.8,44.1 306.7,43.8 315.6,43.6 324.4,43.4 333.3,43.2 342.2,43.0 351.1,42.9 360.0,42.7 368.9,42.6 377.8,42.5 386.7,42.4 395.6,42.2 404.4,42.1 413.3,42.0 422.2,42.0 431.1,41.9 440.0,41.8 448.9,41.7 457.8,41.7 466.7,41.6 475.6,41.5 484.4,41.5 493.3,41.4 502.2,41.4 511.1,41.3 520.0,41.3 528.9,41.2 537.8,41.2 546.7,41.1 555.6,41.1 564.4,41.1 568.9,41.1"/>
+  <polyline fill="none" stroke="#2dd4bf" stroke-width="2.5" points="71.1,207.2 80.0,200.4 88.9,193.7 97.8,187.0 106.7,180.3 115.6,173.6 124.4,166.8 133.3,160.1 142.2,153.4 151.1,146.7 160.0,140.0 168.9,133.2 177.8,126.5 186.7,119.8 195.6,113.1 204.4,106.4 213.3,99.6 222.2,92.9 231.1,86.2 240.0,79.5 248.9,72.8 257.8,66.0 266.7,59.3 275.6,52.6 284.4,45.9 291.1,40.8"/>
+  <circle cx="81.1" cy="133.9" r="4.5" fill="#fb923c"/>
+  <text x="92" y="128" class="svgtxt" fill="#fb923c" font-size="11">Example 2.1: SCR = 1.2, K_pll = 0.5528</text>
+  <circle cx="125.6" cy="166.0" r="4" fill="none" stroke="#2dd4bf" stroke-width="2"/>
+  <text x="134" y="186" class="svgtxt" fill="#2dd4bf" font-size="10">P_max = 1 pu at SCR = 2</text>
+  <text x="330" y="70" class="svgtxt" fill="#e2e8f0" font-size="11">K_pll</text>
+  <text x="296" y="36" class="svgtxt" fill="#2dd4bf" font-size="11">P_max (clipped at 2.5 pu)</text>
+</svg>
+<figcaption><b>Fig. 2.3</b> Two curves against short-circuit ratio, for <var>V</var><sub>g</sub> = 1 pu and <var>I</var><sub>d</sub> = 1 pu. White, left axis: <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub>, which at this current equals both the terminal voltage and the delivered power <var>P</var> in per unit. Teal, right axis: <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2, clipped at 2.5 pu, which is reached at SCR = 5. The two axes have different scales because the two quantities have different ranges. The dashed horizontal line marks 1.0 pu on the right axis, the plant's own rating. <var>P</var><sub>max</sub> crosses it at SCR = 2: below that short-circuit ratio the model cannot deliver rated power at any current, which is what "binding" means. <var>K</var><sub>pll</sub> stays above 0.9 for every SCR above 2.2942 and collapses only close to 1. Illustrates Theorem 2.7 (<span class="rid">R18</span>) and Example 2.2 (<span class="rid">R21</span>).</figcaption>
+</figure>
+
+<h3>2.6.3 What the static model does not explain</h3>
+
+<p>Theorem 2.8 ended with an observation that limits its reach. For every <var>K</var><sub>pll</sub> &gt; 0 the polynomial (2.17) has both coefficients positive, so both roots stay in the left half-plane. Figure 2.4 draws that fact.</p>
+
+<figure id="fig-2-4">
+<svg viewBox="0 0 620 300" role="img" aria-label="Root locus of the linearised phase-locked loop as the loop gain falls.">
+  <rect x="0" y="0" width="620" height="300" fill="#1e293b"/>
+  <text x="60" y="22" class="svgtxt" fill="#fb923c" font-size="12">Upper root of s&#178; + K_pll k_p,pll s + K_pll k_i,pll = 0, as K_pll falls from 1.00 to 0.05</text>
+  <line x1="60" y1="250" x2="560" y2="250" stroke="#334155" stroke-width="1.5"/>
+  <line x1="520" y1="40" x2="520" y2="262" stroke="#334155" stroke-width="1.5"/>
+  <text x="530" y="266" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="418" y="266" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;10</text>
+  <text x="326" y="266" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;20</text>
+  <text x="234" y="266" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;30</text>
+  <text x="142" y="266" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;40</text>
+  <text x="50" y="266" class="svgtxt" fill="#94a3b8" font-size="10">&#8722;50</text>
+  <text x="250" y="284" class="svgtxt" fill="#94a3b8" font-size="11">real part &#963; (1/s)</text>
+  <text x="528" y="254" class="svgtxt" fill="#94a3b8" font-size="10">0</text>
+  <text x="528" y="212" class="svgtxt" fill="#94a3b8" font-size="10">10</text>
+  <text x="528" y="170" class="svgtxt" fill="#94a3b8" font-size="10">20</text>
+  <text x="528" y="128" class="svgtxt" fill="#94a3b8" font-size="10">30</text>
+  <text x="528" y="86" class="svgtxt" fill="#94a3b8" font-size="10">40</text>
+  <text x="528" y="44" class="svgtxt" fill="#94a3b8" font-size="10">50</text>
+  <text x="528" y="32" class="svgtxt" fill="#94a3b8" font-size="10">imag (rad/s)</text>
+  <line x1="520" y1="250" x2="64.7" y2="42.1" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="520" y1="250" x2="254.6" y2="40.1" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <line x1="520" y1="250" x2="375.4" y2="40.0" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="68" y="38" class="svgtxt" fill="#94a3b8" font-size="10">&#950; = 0.707</text>
+  <text x="248" y="36" class="svgtxt" fill="#94a3b8" font-size="10">&#950; = 0.5</text>
+  <text x="368" y="36" class="svgtxt" fill="#94a3b8" font-size="10">&#950; = 0.3</text>
+  <polyline fill="none" stroke="#e2e8f0" stroke-width="2.5" points="111.3,63.4 119.4,63.4 127.6,63.5 135.8,63.7 144.0,64.0 152.1,64.3 160.3,64.7 168.5,65.2 176.7,65.8 184.8,66.4 193.0,67.2 201.2,68.0 209.4,68.9 217.5,69.8 225.7,70.9 233.9,72.0 242.1,73.2 250.2,74.5 258.4,75.9 266.6,77.4 274.8,79.0 282.9,80.7 291.1,82.4 299.3,84.3 307.5,86.3 315.6,88.4 323.8,90.6 332.0,92.9 340.2,95.4 348.3,98.0 356.5,100.7 364.7,103.6 372.9,106.6 381.0,109.8 389.2,113.2 397.4,116.7 405.6,120.5 413.7,124.5 421.9,128.7 430.1,133.2 438.3,138.0 446.4,143.2 454.6,148.8 462.8,154.8 471.0,161.4 479.1,168.7 487.3,176.9 495.5,186.3 499.6,191.7"/>
+  <circle cx="111.3" cy="63.4" r="4.5" fill="#2dd4bf"/>
+  <text x="118" y="58" class="svgtxt" fill="#2dd4bf" font-size="10">K_pll = 1.00 (stiff grid): &#8722;44.43 &#177; j44.43</text>
+  <circle cx="294.0" cy="83.1" r="4.5" fill="#fb923c"/>
+  <text x="300" y="78" class="svgtxt" fill="#fb923c" font-size="10">K_pll = 0.5528 (SCR = 1.2): &#8722;24.56 &#177; j39.74</text>
+  <circle cx="395.4" cy="115.9" r="4.5" fill="#fb923c"/>
+  <text x="401" y="111" class="svgtxt" fill="#fb923c" font-size="10">K_pll = 0.3049 (SCR = 1.05)</text>
+  <circle cx="479.1" cy="168.7" r="4" fill="#94a3b8"/>
+  <text x="400" y="184" class="svgtxt" fill="#94a3b8" font-size="10">K_pll = 0.10: &#8722;4.44 &#177; j19.37</text>
+  <text x="330" y="232" class="svgtxt" fill="#e2e8f0" font-size="10">the pair slides toward the origin; it never crosses into &#963; &gt; 0</text>
+</svg>
+<figcaption><b>Fig. 2.4</b> Root locus of the linearised phase-locked loop of Theorem 2.8 as <var>K</var><sub>pll</sub> falls from 1.00 to 0.05 with the gains of &sect;2.4 held fixed (<var>k</var><sub>p,pll</sub> = 88.86 1/s, <var>k</var><sub>i,pll</sub> = 3948 1/s<sup>2</sup>). Only the upper conjugate root is drawn; the lower one mirrors it. Dashed rays are lines of constant damping ratio at 0.707, 0.5 and 0.3. The real part is &minus;<var>K</var><sub>pll</sub><var>k</var><sub>p,pll</sub>/2, which is negative for every <var>K</var><sub>pll</sub> &gt; 0, so the pair slides toward the origin and never enters the right half-plane. This figure is the reason Cited Result 2.9 is needed: the static model of Theorem 2.7 predicts slowness, not the oscillatory instability that the fuller model of Cited Result 2.9 predicts <span class="cite">[S08, Zhou, Ding, Fan, Zhang and Gole 2014, "Impact of Short-Circuit Ratio and PLL Parameters on the Small-Signal Behavior of a VSC-HVDC Converter," <i>IEEE Trans. Power Delivery</i> 29(5), 2287&ndash;2296, eigenvalue-study sections &mdash; verify]</span>. Illustrates Theorem 2.8 (<span class="rid">R19</span>).</figcaption>
+</figure>
+
+<div class="cit" id="cit-2-9" data-rid="R22">
+<span class="rlabel">Cited Result 2.9 &mdash; The real limit lies below the static bound <span class="rid">(R22)</span></span>
+<p>Restore the current-loop dynamics that Model 2.6 assumption (1) discarded, that is the pole at <var>&alpha;</var><sub>c</sub> in equation (2.6), together with the direct-current-link voltage loop. The combined system then loses stability through a pair of complex poles crossing into the right half-plane, at a current and a short-circuit ratio <em>below</em> the static existence bound of Theorem 2.7. The mechanism is an interaction between the phase-locked loop and the current loop, and the phase-locked-loop bandwidth is a leading parameter: a faster loop destabilises earlier on a weak grid.</p>
+<p><strong>Status: cited, not proved in this book.</strong> <span class="cite">[S08, Zhou, Ding, Fan, Zhang and Gole 2014, "Impact of Short-Circuit Ratio and PLL Parameters on the Small-Signal Behavior of a VSC-HVDC Converter," <i>IEEE Trans. Power Delivery</i> 29(5), 2287&ndash;2296, eigenvalue-study sections &mdash; verify]</span> <span class="cite">[S07, Zhang, Harnefors and Nee 2010, "Power-Synchronization Control of Grid-Connected Voltage-Source Converters," <i>IEEE Trans. Power Systems</i> 25(2), 809&ndash;820, weak-grid limit section &mdash; verify]</span></p>
+<p><strong>Why it sits here.</strong> Model 2.6 named the omission of current-loop dynamics as its second omission. This result is the repayment. Without it a reader could conclude from Figure 2.4 that a weak grid only makes a loop sluggish. That conclusion is wrong, and the model that produced it says so about itself.</p>
+<p><strong>What this chapter therefore does not claim.</strong> Theorem 2.7 does not explain any observed weak-grid oscillation. It gives a ceiling that no design may exceed. The usable region is strictly smaller, and its boundary needs the model this chapter did not build.</p>
+</div>
+
+<h3>2.6.4 What this fleet does not supply</h3>
+
+<div class="cor" id="cor-2-10" data-rid="R23">
+<span class="rlabel">Corollary 2.10 &mdash; A grid-following fleet supplies neither <var>K</var><sub>s</sub> nor <var>H</var> <span class="rid">(R23)</span></span>
+<p>Under Model 2.6, and with the phase-locked loop fast compared with the swing mode of Chapter 1 &mdash; here 7.4 Hz to 10 Hz against 1.43 Hz in Example 1.1 (<a href="ch1.html#ex-1-1"><span class="rid">R08</span></a>) &mdash; a population of grid-following converters contributes no synchronizing torque coefficient and no inertia constant to the system of Chapter 1, whatever its installed capacity.</p>
+<div class="proof">
+<span class="ph">Argument, term by term against R06 and R07</span>
+<ol>
+<li><strong>Synchronizing torque coefficient.</strong> <a href="ch1.html#lem-1-6"><span class="rid">R06</span></a> defines <var>K</var><sub>s</sub> = d<var>P</var><sub>e</sub>/d<var>&delta;</var> at <var>&delta;</var><sub>0</sub>, the change in exported power caused by a change in the unit's <em>own</em> angle against the system. Model 2.6 fixes the exported current at <var>I</var><sub>d</sub>, <var>I</var><sub>q</sub> in the unit's own frame, and the loop re-aligns that frame onto whatever angle the grid presents. On the swing-mode timescale the loop has settled: its 2 % settling time is about 4/(<var>&zeta;</var><sub>pll</sub><var>&omega;</var><sub>n,pll</sub>) = 4/(0.7071 &middot; 62.83) = 0.090 s on a stiff grid and 4/(0.5257 &middot; 46.71) = 0.163 s at SCR = 1.2, against a swing period of 1/1.43 Hz = 0.70 s. Perturb the grid angle slowly on that scale and the converter follows it. Its injected current phasor rotates with the grid. To first order d<var>P</var>/d<var>&delta;</var> = 0. The converter supplies no restoring term. The separation here is a factor of 5 to 7 in frequency, against the factor of 50 that &sect;2.3 uses between the current loop and the angle loop; this hypothesis binds more tightly than that one. What happens inside the 0.09 s to 0.16 s of the loop's own transient is therefore handed to Cited Result 2.9 and is not settled by this corollary.</li>
+<li><strong>Inertia constant.</strong> <a href="ch1.html#def-1-3"><span class="rid">R03</span></a> defines <var>H</var> as stored kinetic energy at rated speed divided by <var>S</var><sub>base</sub>, and <a href="ch1.html#model-1-4"><span class="rid">R04</span></a> puts 2<var>H</var> in front of the frequency derivative. Model 2.6 has no state with that role. The phase-locked-loop integrator stores an angle, not energy. Its value can be reset in software in one sample. A rotor cannot.</li>
+<li><strong>The swing mode itself.</strong> <a href="ch1.html#thm-1-7"><span class="rid">R07</span></a> gives <var>&omega;</var><sub>n</sub> = &radic;(<var>K</var><sub>s</sub><var>&omega;</var><sub>0</sub>/(2<var>H</var>)) and <var>&zeta;</var> = <var>K</var><sub>D</sub>/(4<var>H&omega;</var><sub>n</sub>). Both expressions divide by <var>H</var>. With <var>H</var> = 0 and <var>K</var><sub>s</sub> = 0 neither is defined. The mode does not become badly damped; it ceases to exist as a mode of that fleet.</li>
+<li><strong>What is there instead.</strong> Equation (2.17) is the fleet's only angle dynamic, and Theorem 2.8 showed that it depends on <var>K</var><sub>pll</sub>, which is <em>set by the grid</em>, not supplied to it. The fleet consumes grid strength; it does not produce it. Exercise 6 makes that point precise.</li>
+</ol>
+<p><span class="qed">&#9633;</span></p>
+</div>
+<span class="status">Status: proved here, under the assumptions of Model 2.6 and the timescale hypothesis stated above, by comparison with R03, R04, R06 and R07.</span>
+</div>
+
+<p>Corollary 2.10 states the gap. It does not state the remedy. If an angle must be an internal state backed by energy, then some converter must stop following and start setting. That is the terminal definition of grid-forming control, and it opens Chapter 3 (<span class="rid">R24</span>).</p>
+
+<h3>2.6.5 What this chapter does not cover</h3>
+
+<p>State the boundary plainly, so that no reader carries a result past its assumptions.</p>
+<ol>
+<li><strong>Anything faster than the fundamental frequency.</strong> Model 2.2 averages over a switching period. Switching harmonics, LCL resonance, and control-delay effects are outside it. They need an electromagnetic-transient study.</li>
+<li><strong>Unbalanced and faulted operation.</strong> Every model here assumes balanced three-phase quantities. Negative-sequence components put a second-harmonic term into <var>v</var><sub>q</sub> that Definition 2.4 does not reject.</li>
+<li><strong>Reactive support.</strong> Model 2.6 omission 1. A plant with reactive current control has a different and higher transfer limit, cited there as <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub> &middot; |<var>v</var>| <span class="cite">[S07, Zhang, Harnefors and Nee 2010, "Power-Synchronization Control of Grid-Connected Voltage-Source Converters," <i>IEEE Trans. Power Systems</i> 25(2), 809&ndash;820, weak-grid limit section &mdash; verify]</span>. The numbers in Examples 2.1 and 2.2 do not apply to it.</li>
+<li><strong>The true small-signal stability boundary.</strong> Cited Result 2.9. This chapter gives a ceiling, not the boundary.</li>
+<li><strong>Resistive grids.</strong> <var>R</var><sub>g</sub> = 0 throughout. Distribution-connected plant often has <var>R</var><sub>g</sub> &ge; <var>X</var><sub>g</sub>.</li>
+<li><strong>Protection and fault ride-through.</strong> Equation (2.7) states the current limit and stops. What the converter does <em>at</em> the limit is a protection question, taken up in Chapter 4 (<span class="rid">R40</span>).</li>
+</ol>
+<hr>
+
+<h2 id="exercises">Exercises</h2>
+
+<p>Each exercise names its type. Each answer target states the number the solution must reach. Recompute every number; do not copy a target.</p>
+
+<div class="exercise" id="ex2-1">
+<span class="xh">Exercise 1 &mdash; Conceptual</span>
+<p>A converter rated 200 MVA connects where the short-circuit level is 300 MVA. State the short-circuit ratio. State whether the plant can export its full rating at unity power factor under Model 2.6.</p>
+<details><summary>Answer target</summary>
+<p>SCR = 300/200 = 1.5000, so <var>X</var><sub>g</sub> = 1/1.5 = 0.6667 pu by equation (2.12). At <var>I</var><sub>d</sub> = 1 pu: sin <var>&theta;</var><sub>0</sub> = 0.6667, so <var>&theta;</var><sub>0</sub> = arcsin(0.6667) = 41.81&deg;. Terminal voltage and <var>K</var><sub>pll</sub> are both <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> = 0.7454 pu, and <var>P</var> = 0.7454 pu. This model's ceiling is <var>P</var><sub>max</sub> = SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2 = 0.7500 pu.</p>
+<p><strong>Answer: no.</strong> The plant cannot export 1.0 pu. The ceiling 0.7500 pu is below rating, and even that needs <var>&theta;</var><sub>0</sub> = 45&deg;, not the 41.81&deg; of this operating point. Exporting 1.0 pu requires reactive support that holds the terminal voltage up, which Model 2.6 omission 1 excludes. Cited Result 2.9 (<span class="rid">R22</span>) warns that the true stable limit is lower still.</p>
+</details>
+</div>
+
+<div class="exercise" id="ex2-2">
+<span class="xh">Exercise 2 &mdash; Derivational</span>
+<p>Derive <var>P</var> = <var>v</var><sub>d</sub><var>i</var><sub>d</sub> + <var>v</var><sub>q</sub><var>i</var><sub>q</sub> in per unit from the three-phase instantaneous power, using the amplitude-invariant Park transform of Definition 2.1. Show where the factor 3/2 goes.</p>
+<details><summary>Answer target</summary>
+<p>Instantaneous three-phase power in SI is <var>p</var> = <var>v</var><sub>a</sub><var>i</var><sub>a</sub> + <var>v</var><sub>b</sub><var>i</var><sub>b</sub> + <var>v</var><sub>c</sub><var>i</var><sub>c</sub>. Invert equations (2.1) and (2.2) for a balanced set and substitute. The cross terms cancel, and the result is <var>p</var> = 1.5(<var>v</var><sub>d</sub><var>i</var><sub>d</sub> + <var>v</var><sub>q</sub><var>i</var><sub>q</sub>), with <var>v</var> and <var>i</var> as SI peak-referred dq quantities.</p>
+<p>The factor 3/2 comes from the 2/3 in the amplitude-invariant Clarke transform. It disappears in per unit. With a peak-referred voltage base and a peak-referred current base whose product is (2/3)<var>S</var><sub>base</sub>, dividing <var>p</var> by <var>S</var><sub>base</sub> gives <var>P</var> = <var>v</var><sub>d</sub><var>i</var><sub>d</sub> + <var>v</var><sub>q</sub><var>i</var><sub>q</sub> exactly. The factor is absorbed by the bases, which is why the transform of Definition 2.1 and the bases of <a href="ch1.html#def-1-1"><span class="rid">R01</span></a> must be chosen together: the peak phase-voltage base &radic;2 <var>V</var><sub>base</sub>/&radic;3 and the peak current base &radic;2 <var>I</var><sub>base</sub> multiply to (2/3)<var>S</var><sub>base</sub>. Had the power-invariant factor &radic;(2/3) been chosen instead, the 3/2 would not have appeared, but a 1 pu phase peak would no longer give a 1 pu dq magnitude.</p>
+</details>
+</div>
+
+<div class="exercise" id="ex2-3">
+<span class="xh">Exercise 3 &mdash; Derivational</span>
+<p>Show that <var>K</var><sub>pll</sub> equals the magnitude of &part;<var>v</var><sub>q</sub>/&part;(angle error) at the operating point. Explain why this makes grid strength enter the loop through exactly one scalar.</p>
+<details><summary>Answer target</summary>
+<p>Linearise the loop equation of (2.14) about the locked point. Write <var>&theta;</var><sub>p</sub> = <var>&theta;</var><sub>0</sub> + &Delta;<var>&theta;</var><sub>p</sub>, where &Delta;<var>&theta;</var><sub>p</sub> is the angle error. The term <var>X</var><sub>g</sub><var>I</var><sub>d</sub> is constant on the loop timescale by Model 2.6 assumption (1), so its derivative is zero. Only &minus;<var>V</var><sub>g</sub> sin <var>&theta;</var><sub>p</sub> survives differentiation, giving &part;<var>v</var><sub>q</sub>/&part;&Delta;<var>&theta;</var><sub>p</sub> = &minus;<var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> = &minus;<var>K</var><sub>pll</sub>. This is equation (2.16).</p>
+<p>Grid strength enters through one scalar because the grid touches equation (2.8) only through <var>v</var><sub>q</sub>, and <var>v</var><sub>q</sub> is zero at the operating point. A quantity that is zero at the operating point contributes nothing but its slope to the first-order model. That slope is <var>K</var><sub>pll</sub>. Every other grid property &mdash; <var>X</var><sub>g</sub>, <var>V</var><sub>g</sub>, <var>I</var><sub>d</sub> &mdash; reaches the loop only by setting <var>&theta;</var><sub>0</sub>, and therefore only through <var>K</var><sub>pll</sub>.</p>
+</details>
+</div>
+
+<div class="exercise" id="ex2-4">
+<span class="xh">Exercise 4 &mdash; Computational</span>
+<p>Sweep SCR from 1.01 to 10 and find the short-circuit ratio at which <var>&zeta;</var><sub>pll</sub> first falls below 0.300, for the gains of Example 2.1 at <var>I</var><sub>d</sub> = 1 pu and <var>V</var><sub>g</sub> = 1 pu. Report the value the sweep returns and state the resolution used.</p>
+<details><summary>Answer target</summary>
+<p>Closed form first, as a check on the sweep. Equation (2.19) gives <var>&zeta;</var><sub>pll</sub> = 0.7071&radic;<var>K</var><sub>pll</sub>, so <var>&zeta;</var><sub>pll</sub> = 0.300 at <var>K</var><sub>pll</sub> = (0.300/0.7071)<sup>2</sup> = 0.1800. Then <var>&theta;</var><sub>0</sub> = arccos(0.1800) = 79.63&deg;, and SCR = 1/sin <var>&theta;</var><sub>0</sub> = 1.0166.</p>
+<p>Sweep result at a resolution of 0.001 in SCR, ascending from 1.010: the first grid point with <var>&zeta;</var><sub>pll</sub> &ge; 0.300 is SCR = 1.017, where <var>K</var><sub>pll</sub> = 0.1821 and <var>&zeta;</var><sub>pll</sub> = 0.3017. The grid point below it, SCR = 1.016, gives <var>K</var><sub>pll</sub> = 0.1768 and <var>&zeta;</var><sub>pll</sub> = 0.2973. The crossing therefore lies between 1.016 and 1.017, which brackets the closed-form 1.0166. Report the bracket and the step, not a single digit beyond the resolution.</p>
+<p>Reading: under this static model the damping ratio holds above 0.300 almost to the existence bound of SCR = 1.000. That is exactly why Cited Result 2.9 (<span class="rid">R22</span>) is needed. Real plant meets trouble far above SCR = 1.017.</p>
+</details>
+</div>
+
+<div class="exercise" id="ex2-5">
+<span class="xh">Exercise 5 &mdash; Computational</span>
+<p>Retune <var>k</var><sub>p,pll</sub> and <var>k</var><sub>i,pll</sub> so that Example 2.1 recovers <var>&zeta;</var><sub>pll</sub> = 0.7071 and <var>&omega;</var><sub>n,pll</sub> = 62.83 rad/s at SCR = 1.2. Then report what the new gains do at SCR = 10.</p>
+<details><summary>Answer target</summary>
+<p>Equation (2.18) shows both gains enter only as products with <var>K</var><sub>pll</sub>. To restore the design pair at <var>K</var><sub>pll</sub> = 0.5528, divide both gains by 0.5528: <var>k</var><sub>p,pll</sub> = 88.86/0.5528 = 160.7 1/s and <var>k</var><sub>i,pll</sub> = 3948/0.5528 = 7142 1/s<sup>2</sup>. Check with equation (2.18): <var>&omega;</var><sub>n,pll</sub> = &radic;(0.5528 &middot; 7141.82) = &radic;3948.00 = 62.83 rad/s, and with equation (2.19) <var>&zeta;</var><sub>pll</sub> = 0.7071 &middot; &radic;(0.5528/0.5528) = 0.7071 &middot; 1.0000 = 0.7071. Correct.</p>
+<p>At SCR = 10, <var>K</var><sub>pll</sub> = 0.9950. Both equations (2.18) and (2.19) scale from the SCR = 1.2 point by the factor &radic;(0.9950/0.5528) = &radic;1.8000 = 1.3416. So <var>&omega;</var><sub>n,pll</sub> = 62.83 &middot; 1.3416 = 84.30 rad/s, which is 84.30/(2&pi;) = 13.42 Hz, and <var>&zeta;</var><sub>pll</sub> = 0.7071 &middot; 1.3416 = 0.9487.</p>
+<p><strong>The trade this chapter names.</strong> A loop tuned for the weak case runs at 13.42 Hz on a strong grid, against the 10.00 Hz it was designed for. The ratio is 13.42/10.00 = 1.3416. Cited Result 2.9 (<span class="rid">R22</span>) reports that a faster phase-locked loop destabilises <em>earlier</em> on a weak grid. So raising the gains to fix the weak-grid bandwidth works against the weak-grid stability limit. One fixed pair of gains cannot serve both ends of the range. That is the argument for gain scheduling. It is also, as Chapter 3 argues, the argument for a control law that does not measure the angle at all.</p>
+</details>
+</div>
+
+<div class="exercise" id="ex2-6">
+<span class="xh">Exercise 6 &mdash; Conceptual</span>
+<p>State, in terms of <a href="ch1.html#lem-1-6"><span class="rid">R06</span></a> and <span class="rid">R18</span>, one sentence on why adding more grid-following plant does not raise SCR for the plant already connected there.</p>
+<details><summary>Answer target</summary>
+<p>SCR is set by the Thevenin impedance of the <em>sources</em> behind the point of connection (Definition 2.5), and a current source contributes no Thevenin voltage source, so it adds no short-circuit power and leaves <var>X</var><sub>g</sub> unchanged.</p>
+<p>Expand in the chapter's terms. <a href="ch1.html#lem-1-6"><span class="rid">R06</span></a> gives a synchronous machine a restoring coefficient <var>K</var><sub>s</sub> = (<var>E</var>&prime;<var>V</var><sub>inf</sub>/<var>X</var>) cos <var>&delta;</var><sub>0</sub>, which exists because the machine holds an internal emf <var>E</var>&prime; behind a finite reactance. That emf is what feeds a fault, so it is what sets <var>S</var><sub>sc</sub>. Model 2.6 gives a grid-following converter no internal emf at all; equation (2.7) also caps its fault contribution near 1.1 to 1.3 pu. <span class="rid">R18</span> then shows that each added converter increases the current flowing through the same <var>X</var><sub>g</sub>, which pushes <var>&theta;</var><sub>0</sub> up and <var>K</var><sub>pll</sub> down for every plant at that node. Adding grid-following plant therefore consumes grid strength; it does not produce it. Corollary 2.10 (<span class="rid">R23</span>) is the general statement.</p>
+</details>
+</div>
+
+<hr>
+
+<h2 id="ledger">Chapter summary and result ledger</h2>
+
+<p>Chapter 1 gave a machine an angle backed by kinetic energy, and read the stability of that angle off two numbers, <var>K</var><sub>s</sub> and <var>H</var>. This chapter gave a converter an angle backed by a measurement, and read the behaviour of that angle off one number, <var>K</var><sub>pll</sub>. The algebra of the two restoring coefficients matches. The energy behind them does not.</p>
+
+<p>The practical statement is short. A grid-following plant on a weak grid loses terminal voltage and export power at the same rate, because both are the same quantity <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub> = <var>K</var><sub>pll</sub> in per unit at unity power factor. It loses loop bandwidth and damping ratio at the same moment, as &radic;<var>K</var><sub>pll</sub> (equation (2.19)). At SCR = 1.2 the first pair is down 44.7 % and the second pair 25.7 %. The static ceiling on power is SCR &middot; <var>V</var><sub>g</sub><sup>2</sup>/2, which falls below plant rating at SCR = 2. The true stable region is smaller than the static one, by a mechanism this chapter cites and does not prove.</p>
+
+<div class="tw">
+<table>
+<caption>Table 2.3 &mdash; Every result in this chapter, with its global identifier and its epistemic status.</caption>
+<thead><tr><th>Local</th><th>Global</th><th>Statement</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Definition 2.1</td><td>R12</td><td>Clarke and Park transforms, amplitude-invariant, d axis on the measured voltage</td><td>stated in &sect;2.1</td></tr>
+<tr><td>Model 2.2</td><td>R13</td><td>Averaged converter with L filter in dq, with cross-coupling</td><td>derived in &sect;2.2</td></tr>
+<tr><td>Model 2.3</td><td>R14</td><td>Decoupled current control; first-order closed loop of bandwidth <var>&alpha;</var><sub>c</sub></td><td>derived in &sect;2.3</td></tr>
+<tr><td>Definition 2.4</td><td>R15</td><td>Synchronous-reference-frame phase-locked loop</td><td>stated in &sect;2.4</td></tr>
+<tr><td>Definition 2.5</td><td>R16</td><td>Short-circuit ratio; <var>X</var><sub>g</sub> = 1/SCR; strength classes</td><td>stated in &sect;2.5; classes cited [S19 &mdash; verify]</td></tr>
+<tr><td>Model 2.6</td><td>R17</td><td>Current source behind <var>jX</var><sub>g</sub>; four omissions listed</td><td>derived in &sect;2.5</td></tr>
+<tr><td>Theorem 2.7</td><td>R18</td><td>Existence bound on current; power curve; <var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos <var>&theta;</var><sub>0</sub></td><td>proved in &sect;2.5</td></tr>
+<tr><td>Theorem 2.8</td><td>R19</td><td><var>&omega;</var><sub>n,pll</sub> = &radic;(<var>K</var><sub>pll</sub><var>k</var><sub>i,pll</sub>); <var>&zeta;</var><sub>pll</sub> &#8733; &radic;<var>K</var><sub>pll</sub></td><td>proved in &sect;2.6</td></tr>
+<tr><td>Example 2.1</td><td>R20</td><td>SCR = 1.2: <var>&theta;</var><sub>0</sub> = 56.44&deg;, <var>K</var><sub>pll</sub> = 0.5528, 7.435 Hz, <var>&zeta;</var><sub>pll</sub> = 0.5257</td><td>computed in &sect;2.6.1</td></tr>
+<tr><td>Example 2.2</td><td>R21</td><td>Five-row SCR sweep with both power columns</td><td>computed in &sect;2.6.2</td></tr>
+<tr><td>Cited Result 2.9</td><td>R22</td><td>Phase-locked-loop and current-loop interaction destabilises below the static bound</td><td>cited [S07, S08 &mdash; verify]; not proved here</td></tr>
+<tr><td>Corollary 2.10</td><td>R23</td><td>A grid-following fleet supplies neither <var>K</var><sub>s</sub> nor <var>H</var></td><td>proved in &sect;2.6.4</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Forward.</strong> Corollary 2.10 leaves a hole where <var>K</var><sub>s</sub> and <var>H</var> used to be. Chapter 3 defines grid-forming control by terminal behaviour (<span class="rid">R24</span>). It shows that four control families reduce to one angle model with an equivalent inertia constant and an equivalent damping coefficient (<span class="rid">R32</span>). It recovers <var>K</var><sub>s</sub>. It then bounds the recovered inertia by the direct-current-side energy reserve and by the current limit <var>I</var><sub>max</sub> of equation (2.7) (<span class="rid">R33</span>). Those two bounds have no counterpart in Chapter 1.</p>
+
+<p>Rendering convention: the plan writes symbol names in plain text, such as <code>omega_n_pll</code>. This chapter renders the same symbol as <var>&omega;</var><sub>n,pll</sub>. The mapping is one to one: an underscore becomes a subscript, and a spelled-out Greek name becomes the Greek letter. So <code>k_p_pll</code> is <var>k</var><sub>p,pll</sub>, <code>zeta_pll</code> is <var>&zeta;</var><sub>pll</sub>, <code>alpha_c</code> is <var>&alpha;</var><sub>c</sub>, and <code>K_pll</code> is <var>K</var><sub>pll</sub>. This chapter never shortens <var>k</var><sub>p,pll</sub> to <var>k</var><sub>p</sub>.</p>
+<p class="cite">Cross-chapter references in this chapter use the global result identifiers R01 to R40 of the book plan. Those already drafted in Chapter 1 (R01, R03, R04, R06 to R08) are linked to <code>ch1.html</code>; identifiers for Chapters 3 and 4 (R24, R32, R33, R39, R40) are not yet linked, because those chapters' anchors do not yet exist. Every citation carries the mark "verify" until a human reads the source page.</p>
+</div>
+</body>
+</html>

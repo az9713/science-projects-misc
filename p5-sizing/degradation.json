@@ -1,0 +1,102 @@
+{
+  "scenario": "degradation",
+  "case": "grid-forming BESS replacing a 1.6 GVA synchronous condenser fleet for frequency response",
+  "source_method": "p1-textbook/ch4.html section 4.5, Example 4.2 (R39), eqs (4.11)-(4.13); same base model as inertia-constant.py / cost-curve.py, H fixed at 3.5 s. ch4.html has no ageing model; the degradation logic below is an addition of this study.",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "life_years": 15,
+  "varied_uncertainty": {
+    "energy_retention_at_EOL": {
+      "distribution": "triangular(min 0.7, mode 0.8, max 0.85)",
+      "meaning": "fraction of BOL nameplate energy (capacity) still available after 15 years",
+      "source": "Not in ch4.html. Assumption of this study, order-of-magnitude anchored to the common industry convention of 70-80% retained capacity as Li-ion grid-storage end-of-life (e.g. NREL ATB storage degradation assumptions; vendor warranties such as Tesla Megapack, quoted near 70% retention at 20 years). Verify against a specific product warranty spec before quoting."
+    },
+    "power_retention_at_EOL": {
+      "distribution": "triangular(min 0.85, mode 0.92, max 0.97)",
+      "meaning": "fraction of BOL nameplate power still available after 15 years",
+      "source": "Not in ch4.html. Assumption of this study: power fade (cell internal-resistance rise) is generally smaller than capacity fade for grid-scale Li-ion over 15 years, and the converter itself does not materially degrade. Order-of-magnitude only; verify against a specific product spec."
+    },
+    "correlation": "energy_retention_at_EOL and power_retention_at_EOL drawn independently; no sourced correlation coefficient between capacity fade and power fade."
+  },
+  "sizing_logic": {
+    "description": "BOL install = EOL requirement / retention at EOL, so the plant still meets the ch4.html requirement (1120 MVA / 224 MW headroom, 1120 MWh one-hour store) after 15 years of fade. Capex is unit cost x the BOL (as-installed, day-one) quantities.",
+    "eol_requirement_power_MVA": 1120.0,
+    "eol_requirement_power_headroom_MW": 224.0,
+    "eol_requirement_energy_one_hour_store_MWh": 1120.0,
+    "eol_requirement_energy_physical_need_MWh": 0.049777777777777775
+  },
+  "outputs": {
+    "energy_retention_at_EOL": {
+      "unit": "fraction",
+      "meaning": "sampled fraction of BOL nameplate energy still available at year 15 (the input)",
+      "p5": 0.727914,
+      "p50": 0.786787,
+      "p95": 0.830739,
+      "mean": 0.783374
+    },
+    "power_retention_at_EOL": {
+      "unit": "fraction",
+      "meaning": "sampled fraction of BOL nameplate power still available at year 15 (the input)",
+      "p5": 0.870176,
+      "p50": 0.914558,
+      "p95": 0.952495,
+      "mean": 0.913056
+    },
+    "bess_installed_power_BOL_MVA": {
+      "unit": "MVA",
+      "meaning": "converter rating to install at BOL so EOL power still meets 1120 MVA / 224 MW headroom",
+      "p5": 1175.858869,
+      "p50": 1224.635091,
+      "p95": 1287.096252,
+      "mean": 1227.537874
+    },
+    "bess_installed_energy_BOL_MWh": {
+      "unit": "MWh",
+      "meaning": "energy (one-hour store) to install at BOL so EOL energy still meets 1120 MWh",
+      "p5": 1348.197116,
+      "p50": 1423.510694,
+      "p95": 1538.643932,
+      "mean": 1432.009763
+    },
+    "capex_BOL_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex at BOL (day-one purchase), 200 USD/kW + 250 USD/kWh on the BOL install quantities",
+      "p5": 579.777327,
+      "p50": 601.897213,
+      "p95": 631.845167,
+      "mean": 603.510015
+    }
+  },
+  "textbook_reference_no_fade": {
+    "bess_installed_power_BOL_MVA": 1120.0,
+    "bess_installed_energy_BOL_MWh": 1120.0,
+    "capex_BOL_MUSD": 504.0
+  },
+  "context": {
+    "system_stored_energy_MJ": 200000.0,
+    "reference_loss_MW": 1000.0,
+    "condenser_H_s_fixed": 3.5,
+    "unit_costs": {
+      "power_USD_per_kW": 200.0,
+      "energy_USD_per_kWh": 250.0
+    }
+  },
+  "findings": [
+    "At the mode retentions (80% energy, 92% power), the plant must be installed at 1400 MWh / 1217.4 MVA at BOL to still deliver the 1120 MWh / 1120 MVA EOL requirement after 15 years, for a BOL capex of 593.5 MUSD against the no-fade reference of 504.0 MUSD -- about 1.18x, driven mainly by the deeper assumed energy fade (20% vs. 8% power fade at the mode).",
+    "Across the 10,000 Monte Carlo samples, BOL capex runs from 579.8 MUSD (p5) to 631.8 MUSD (p95), median 601.9 MUSD; energy retention drives most of the spread because the one-hour store (1120 MWh at EOL) dominates capex over the 1120 MVA converter (as in cost-curve.py). The sample median (601.9 MUSD) sits above the closed-form mode-retention figure (593.5 MUSD) because the triangular medians of both retention distributions are pulled toward their wider, lower-retention tail (0.70-0.85 for energy, 0.85-0.97 for power), which is asymmetric around the mode.",
+    "The BOL/EOL install ratio equals 1/retention exactly for each fade channel by construction (checked to machine precision in the self-check), so power and energy over-build never interact -- the two channels can be read independently off their own retention figure."
+  ],
+  "assumptions": [
+    "Condenser H fixed at 3.5 s, ch4 Example 4.2 ('assumed for this case - verify against a manufacturer figure'); not varied in this scenario, matching cost-curve.py.",
+    "Energy (capacity) retention at EOL ~ triangular(0.70, 0.80, 0.85). Not in ch4.html; assumption of this study anchored to the common 70-80% retained-capacity EOL convention for grid-scale Li-ion (e.g. NREL ATB; vendor warranties such as Tesla Megapack near 70% at 20 years). Verify against a specific product warranty before quoting.",
+    "Power retention at EOL ~ triangular(0.85, 0.92, 0.97). Not in ch4.html; assumption of this study that power fade is smaller than capacity fade over 15 years for grid-scale Li-ion, order-of-magnitude only; verify against a specific product spec.",
+    "Energy and power retention drawn independently (no sourced correlation between the two fade mechanisms).",
+    "BOL install = EOL requirement / retention at EOL, applied separately to power and energy; this assumes linear, monotonic fade to a single 15-year figure (no fade curve shape, no calendar-vs-cycling split, no augmentation/replacement partway through life).",
+    "EOL requirement itself: 1120 MVA converter rating / 224 MW headroom / 1120 MWh one-hour store, from ch4.html Example 4.2 at H = 3.5 s, eqs (4.11)-(4.13), identical to cost-curve.py's fixed sizing.",
+    "Unit costs 200 USD/kW (converter + grid connection) and 250 USD/kWh (cells + racks + BMS), the majority convention per the brief, fixed placeholders, not from a source read in this run, applied to the BOL (as-installed) quantities.",
+    "f0 = 50 Hz; RoCoF = 1.0 Hz/s (ch4 eq 4.12, DS3 / GB loss-of-mains figure [S16 - verify]); excursion 0.8 Hz (ch4 eq 4.11); H_v = 5.0 s (ch4 eq 4.13, 'assumed for this case'); current limit 1.2 pu (ch4 Constraint 3); one-hour store (ch4 Constraint 1, 'assumed for this case'). All fixed, all from ch4.html Example 4.2 unless marked assumption.",
+    "Fleet: 8 x 200 MVA = 1.6 GVA, ch4 Example 4.2 (the brief's '1.6 GW' is written as 1.6 GVA in the textbook).",
+    "System context 200 GVA.s and 1000 MW loss from ch4 Example 4.1; used only for reporting, not in the sizing.",
+    "No response delay, no outage, no financing or O&M cost, no augmentation/replacement strategy, no currency/time discounting: other P5 scenarios cover response time and unit-cost/inertia spread; this scenario isolates 15-year degradation only."
+  ]
+}

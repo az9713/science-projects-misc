@@ -1,0 +1,116 @@
+{
+  "scenario": "response-time",
+  "case": "grid-forming BESS replacing a 1.6 GVA synchronous condenser fleet for frequency response",
+  "source_method": "p1-textbook/ch4.html section 4.5, Example 4.2 (R39), eqs (4.11)-(4.13); same base model as inertia-constant.py, H fixed at 3.5 s",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "varied_uncertainty": {
+    "name": "BESS response time T_d (s), trigger to full power delivery",
+    "distribution": "triangular(min 0.05, mode 0.15, max 0.3)",
+    "source": "Not in ch4.html. Assumption of this study, order-of-magnitude anchored to published fast-frequency-response products (e.g. National Grid ESO Dynamic Containment, full delivery within about 1 s of trigger); verify against a specific product spec before quoting."
+  },
+  "effect_model": {
+    "description": "k = t_natural / (t_natural - T_d), t_natural = DF_EXCURSION_HZ / ROCOF_HZ_S = 0.8 s; required power headroom = 224 MW (ch4 baseline) x k. Energy requirement (eq 4.11) held fixed; only power, converter rating, store size and capex scale with k.",
+    "t_natural_s": 0.8,
+    "caveat": "First-order approximation (remaining-time scaling), not a full swing-equation/RoCoF-relay simulation. Assumption of this study, not from ch4.html."
+  },
+  "outputs": {
+    "response_time_s": {
+      "unit": "s",
+      "meaning": "sampled BESS trigger-to-full-power response time (the input)",
+      "p5": 0.086036,
+      "p50": 0.163362,
+      "p95": 0.256931,
+      "mean": 0.16673
+    },
+    "amplification_factor": {
+      "unit": "dimensionless",
+      "meaning": "k = t_natural / (t_natural - T_d), t_natural = 0.8 s; power scale-up from the delay",
+      "p5": 1.120505,
+      "p50": 1.256601,
+      "p95": 1.47311,
+      "mean": 1.271836
+    },
+    "bess_power_headroom_MW": {
+      "unit": "MW",
+      "meaning": "power to still arrest the 0.8 Hz excursion given the delay; k x the 224 MW baseline",
+      "p5": 250.9932,
+      "p50": 281.478629,
+      "p95": 329.97662,
+      "mean": 284.891349
+    },
+    "bess_converter_rating_MVA": {
+      "unit": "MVA",
+      "meaning": "grid-forming converter rating at H_v 5.0 s (0.20 pu headroom), eq (4.13)",
+      "p5": 1254.966001,
+      "p50": 1407.393143,
+      "p95": 1649.8831,
+      "mean": 1424.456743
+    },
+    "bess_energy_required_MWh": {
+      "unit": "MWh",
+      "meaning": "energy released over the 0.8 Hz excursion, eq (4.11); unaffected by response time",
+      "p5": 0.049778,
+      "p50": 0.049778,
+      "p95": 0.049778,
+      "mean": 0.049778
+    },
+    "bess_energy_one_hour_store_MWh": {
+      "unit": "MWh",
+      "meaning": "store size under the textbook one-hour assumption (a design choice, not a requirement)",
+      "p5": 1254.966001,
+      "p50": 1407.393143,
+      "p95": 1649.8831,
+      "mean": 1424.456743
+    },
+    "capex_one_hour_store_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the one-hour store, fixed placeholder unit costs",
+      "p5": 564.734701,
+      "p50": 633.326914,
+      "p95": 742.447395,
+      "mean": 641.005534
+    },
+    "capex_min_energy_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the store sized to the physical energy need only",
+      "p5": 251.005645,
+      "p50": 281.491073,
+      "p95": 329.989064,
+      "mean": 284.903793
+    }
+  },
+  "textbook_reference_at_Td_0": {
+    "amplification_factor": 1.0,
+    "bess_power_headroom_MW": 224.0,
+    "bess_converter_rating_MVA": 1120.0,
+    "bess_energy_one_hour_store_MWh": 1120.0,
+    "bess_energy_required_MWh": 0.049777777777777775,
+    "store_to_need_ratio": 22500.0
+  },
+  "context": {
+    "system_stored_energy_MJ": 200000.0,
+    "reference_loss_MW": 1000.0,
+    "condenser_H_s_fixed": 3.5
+  },
+  "findings": [
+    "Required BESS power scales with the amplification factor k = 0.8 / (0.8 - T_d): from k = 1.12 at the p5 response time (0.086 s, 251 MW) to k = 1.47 at the p95 response time (0.257 s, 330 MW), against the zero-delay 224 MW baseline (median k = 1.26, 281 MW).",
+    "The physical energy requirement (eq 4.11) does not change with response time in this model (fixed at 0.0498 MWh); only power, converter rating and capex scale with k, so response time drives a power/converter-sizing risk, not an energy-sizing risk.",
+    "The energy-store-to-need ratio is 22 500 x k, so about 25 200 at p5 and about 33 100 at p95, rising with response time because the one-hour store scales with converter rating (k) while the physical energy need (eq 4.11) does not; power headroom remains the binding constraint throughout."
+  ],
+  "assumptions": [
+    "BESS response time T_d ~ triangular(0.05, 0.15, 0.30) s. Not read from ch4.html; order-of-magnitude assumption anchored to published fast-frequency-response products (e.g. National Grid ESO Dynamic Containment, full delivery within about 1 s); verify against a specific product spec.",
+    "Effect model: required power scaled by k = t_natural/(t_natural - T_d), t_natural = 0.8 s (the time to reach the 0.8 Hz target excursion uncorrected). First-order remaining-time approximation, not a full dynamic simulation; assumption of this study.",
+    "Condenser H held fixed at 3.5 s (ch4 Example 4.2 textbook value) so this scenario isolates response-time uncertainty; the inertia-constant scenario covers H uncertainty separately.",
+    "Fleet: 8 x 200 MVA = 1.6 GVA, ch4 Example 4.2 (the brief's '1.6 GW' is written as 1.6 GVA in the textbook).",
+    "f0 = 50 Hz, ch4 Examples 4.1 and 4.2.",
+    "Design RoCoF = 1.0 Hz/s, ch4 eq (4.12), DS3 / GB loss-of-mains figure [S16 - verify]; fixed.",
+    "Energy term over a 0.8 Hz excursion, ch4 eq (4.11), linearised form (0.80% above the exact form); fixed.",
+    "BESS virtual inertia constant H_v = 5.0 s, so 0.20 pu headroom per unit rating, ch4 eq (4.13), 'assumed for this case'; fixed.",
+    "Terminal voltage 1.0 pu, unity power factor, current limit 1.2 pu at 1.0 pu dispatch, ch4 Constraint 3; converter rating = headroom / 0.20.",
+    "One-hour store (MWh = MVA rating x 1 h), ch4 Constraint 1, 'assumed for this case'; reported separately from the physical energy need.",
+    "Unit costs 200 USD/kVA (converter + connection) and 250 USD/kWh (energy), fixed placeholders, not from a source read in this run; the cost-curve scenario owns cost uncertainty.",
+    "System context 200 GVA.s and 1000 MW loss from ch4 Example 4.1; context only, not used in the sizing.",
+    "No current limiting beyond the 1.2 pu cap, no degradation, no outage: other P5 scenarios cover those."
+  ]
+}

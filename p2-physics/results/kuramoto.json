@@ -1,0 +1,32 @@
+{
+  "target": "Kc, Kuramoto model synchronization threshold, Lorentzian frequencies (gamma=1)",
+  "method": "Time-averaged order parameter r above threshold at 8 K values in [2.4, 5.0], fit r^2 = a + b/K by unweighted least squares, Kc = -b/a (intercept form)",
+  "measured": 2.000013,
+  "published": 2.0,
+  "error_estimate": 0.000123,
+  "tolerance": 0.000435,
+  "abs_diff": 0.000013,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 177.4,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": 20260922,
+  "n_oscillators": [8000, 4000],
+  "runs": [
+    {"exit_code": 0, "runtime_s": 177.4},
+    {"exit_code": 0, "runtime_s": 210.8}
+  ],
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "previous": {
+    "measured": 1.999991,
+    "tolerance": 0.000474,
+    "abs_diff": 0.000009,
+    "error_estimate": 0.000113,
+    "runtime_s": 118.7
+  },
+  "notes": "Second verify pass, after the fix stage applied referee change 4 (kuramoto.py step(): sample z at theta before any drift, then apply the drift/kick/drift split symmetrically, instead of sampling after a full drift). Two full runs (240 s timeout each, neither hit it) gave bit-identical numeric output tables and identical MEASURED=2.000013, PUBLISHED=2.000000, ERROR_ESTIMATE=0.000123, TOLERANCE=0.000435, ABS_DIFF=0.000013, RESULT=PASS, exit_code=0 both times, no stderr. Only the printed RUNTIME_S line differed (177.4 s vs 210.8 s, both well inside the 240 s per-run timeout and the referee's 180 s budget note is exceeded here -- the fix cost more than the +40% estimate, from about 110 s pre-fix to about 177-211 s post-fix, roughly +60-90%), so the run is deterministic under the fixed SEED=20260922. Recomputed abs_diff = |2.000013 - 2.000000| = 0.000013, an exact match to the script's printed ABS_DIFF, well inside TOLERANCE=0.000435. What changed against the previous JSON: measured 1.999991 -> 2.000013, tolerance 0.000474 -> 0.000435 (tightened, since delta_dt shrank), abs_diff 0.000009 -> 0.000013 (both pass on 3x error alone: previous 3*0.000113=0.000339 > 0.000009 yes; now 3*0.000123=0.000369 > 0.000013 yes). Discretization bias factor lambda (the fit intercept a) improved from 0.989839 to 0.999852 at dt=0.010, and delta_dt dropped from 0.000126 to 0.000066 (about 1.9x smaller, short of the referee's 'about 10x' expectation but in the same direction and still small relative to tolerance). The script printed 0 spuriously aliased locks at every K in both runs. scipy is not imported anywhere in kuramoto.py (only time and numpy); scipy_version=1.16.0 is recorded from the environment because the required output shape includes that key. Referee's ising change 5, kepler change 5, and fpu change 4 are JSON-note edits for those other scripts' results files; the referee.md kuramoto section lists only change 4, a script-code fix (already applied before this verify pass), with no corresponding instruction to alter kuramoto.json's notes text, so referee_json_changes_applied = none listed for this file."
+}

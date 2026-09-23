@@ -1,0 +1,114 @@
+{
+  "scenario": "inertia-constant",
+  "case": "grid-forming BESS replacing a 1.6 GVA synchronous condenser fleet for frequency response",
+  "source_method": "p1-textbook/ch4.html section 4.5, Example 4.2 (R39), eqs (4.11)-(4.13)",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "varied_uncertainty": {
+    "name": "condenser inertia constant H (s, including flywheel)",
+    "distribution": "triangular(min 2.0, mode 3.5, max 5.0)",
+    "correlation": "one H per sample, applied to all 8 units"
+  },
+  "outputs": {
+    "condenser_H_s": {
+      "unit": "s",
+      "meaning": "sampled condenser inertia constant (the input)",
+      "p5": 2.48348,
+      "p50": 3.503205,
+      "p95": 4.528205,
+      "mean": 3.500761
+    },
+    "fleet_stored_energy_MJ": {
+      "unit": "MJ",
+      "meaning": "condenser fleet kinetic energy the BESS must match, H x 1600 MVA",
+      "p5": 3973.567201,
+      "p50": 5605.128561,
+      "p95": 7245.128262,
+      "mean": 5601.217073
+    },
+    "bess_power_headroom_MW": {
+      "unit": "MW",
+      "meaning": "power above dispatch at RoCoF 1 Hz/s, eq (4.12); the required BESS response power",
+      "p5": 158.942688,
+      "p50": 224.205142,
+      "p95": 289.80513,
+      "mean": 224.048683
+    },
+    "bess_converter_rating_MVA": {
+      "unit": "MVA",
+      "meaning": "grid-forming converter rating at H_v 5.0 s (0.20 pu headroom), eq (4.13)",
+      "p5": 794.71344,
+      "p50": 1121.025712,
+      "p95": 1449.025652,
+      "mean": 1120.243415
+    },
+    "bess_energy_required_MWh": {
+      "unit": "MWh",
+      "meaning": "energy released over a 0.8 Hz excursion, eq (4.11); the physical energy need",
+      "p5": 0.035321,
+      "p50": 0.049823,
+      "p95": 0.064401,
+      "mean": 0.049789
+    },
+    "bess_energy_one_hour_store_MWh": {
+      "unit": "MWh",
+      "meaning": "store size under the textbook one-hour assumption (a design choice, not a requirement)",
+      "p5": 794.71344,
+      "p50": 1121.025712,
+      "p95": 1449.025652,
+      "mean": 1120.243415
+    },
+    "capex_one_hour_store_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the one-hour store, fixed placeholder unit costs",
+      "p5": 357.621048,
+      "p50": 504.46157,
+      "p95": 652.061544,
+      "mean": 504.109537
+    },
+    "capex_min_energy_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the store sized to the physical energy need only",
+      "p5": 158.951518,
+      "p50": 224.217598,
+      "p95": 289.821231,
+      "mean": 224.06113
+    }
+  },
+  "textbook_reference_at_H_3p5": {
+    "fleet_stored_energy_MJ": 5600.0,
+    "energy_released_0p8Hz_MJ": 179.2,
+    "bess_power_headroom_MW": 224.0,
+    "bess_converter_rating_MVA": 1120.0,
+    "bess_energy_one_hour_store_MWh": 1120.0,
+    "store_to_need_ratio": 22500.0
+  },
+  "context": {
+    "system_stored_energy_MJ": 200000.0,
+    "reference_loss_MW": 1000.0,
+    "fleet_share_of_system_inertia_p5_p50_p95_pct": [
+      1.9868,
+      2.8026,
+      3.6226
+    ]
+  },
+  "findings": [
+    "Required BESS power scales 1:1 with H: 64 MW per second of H, so the p5-p95 H range maps directly to the power range.",
+    "The store-to-need energy ratio is 22 500 at every H, so power headroom (with the current limit) stays the binding constraint across the whole H range; energy never binds.",
+    "Capex with a one-hour store is dominated by the store and scales linearly with H; the placeholder unit costs are not sourced."
+  ],
+  "assumptions": [
+    "Condenser H ~ triangular(2.0, 3.5, 5.0) s. Mode 3.5 s from ch4 Example 4.2 (itself 'assumed for this case - verify'). Bounds 2.0 s and 5.0 s are an assumption of this study, not read from a source.",
+    "One H per sample for all 8 condensers (fully correlated). Independent per-unit draws would narrow the spread by about 1/sqrt(8).",
+    "Fleet: 8 x 200 MVA = 1.6 GVA, ch4 Example 4.2 (the brief's '1.6 GW' is written as 1.6 GVA in the textbook).",
+    "f0 = 50 Hz, ch4 Examples 4.1 and 4.2.",
+    "Design RoCoF = 1.0 Hz/s, ch4 eq (4.12), DS3 / GB loss-of-mains figure [S16 - verify]; fixed.",
+    "Energy term over a 0.8 Hz excursion, ch4 eq (4.11), linearised form (0.80 % above the exact form); fixed.",
+    "BESS virtual inertia constant H_v = 5.0 s, so 0.20 pu headroom per unit rating, ch4 eq (4.13), 'assumed for this case'; fixed.",
+    "Terminal voltage 1.0 pu, unity power factor, current limit 1.2 pu at 1.0 pu dispatch, ch4 Constraint 3; converter rating = headroom / 0.20.",
+    "One-hour store (MWh = MVA rating x 1 h), ch4 Constraint 1, 'assumed for this case'; reported separately from the physical energy need.",
+    "Unit costs 200 USD/kVA (converter + connection) and 250 USD/kWh (energy), fixed placeholders, not from a source read in this run; the cost-curve scenario owns cost uncertainty.",
+    "System context 200 GVA.s and 1000 MW loss from ch4 Example 4.1; used only for the fleet-share figure, not in the sizing.",
+    "No current limiting beyond the 1.2 pu cap, no response delay, no degradation, no outage: other P5 scenarios cover those."
+  ]
+}

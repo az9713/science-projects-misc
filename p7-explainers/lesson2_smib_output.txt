@@ -1,0 +1,49 @@
+=== Base equilibrium (P_m = 0.8 pu) ===
+P_max   = 1.6923 pu
+delta_0 = 0.4924 rad = 28.2115 deg
+K_s     = 1.4913 pu/rad
+omega_n = 8.9618 rad/s = 1.4263 Hz
+zeta    = 0.01594
+
+=== Jacobian check at base equilibrium ===
+Analytic A = ((0.0, 376.99111843077515), (-0.2130394868756507, -0.2857142857142857))
+Finite-diff A = ((0.0, 376.99111843077515), (-0.21303942973219644, -0.2857142857142857))
+  |A[0][0] diff| = 0.000e+00
+  |A[0][1] diff| = 0.000e+00
+  |A[1][0] diff| = 5.714e-08
+  |A[1][1] diff| = 0.000e+00
+
+Eigenvalues (base) = -0.1429 +8.9607j, -0.1429 -8.9607j
+
+=== Step P_m: 0.8 -> 0.85 pu, RK4 h=0.001 s, 10 s ===
+New equilibrium delta_new = 0.5262 rad = 30.1505 deg
+New K_s = 1.4634 pu/rad, omega_n = 8.8775 rad/s = 1.4129 Hz, zeta = 0.01609
+Zero crossings found: 28
+Zero-crossing oscillation frequency = 1.4127 Hz
+Linearised frequency at new point   = 1.4129 Hz
+
+=== Eigenvalue sweep over K_D (Fig. 2.3 data) ===
+  K_D=  0.0: 0.0000 +8.9618j, 0.0000 -8.9618j  |eig|=8.9618
+  K_D=  2.0: -0.1429 +8.9607j, -0.1429 -8.9607j  |eig|=8.9618
+  K_D= 10.0: -0.7143 +8.9333j, -0.7143 -8.9333j  |eig|=8.9618
+  K_D= 30.0: -2.1429 +8.7018j, -2.1429 -8.7018j  |eig|=8.9618
+
+=== H sweep (Exercise 3) ===
+  H=2.0 s: omega_n=11.86 rad/s, zeta=0.0211
+  H=3.5 s: omega_n=8.96 rad/s, zeta=0.0159
+  H=6.0 s: omega_n=6.84 rad/s, zeta=0.0122
+  H=8.0 s: omega_n=5.93 rad/s, zeta=0.0105
+
+=== Finite-difference step-size sweep (Exercise 4) ===
+  step=1e-02: A[1][0]=-0.2124645124, |error|=5.750e-04
+  step=1e-03: A[1][0]=-0.2129823085, |error|=5.718e-05
+  step=1e-04: A[1][0]=-0.2130337722, |error|=5.715e-06
+  step=1e-05: A[1][0]=-0.2130389154, |error|=5.714e-07
+  step=1e-06: A[1][0]=-0.2130394297, |error|=5.714e-08
+  step=1e-07: A[1][0]=-0.2130394813, |error|=5.582e-09
+  step=1e-08: A[1][0]=-0.2130394861, |error|=8.234e-10
+  step=1e-09: A[1][0]=-0.2130395067, |error|=1.980e-08
+  step=1e-10: A[1][0]=-0.2130395860, |error|=9.910e-08
+  step=1e-11: A[1][0]=-0.2130391102, |error|=3.767e-07
+  step=1e-12: A[1][0]=-0.2130359381, |error|=3.549e-06
+Smallest error at step = 1e-08 (error = 8.234e-10)

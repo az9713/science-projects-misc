@@ -1,0 +1,22 @@
+{
+  "target": "Feigenbaum delta, logistic map x -> r x (1 - x)",
+  "method": "Superstable parameter values r_n (Newton on f^(2^n)(1/2)-1/2, exact propagated derivative), delta_N = (r_N - r_{N-1})/(r_{N+1} - r_N) at the level N minimizing an error estimate (truncation + measured roundoff)",
+  "measured": 4.66920151427718,
+  "published": 4.66920160910299,
+  "tolerance": 2.68575e-06,
+  "abs_diff": 9.48258e-08,
+  "error_estimate": 7.57224e-07,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 0.062,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": null,
+  "runs": [
+    {"exit_code": 0, "runtime_s": 0.062},
+    {"exit_code": 0, "runtime_s": 0.057}
+  ],
+  "notes": "Two full runs gave bit-identical stdout for every numeric line (r_n table, delta_n table, error budget, alpha=2.502904, MEASURED=4.66920151427718); only RUNTIME_S differed (0.062 s vs 0.057 s), so the result is deterministic (no RNG/seed: script uses Newton iteration on a deterministic recurrence, seed field is null). Recomputed abs_diff = |4.66920151427718 - 4.66920160910299| = 9.48258e-08, matching the printed ABS_DIFF=9.48258e-08 and well under TOLERANCE=2.68575e-06 (tolerance = 3*error_estimate + truncation, per script). Reported level N=10, chosen by the script's own error-estimate minimization without reference to the published value. Both wiring self-checks passed (Newton r_1 matches 1+sqrt(5) to 0.00e+00; derivative check relative error 4.96e-11) and alpha=2.502904 vs published 2.502907875 (Briggs 1991), consistent with the script's stated method-bias caveats (truncation falls, roundoff rises with n; delta_N expected low, and it came out low by ~9.5e-08 as predicted). No stderr output, no warnings, in either run. Runtime ~0.06 s, far under the 240 s timeout."
+}

@@ -1,0 +1,38 @@
+{
+  "method": "finite-volume",
+  "scheme": "Fromm (unlimited MUSCL) + Rusanov flux, central viscous flux, SSP-RK3",
+  "benchmark": "1D viscous Burgers, nu=0.07, x in [0,2pi] periodic, t_end=0.5, Cole-Hopf 2-image phi, u=-2nu phi_x/phi+4",
+  "grids": [
+    128,
+    256,
+    512,
+    1024,
+    2048
+  ],
+  "time_steps": [
+    178,
+    357,
+    930,
+    3719,
+    14875
+  ],
+  "errors": [
+    0.03554423983652723,
+    0.01104930658603813,
+    0.003250266954318614,
+    0.0008820862795916742,
+    0.00022930509678077026
+  ],
+  "error_norm": "discrete L2 of cell averages vs exact cell averages, sqrt(h*sum e^2)",
+  "pairwise_orders": [
+    1.6856599469426583,
+    1.7653257131520346,
+    1.8815665336739886,
+    1.9436513549951833
+  ],
+  "observed_order": 1.8199299344353745,
+  "theoretical_order": 2.0,
+  "analytic_periodicity_gap": 6.217248937900877e-15,
+  "runtime_s": 6.1994139999987965,
+  "pass": true
+}

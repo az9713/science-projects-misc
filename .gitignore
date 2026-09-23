@@ -1,0 +1,9 @@
+HANDOFF.md
+PLAN.md
+STATE.md
+usage-log.md
+tokcost.py
+*-results.json
+.ignore/
+.claude/
+__pycache__/

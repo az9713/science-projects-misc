@@ -1,0 +1,148 @@
+{
+  "scenario": "grid-code",
+  "case": "grid-forming BESS replacing a 1.6 GVA synchronous condenser fleet for frequency response",
+  "source_method": "p1-textbook/ch4.html section 4.5, Example 4.2 (R39), eqs (4.11)-(4.13); same base model as inertia-constant.py",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "varied_uncertainty": {
+    "name": "grid code (sets the RoCoF withstand requirement and the frequency-excursion requirement)",
+    "distribution": "categorical, 6 codes, equal probability 1/6 each",
+    "categories": [
+      {
+        "name": "GB (NGESO)",
+        "rocof_hz_s": 1.0,
+        "df_hz": 0.8
+      },
+      {
+        "name": "Continental Europe (ENTSO-E RfG)",
+        "rocof_hz_s": 2.0,
+        "df_hz": 0.8
+      },
+      {
+        "name": "Nordic synchronous area",
+        "rocof_hz_s": 1.0,
+        "df_hz": 0.5
+      },
+      {
+        "name": "Ireland & N. Ireland (DS3)",
+        "rocof_hz_s": 1.0,
+        "df_hz": 1.0
+      },
+      {
+        "name": "Australia (AEMO NER)",
+        "rocof_hz_s": 1.0,
+        "df_hz": 0.5
+      },
+      {
+        "name": "Generic weak island grid",
+        "rocof_hz_s": 2.0,
+        "df_hz": 1.0
+      }
+    ],
+    "source": "illustrative values shaped on the public RoCoF/excursion figures of GB Grid Code/EFCC, ENTSO-E RfG (EU 2016/631) Type A/B, the Nordic System Operation Agreement, EirGrid/SONI DS3, AEMO NER, and a generic weak-island grid; not audited against the current in-force text of any of them - verify before quoting a specific jurisdiction"
+  },
+  "outputs": {
+    "grid_code_rocof_hz_s": {
+      "unit": "Hz/s",
+      "meaning": "sampled grid code's RoCoF withstand/design requirement (part of the input)",
+      "p5": 1.0,
+      "p50": 1.0,
+      "p95": 2.0,
+      "mean": 1.334
+    },
+    "grid_code_df_hz": {
+      "unit": "Hz",
+      "meaning": "sampled grid code's frequency-excursion requirement (part of the input)",
+      "p5": 0.5,
+      "p50": 0.8,
+      "p95": 1.0,
+      "mean": 0.76999
+    },
+    "fleet_stored_energy_MJ": {
+      "unit": "MJ",
+      "meaning": "condenser fleet kinetic energy at fixed H=3.5s, H x 1600 MVA (does not vary with grid code)",
+      "p5": 5600.0,
+      "p50": 5600.0,
+      "p95": 5600.0,
+      "mean": 5600.0
+    },
+    "bess_power_headroom_MW": {
+      "unit": "MW",
+      "meaning": "power above dispatch at the sampled RoCoF, eq (4.12); the required BESS response power",
+      "p5": 224.0,
+      "p50": 224.0,
+      "p95": 448.0,
+      "mean": 298.816
+    },
+    "bess_converter_rating_MVA": {
+      "unit": "MVA",
+      "meaning": "grid-forming converter rating at H_v 5.0 s, eq (4.13); pu headroom itself scales with RoCoF",
+      "p5": 1120.0,
+      "p50": 1120.0,
+      "p95": 1120.0,
+      "mean": 1120.0
+    },
+    "bess_energy_required_MWh": {
+      "unit": "MWh",
+      "meaning": "energy released over the sampled frequency excursion, eq (4.11); the physical energy need",
+      "p5": 0.031111,
+      "p50": 0.049778,
+      "p95": 0.062222,
+      "mean": 0.04791
+    },
+    "bess_energy_one_hour_store_MWh": {
+      "unit": "MWh",
+      "meaning": "store size under the textbook one-hour assumption (a design choice, not a requirement)",
+      "p5": 1120.0,
+      "p50": 1120.0,
+      "p95": 1120.0,
+      "mean": 1120.0
+    },
+    "capex_one_hour_store_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the one-hour store, fixed placeholder unit costs",
+      "p5": 504.0,
+      "p50": 504.0,
+      "p95": 504.0,
+      "mean": 504.0
+    },
+    "capex_min_energy_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the store sized to the physical energy need only",
+      "p5": 224.007778,
+      "p50": 224.012444,
+      "p95": 224.015556,
+      "mean": 224.011978
+    }
+  },
+  "textbook_reference_GB_code": {
+    "fleet_stored_energy_MJ": 5600.0,
+    "energy_released_0p8Hz_MJ": 179.2,
+    "bess_power_headroom_MW": 224.0,
+    "bess_converter_rating_MVA": 1120.0,
+    "bess_energy_one_hour_store_MWh": 1120.0
+  },
+  "context": {
+    "system_stored_energy_MJ": 200000.0,
+    "reference_loss_MW": 1000.0,
+    "fleet_share_of_system_inertia_pct": 2.8
+  },
+  "findings": [
+    "Required BESS power headroom scales 1:1 with the grid code's RoCoF requirement: GB and the two Australia/Nordic-style codes at 1.0 Hz/s give 224 MW; Continental Europe and the generic weak-island code at 2.0 Hz/s give 448 MW, exactly double.",
+    "The converter rating (MVA) does NOT vary with the grid code in this model: it comes out to a constant 1120 MVA (=5600 MJ fleet energy / H_v 5.0 s) at every RoCoF, because the eq (4.13) headroom fraction scales with RoCoF the same way the power need does, cancelling RoCoF out of the ratio. Only the physical energy need and, through it, the one-hour store MWh vary, and only with the frequency-excursion requirement (df), not with RoCoF.",
+    "Physical energy need ranges from 0.031 MWh (df 0.5 Hz: Nordic, Australia) to 0.062 MWh (df 1.0 Hz: Ireland/N. Ireland, generic weak island) - all far below the one-hour store size, so the one-hour store choice, not the grid code, still sets the energy rating.",
+    "Capex with a one-hour store tracks the power headroom, so it doubles between the 1.0 Hz/s and 2.0 Hz/s RoCoF codes; the placeholder unit costs are not sourced."
+  ],
+  "assumptions": [
+    "Grid code ~ categorical over 6 representative codes, equal probability 1/6 each (a simplification of this study, not a market-share weighting): GB (NGESO) RoCoF 1.0 Hz/s, df 0.8 Hz; Continental Europe (ENTSO-E RfG) RoCoF 2.0 Hz/s, df 0.8 Hz; Nordic synchronous area RoCoF 1.0 Hz/s, df 0.5 Hz; Ireland & N. Ireland (DS3) RoCoF 1.0 Hz/s, df 1.0 Hz; Australia (AEMO NER) RoCoF 1.0 Hz/s, df 0.5 Hz; generic weak island grid RoCoF 2.0 Hz/s, df 1.0 Hz. All six rows are illustrative, shaped on public information about each regime, and not audited against the current in-force text - verify against the current code before quoting a specific jurisdiction.",
+    "Condenser inertia constant H = 3.5 s, held fixed at the ch4 Example 4.2 textbook value ('assumed for this case - verify against a manufacturer figure'); the companion inertia-constant.py scenario varies H instead and holds the grid code fixed at GB.",
+    "Fleet: 8 x 200 MVA = 1.6 GVA, ch4 Example 4.2 (the brief's '1.6 GW' is written as 1.6 GVA in the textbook).",
+    "f0 = 50 Hz, ch4 Examples 4.1 and 4.2.",
+    "BESS virtual inertia constant H_v = 5.0 s, ch4 eq (4.13), 'assumed for this case'; fixed across all grid codes.",
+    "Terminal voltage 1.0 pu, unity power factor, current limit 1.2 pu at 1.0 pu dispatch, ch4 Constraint 3; converter rating = headroom / pu headroom fraction.",
+    "One-hour store (MWh = MVA rating x 1 h), ch4 Constraint 1, 'assumed for this case'; reported separately from the physical energy need.",
+    "Unit costs 200 USD/kVA (converter + connection) and 250 USD/kWh (energy), fixed placeholders, not from a source read in this run; the cost-curve scenario owns cost uncertainty.",
+    "System context 200 GVA.s and 1000 MW loss from ch4 Example 4.1; used only for the fleet-share figure, not in the sizing.",
+    "No current limiting beyond the 1.2 pu cap, no response delay, no degradation, no outage: other P5 scenarios cover those."
+  ]
+}

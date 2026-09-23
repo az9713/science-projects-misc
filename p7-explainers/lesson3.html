@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Lesson 3: When the Integrator Lies</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1;
+  --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf;
+  --border:#334155; --border2:#1e293b;
+}
+*{box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--text);margin:0;padding:0;}
+body{
+  font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.6; font-size:16px;
+}
+main{max-width:800px;margin:0 auto;padding:20px 16px 60px;}
+h1{font-size:1.55rem;line-height:1.3;margin:0.2em 0 0.1em;color:var(--text);}
+h2{
+  font-size:1.2rem;margin:2em 0 0.6em;color:var(--accent);
+  border-bottom:1px solid var(--border);padding-bottom:0.3em;
+}
+h3{font-size:1.02rem;margin:1.4em 0 0.5em;color:var(--text2);}
+p{margin:0.8em 0;max-width:70ch;}
+.kicker{color:var(--muted);font-size:0.85rem;margin-bottom:0.6em;}
+.lede{color:var(--text2);font-size:1.02rem;}
+a{color:var(--accent2);}
+var{font-style:italic;color:var(--text);}
+sub,sup{font-size:0.75em;}
+code,pre{
+  font-family:Consolas,"SF Mono",Menlo,monospace; font-size:0.85rem;
+}
+code.inline{
+  background:var(--border2);padding:0.05em 0.35em;border-radius:4px;
+  color:var(--text2); white-space:nowrap;
+}
+pre{
+  background:var(--border2); border:1px solid var(--border);
+  border-radius:8px; padding:12px 14px; overflow-x:auto;
+  color:var(--text2); max-width:100%;
+}
+.callout{
+  background:var(--card); border:1px solid var(--border);
+  border-left:3px solid var(--accent); border-radius:8px;
+  padding:14px 16px; margin:1.2em 0;
+}
+.callout.result{border-left-color:var(--accent2);}
+.callout h4{margin:0 0 0.4em;font-size:0.95rem;color:var(--text);}
+figure{margin:1.6em 0; background:var(--card); border:1px solid
+  var(--border); border-radius:10px; padding:12px 12px 8px;}
+figure svg{width:100%;height:auto;display:block;}
+figcaption{
+  font-size:0.85rem; color:var(--muted); margin-top:0.5em;
+  line-height:1.45;
+}
+figcaption b{color:var(--text2);}
+table{
+  border-collapse:collapse; width:100%; font-size:0.88rem;
+  margin:1em 0; display:block; overflow-x:auto;
+}
+th,td{
+  border:1px solid var(--border); padding:6px 10px; text-align:left;
+  white-space:nowrap;
+}
+th{color:var(--text2); background:var(--border2);}
+td.num{text-align:right; font-variant-numeric:tabular-nums;}
+.exercise{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:8px; padding:12px 16px; margin:1em 0;
+}
+.exercise h4{margin:0 0 0.4em; color:var(--accent2); font-size:0.95rem;}
+details{margin-top:0.6em;}
+summary{
+  cursor:pointer; color:var(--muted); font-size:0.85rem;
+  outline:none;
+}
+details[open] summary{color:var(--text2);}
+details p, details ul{
+  font-size:0.9rem; color:var(--text2); margin:0.5em 0 0.2em;
+}
+.legend{display:flex; gap:16px; flex-wrap:wrap; font-size:0.8rem;
+  color:var(--muted); margin-top:6px;}
+.legend span{display:inline-flex; align-items:center; gap:5px;}
+.swatch{width:14px;height:3px;display:inline-block;border-radius:2px;}
+footer{
+  color:var(--muted); font-size:0.8rem; margin-top:3em;
+  border-top:1px solid var(--border); padding-top:1em;
+}
+</style>
+</head>
+<body>
+<main>
+
+<div class="kicker">P7 &middot; rigorous-explainer &middot; classical
+swing-equation unit &middot; Lesson 3 of the series (follows Lesson 2,
+precedes Lesson 4)</div>
+<h1>When the Integrator Lies: Step Size and False Instability</h1>
+<p class="lede">Lesson 2 built a single machine against an infinite
+bus and proved, by computing its eigenvalues, that a small disturbance
+decays. This lesson simulates the same machine and watches it fall out
+of step. Neither the machine nor Lesson 2's proof is wrong. The
+numerical method is. This lesson shows how to see that before trusting
+a plot.</p>
+
+<h2 id="sec-opening">1. Opening problem</h2>
+<p>A programmer takes the single-machine-infinite-bus (SMIB) model from
+Lesson 2 &mdash; inertia constant <var>H</var> = 3.5 s, damping
+<code class="inline">K_D</code> = 2 pu, internal voltage
+<var>E&prime;</var> = 1.1 pu behind reactance
+<code class="inline">X</code> = 0.65 pu against an infinite bus at
+<var>V</var><sub>inf</sub> = 1.0 pu, mechanical power
+<var>P</var><sub>m</sub> = 0.8 pu &mdash; and steps
+<var>P</var><sub>m</sub> from 0.8 pu to 0.85 pu. Lesson 2 linearised
+this machine at its equilibrium angle
+&delta;<sub>0</sub> = 28.21&deg; and found the eigenvalues
+&lambda; = &minus;0.1429 &plusmn; j8.9607 s<sup>&minus;1</sup>: a
+decaying oscillation at 1.43 Hz, period about 0.7 s &mdash; inside the
+0.7 Hz&ndash;2 Hz band reported for local plant modes
+[S01, Kundur 1994, <i>Power System Stability and Control</i>,
+&sect;12.1 &mdash; verify]. A negative real part means stable.</p>
+<p>The programmer integrates with forward Euler at a step
+<var>h</var> = 10 ms &mdash; a number that looks safely small next to
+a 0.7 s period, only 1.4% of it. The angle &delta;(<var>t</var>) does
+not settle near a new equilibrium. It swings wider on every cycle and,
+at <var>t</var> = 16.93 s, passes 180&deg;: by the usual convention
+this means the machine has lost synchronism. Lesson 2 proved this
+machine is stable. The simulation says it is not. One of the two is
+wrong, and it is not the physics. This lesson derives exactly which
+step sizes forward Euler can be trusted at for this eigenvalue, shows
+two integrators that do not have the problem, and gives the check a
+programmer can run in seconds &mdash; before believing any transient
+plot &mdash; instead of running the simulation twice as long "to be
+sure".</p>
+
+<h2 id="sec-model">2. Model: the linear test equation and three
+integrators</h2>
+<p>Near an equilibrium, Lesson 2's swing equation</p>
+<pre>2H d(&Delta;&omega;)/dt = P_m - P_e - K_D &Delta;&omega;
+      d&delta;/dt = &omega;_0 &Delta;&omega;</pre>
+<p>(rotor angle <var>&delta;</var> in rad, per-unit speed deviation
+<code class="inline">&Delta;&omega;</code>, synchronous speed
+<var>&omega;</var><sub>0</sub> = 2&pi;&middot;60 = 376.991 rad/s,
+electrical power <var>P</var><sub>e</sub> =
+<var>P</var><sub>max</sub> sin&delta;, and damping
+<code class="inline">K_D</code>, never written <var>D</var>) linearises
+to <var>d</var><b>x</b>/<var>dt</var> = <b>A</b><b>x</b>, whose
+eigenvalues are a complex-conjugate pair
+&lambda; = &sigma; &plusmn; j&omega;<sub>d</sub>. Any single mode of
+that linear system obeys the scalar <b>linear test equation</b></p>
+<pre>dx/dt = &lambda;x,      x(t) = x(0) e^(&lambda;t).</pre>
+<p>Here <var>&sigma;</var> (1/s) is the physical decay rate &mdash;
+negative means the mode dies out &mdash; and
+<var>&omega;</var><sub>d</sub> (rad/s) is the damped oscillation
+frequency. A numerical method does not evaluate
+<var>e</var><sup>&lambda;<var>t</var></sup>; it builds an
+approximation to it, one step at a time, and the three methods this
+lesson compares build it three different ways:</p>
+<ul>
+<li><b>Forward Euler:</b>
+<code class="inline">x_(k+1) = x_k + h&middot;f(x_k)</code>. Applied
+to the test equation: <code class="inline">x_(k+1) = (1 +
+h&lambda;)x_k</code>.</li>
+<li><b>Semi-implicit (symplectic) Euler:</b> update the speed
+deviation first with the old angle, then the angle with the
+<i>new</i> speed deviation:
+<code class="inline">&Delta;&omega;_(k+1) = &Delta;&omega;_k +
+h(P_m &minus; P_max sin&delta;_k &minus; K_D&Delta;&omega;_k)/(2H)</code>,
+<code class="inline">&delta;_(k+1) = &delta;_k +
+h&omega;_0&Delta;&omega;_(k+1)</code>. It costs the same one function
+evaluation as forward Euler.</li>
+<li><b>RK4:</b> the classical fourth-order Runge&ndash;Kutta method,
+four function evaluations per step, with local truncation error
+<var>O</var>(<var>h</var><sup>5</sup>) per step and global error
+<var>O</var>(<var>h</var><sup>4</sup>) for a smooth right-hand side.</li>
+</ul>
+<p>For any of these, one step multiplies the current error mode by a
+number <var>R</var>(<var>h</var>&lambda;) called the
+<b>amplification factor</b>. The true solution multiplies by
+<var>e</var><sup>&lambda;<var>h</var></sup> each step, whose magnitude
+is <var>e</var><sup>&sigma;<var>h</var></sup> &lt; 1 whenever
+&sigma; &lt; 0. A method is <b>linearly stable</b> at step
+<var>h</var> exactly when
+|<var>R</var>(<var>h</var>&lambda;)| &lt; 1. Being stable and being
+accurate are different claims: a stable method can still multiply the
+true answer by the wrong factor at every step, as &sect;3 shows
+numerically.</p>
+
+<h2 id="sec-derivation">3. Derivation: amplification, the stability
+limit, and a conserved energy</h2>
+<h3>3.1 Forward Euler's amplification factor</h3>
+<p>From <code class="inline">x_(k+1) = (1 + h&lambda;)x_k</code>, the
+amplification factor is <var>R</var> = 1 + <var>h</var>&lambda;. With
+&lambda; = &sigma; + j&omega;<sub>d</sub>,</p>
+<pre>|1 + h&lambda;|&sup2; = (1 + h&sigma;)&sup2; + (h&omega;_d)&sup2;.</pre>
+<p>Using Lesson 2's base-point eigenvalue &sigma; = &minus;0.1429 1/s,
+&omega;<sub>d</sub> = 8.9607 rad/s, at <var>h</var> = 0.01 s:
+|1 + <var>h</var>&lambda;| = 1.00258, a number just over 1. Over one
+second that multiplies the amplitude by
+1.00258<sup>1/0.01</sup> = <var>e</var><sup><var>g</var></sup> where
+the equivalent continuous growth rate is
+<var>g</var> = ln(1.00258)/0.01 = +0.258 s<sup>&minus;1</sup> &mdash;
+positive &mdash; against the true physical decay rate of
+&minus;0.143 s<sup>&minus;1</sup>. Over 10 s, forward Euler multiplies
+the oscillation amplitude by
+1.00258<sup>1000</sup> = 13.2; the true system multiplies it by
+<var>e</var><sup>&minus;1.429</sup> = 0.240. The method has not just
+lost accuracy: it has flipped the sign of the trend. This is
+<b>false instability</b>, introduced by the step, not by the machine.
+Every number in this paragraph is printed by
+<code class="inline">lesson3_euler_drift.py</code> in &sect;4.</p>
+<h3>3.2 The stability limit and why "stable" is not "accurate"</h3>
+<p>Solving |1 + <var>h</var>&lambda;| &lt; 1 for <var>h</var> (expand
+the square to get 2<var>h</var>&sigma; + <var>h</var>&sup2;|&lambda;|&sup2;
+&lt; 0, then divide by <var>h</var> &gt; 0; no approximation is made)
+gives exactly</p>
+<pre>h &lt; h_crit = -2&sigma; / |&lambda;|&sup2;</pre>
+<p>With &sigma; = &minus;0.1429 and
+|&lambda;|&sup2; = &sigma;&sup2; + &omega;<sub>d</sub>&sup2; = 80.32,
+<var>h</var><sub>crit</sub> = 0.2857/80.32 = 0.00356 s = 3.56 ms.
+Above this step, forward Euler is unstable for this eigenvalue
+regardless of how small the physical time constant looks. But
+<var>h</var><sub>crit</sub> only guarantees decay, not correctness:
+at <var>h</var> = 1 ms (well under the 3.56 ms limit), forward Euler
+still multiplies the 10 s amplitude by 0.358, not the true 0.240
+&mdash; stable, and still wrong by close to 50%. A programmer who only
+checks "does it decay?" and stops there has under-checked the method.</p>
+<h3>3.3 A conserved energy for the undamped machine</h3>
+<p>Set <var>K</var><sub>D</sub> = 0. Multiply the swing equation's
+speed-deviation row by
+<var>&omega;</var><sub>0</sub>&Delta;&omega; and substitute
+<var>d&delta;</var>/<var>dt</var> = &omega;<sub>0</sub>&Delta;&omega;:</p>
+<pre>2H&omega;_0&Delta;&omega; d(&Delta;&omega;)/dt = (P_m - P_max sin&delta;)&omega;_0&Delta;&omega;
+H d(&omega;_0&Delta;&omega;&sup2;)/dt = (P_m - P_max sin&delta;) d&delta;/dt
+d/dt [ H&omega;_0&Delta;&omega;&sup2; - P_m&delta; - P_max cos&delta; ] = 0.</pre>
+<p>Call the bracketed quantity <var>W</var> = H&omega;<sub>0</sub>
+&Delta;&omega;&sup2; &minus; <var>P</var><sub>m</sub>&delta; &minus;
+<var>P</var><sub>max</sub>cos&delta;. With damping restored, the same
+steps give <var>dW</var>/<var>dt</var> = &minus;K<sub>D</sub>
+&omega;<sub>0</sub>&Delta;&omega;&sup2; &le; 0, so <var>W</var> is
+exactly conserved by the true dynamics when
+<var>K</var><sub>D</sub> = 0 (Exercise 2 asks for this derivation
+again from scratch). <var>W</var> is not measured energy in joules;
+it is a Lyapunov-type bookkeeping quantity built from the model's own
+terms, useful precisely because a correct integrator must hold it
+flat. Figure 3.3 runs forward Euler and semi-implicit Euler on the
+undamped machine and watches <var>W</var>: forward Euler drifts,
+semi-implicit does not.</p>
+<h3>3.4 Why semi-implicit Euler and RK4 do not have this problem</h3>
+<p>Semi-implicit Euler updates <var>&Delta;&omega;</var> with the old
+angle and then <var>&delta;</var> with the <i>new</i>
+<var>&Delta;&omega;</var>. That one-line reordering makes the map
+area-preserving (symplectic) in the (<var>&delta;</var>,
+<var>&Delta;&omega;</var>) plane for the undamped oscillator, so
+<var>W</var> cannot drift monotonically &mdash; it can only ripple
+around its true value. The bound on that ripple holds for
+<var>h&omega;</var><sub>n</sub> &lt; 2, where
+<var>&omega;</var><sub>n</sub> = |&lambda;| = 8.9618 rad/s is the
+undamped natural frequency of the linearised mode, giving
+<var>h</var> &lt; 2/8.9618 = 0.2232 s for the undamped
+(<var>K</var><sub>D</sub> = 0) linear oscillator. With
+<var>K</var><sub>D</sub> = 2 restored, the linearised semi-implicit map
+reaches spectral radius 1 (the larger eigenvalue magnitude of
+the one-step map) at <var>h</var> = 0.2196 s &mdash; about 62
+times forward Euler's 3.56 ms limit for the same eigenvalue, at the
+same one function evaluation per step. RK4's stability boundary for a purely
+oscillatory mode is the well-known
+<var>h</var>|&lambda;| &lt; 2&radic;2 &asymp; 2.828; the small
+negative &sigma; here shifts it slightly, to
+<var>h</var>|&lambda;| = 2.86, i.e.
+<var>h</var> &lt; 2.86/8.9618 = 0.3191 s, about 90 times forward
+Euler's limit, at four function evaluations per step. Figure 3.1
+draws the forward-Euler part of this: forward Euler is stable exactly
+when <var>h</var>&lambda; lands inside the disc of radius 1 centred
+at &minus;1 in the complex plane.</p>
+
+<figure id="fig-3-1">
+<svg viewBox="0 0 620 300" role="img" aria-labelledby="fig31title">
+<title id="fig31title">Forward-Euler stability disc and the
+eigenvalue leaving it as the step grows</title>
+<text x="10" y="18" fill="#cbd5e1" font-size="12">Mini context:
+disc of radius 1 centred at (-1, 0)</text>
+<circle cx="415.4" cy="140" r="76.9" fill="none"
+  stroke="#334155" stroke-width="1.5"/>
+<line x1="330" y1="140" x2="600" y2="140" stroke="#334155"/>
+<line x1="492.3" y1="55" x2="492.3" y2="225" stroke="#334155"/>
+<circle cx="492.3" cy="140" r="2.4" fill="#94a3b8"/>
+<circle cx="415.4" cy="140" r="2.4" fill="#94a3b8"/>
+<text x="492.3" y="152" fill="#94a3b8" font-size="10"
+  text-anchor="middle">0</text>
+<text x="415.4" y="152" fill="#94a3b8" font-size="10"
+  text-anchor="middle">-1</text>
+<text x="600" y="152" fill="#94a3b8" font-size="10"
+  text-anchor="end">Re(h&lambda;)</text>
+<text x="497" y="60" fill="#94a3b8" font-size="10">Im(h&lambda;)</text>
+<circle cx="492.3" cy="140" r="5" fill="none" stroke="#fb923c"
+  stroke-width="1.2"/>
+<text x="500" y="128" fill="#fb923c" font-size="9">zoom window</text>
+<line x1="20" y1="20" x2="20" y2="250" stroke="#334155"/>
+<line x1="20" y1="250" x2="340" y2="250" stroke="#334155"/>
+<text x="12" y="26" fill="#94a3b8" font-size="10"
+  text-anchor="end">0.10</text>
+<text x="12" y="140" fill="#94a3b8" font-size="10"
+  text-anchor="end">0.05</text>
+<text x="12" y="253" fill="#94a3b8" font-size="10"
+  text-anchor="end">0</text>
+<text x="180" y="266" fill="#94a3b8" font-size="10"
+  text-anchor="middle">Re(h&lambda;), zoomed near 0</text>
+<polygon points="20.0,78.0 24.4,79.4 28.8,80.9 33.2,82.4 37.6,83.8
+42.0,85.3 46.4,86.8 50.7,88.3 55.1,89.9 59.5,91.4 63.9,93.0 68.3,94.5
+72.7,96.1 77.1,97.8 81.5,99.4 85.9,101.0 90.3,102.7 94.7,104.4
+99.1,106.1 103.5,107.8 107.8,109.5 112.2,111.3 116.6,113.1 121.0,114.9
+125.4,116.7 129.8,118.6 134.2,120.5 138.6,122.4 143.0,124.4 147.4,126.3
+151.8,128.3 156.2,130.4 160.5,132.5 164.9,134.6 169.3,136.7 173.7,138.9
+178.1,141.2 182.5,143.5 186.9,145.8 191.3,148.2 195.7,150.7 200.1,153.2
+204.5,155.7 208.9,158.4 213.3,161.1 217.6,164.0 222.0,166.9 226.4,169.9
+230.8,173.0 235.2,176.3 239.6,179.7 244.0,183.3 248.4,187.2 252.8,191.2
+257.2,195.6 261.6,200.3 266.0,205.6 270.4,211.5 274.7,218.6 279.1,227.8
+283.5,250.0 283.5,250.0 20.0,250.0" fill="#2dd4bf" fill-opacity="0.12"
+  stroke="none"/>
+<polyline points="20.0,78.0 24.4,79.4 28.8,80.9 33.2,82.4 37.6,83.8
+42.0,85.3 46.4,86.8 50.7,88.3 55.1,89.9 59.5,91.4 63.9,93.0 68.3,94.5
+72.7,96.1 77.1,97.8 81.5,99.4 85.9,101.0 90.3,102.7 94.7,104.4
+99.1,106.1 103.5,107.8 107.8,109.5 112.2,111.3 116.6,113.1 121.0,114.9
+125.4,116.7 129.8,118.6 134.2,120.5 138.6,122.4 143.0,124.4 147.4,126.3
+151.8,128.3 156.2,130.4 160.5,132.5 164.9,134.6 169.3,136.7 173.7,138.9
+178.1,141.2 182.5,143.5 186.9,145.8 191.3,148.2 195.7,150.7 200.1,153.2
+204.5,155.7 208.9,158.4 213.3,161.1 217.6,164.0 222.0,166.9 226.4,169.9
+230.8,173.0 235.2,176.3 239.6,179.7 244.0,183.3 248.4,187.2 252.8,191.2
+257.2,195.6 261.6,200.3 266.0,205.6 270.4,211.5 274.7,218.6 279.1,227.8
+283.5,250.0" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+<circle cx="270.1" cy="229.4" r="3.6" fill="#2dd4bf"/>
+<text x="270.1" y="220" fill="#2dd4bf" font-size="10"
+  text-anchor="middle">1 ms</text>
+<circle cx="235.7" cy="176.6" r="3.6" fill="#e2e8f0"/>
+<text x="235.7" y="192" fill="#e2e8f0" font-size="10"
+  text-anchor="middle">3.56 ms</text>
+<circle cx="216.3" cy="147.0" r="3.6" fill="#fb923c"/>
+<text x="212" y="140" fill="#fb923c" font-size="10"
+  text-anchor="end">5 ms</text>
+<circle cx="149.1" cy="43.9" r="3.6" fill="#fb923c"/>
+<text x="149.1" y="34" fill="#fb923c" font-size="10"
+  text-anchor="middle">10 ms</text>
+</svg>
+<figcaption><b>Fig. 3.1.</b>
+The forward-Euler stability disc (radius 1, centred at &minus;1) in
+the <var>h</var>&lambda;-plane, zoomed near the origin where this
+eigenvalue's points actually fall. Shaded teal is inside the disc
+(stable); the grey arc is the boundary
+|1 + <var>h</var>&lambda;| = 1. <var>h</var>&lambda; for
+<var>h</var> = 1 ms sits inside; 3.56 ms sits on the boundary
+(<var>h</var><sub>crit</sub>, computed in &sect;3.2); 5 ms and 10 ms
+sit outside &mdash; the eigenvalue visibly leaves the disc as
+<var>h</var> grows. The small orange circle at the origin, on the
+right edge of the full disc (right panel), marks where this zoomed
+window sits. The zoom panel's axes are not to equal scale (the real
+axis is stretched about 41 times relative to the imaginary axis), so
+the boundary arc looks steeper than it is.</figcaption>
+</figure>
+
+<h2 id="sec-code">4. Code: comparing three integrators on the same
+machine</h2>
+<p>The listing below reimplements the SMIB right-hand side and the
+three step functions from first principles (stdlib only, no import of
+Lesson 2's file), then: computes the base-point eigenvalue and its
+amplification factor at <var>h</var> = 10 ms; derives
+<var>h</var><sub>crit</sub> from the closed-form formula and confirms
+it by bisection on the linear test equation; runs the Lesson 2
+step-response (<var>P</var><sub>m</sub>: 0.8 &rarr; 0.85 pu) for 10 s
+at <var>h</var> = 10 ms with all three methods and reports the late
+oscillation amplitude (the largest
+|&delta; &minus; &delta;<sub>new</sub>| over the last 2 s); and runs
+forward Euler out to 60 s to find the slip time.</p>
+<pre>$ python lesson3_euler_drift.py
+lambda = -0.1429 +8.9607j 1/s (sigma, omega_d)
+h = 0.010 s: |1 + h*lambda| = 1.00258
+Euler growth rate  = +0.258 1/s (physical = -0.143 1/s)
+Euler amplitude x10s  = 13.203
+True amplitude x10s   = 0.240
+h_crit (formula) = 0.00356 s = 3.56 ms
+h_crit (bisection) = 0.00356 s = 3.56 ms
+h = 0.001 s: Euler amplitude x10s = 0.358
+
+Initial amplitude |delta_new - delta0| = 1.94 deg
+forward Euler        late amplitude (8-10 s) = 22.306 deg
+semi-implicit Euler  late amplitude (8-10 s) = 0.609 deg
+RK4                  late amplitude (8-10 s) = 0.609 deg
+
+Forward Euler, h = 10 ms, run to 60 s:
+slip time (|delta| &gt; 180 deg) = 16.93 s</pre>
+<p>The transient starts at amplitude 1.94&deg; (the gap between the
+old and new equilibrium angles, 28.21&deg; and 30.15&deg;). Forward
+Euler should show that amplitude decaying toward zero, as the true
+system and Lesson 2's eigenvalue both say it must. Instead, over
+seconds 8&ndash;10 its oscillation is still 22.3&deg; wide &mdash;
+more than eleven times the starting amplitude, growing, not shrinking
+&mdash; while semi-implicit Euler and RK4 both land on 0.609&deg;,
+agreeing with each other to three figures using one and four function
+evaluations per step respectively. Left running to 60 s, forward
+Euler's growing oscillation eventually carries &delta; past 180&deg;
+at <var>t</var> = 16.93 s, which is exactly the opening problem's
+number. That crossing is a property of the Euler map at this step, not
+of the machine.</p>
+<figure id="fig-3-2">
+<svg viewBox="0 0 620 300" role="img" aria-labelledby="fig32title">
+<title id="fig32title">Rotor angle under three integrators,
+h = 10 ms, 0-20 s</title>
+<line x1="50" y1="20" x2="50" y2="250" stroke="#334155"/>
+<line x1="50" y1="250" x2="600" y2="250" stroke="#334155"/>
+<g stroke="#1e293b" stroke-width="1">
+<line x1="50" y1="192.5" x2="600" y2="192.5"/>
+<line x1="50" y1="135" x2="600" y2="135"/>
+<line x1="50" y1="77.5" x2="600" y2="77.5"/>
+</g>
+<g fill="#94a3b8" font-size="10">
+<text x="44" y="253" text-anchor="end">0</text>
+<text x="44" y="196" text-anchor="end">15</text>
+<text x="44" y="139" text-anchor="end">30</text>
+<text x="44" y="81" text-anchor="end">45</text>
+<text x="44" y="24" text-anchor="end">60&deg;</text>
+<text x="50" y="266">0</text>
+<text x="187.5" y="266" text-anchor="middle">5</text>
+<text x="325" y="266" text-anchor="middle">10</text>
+<text x="462.5" y="266" text-anchor="middle">15</text>
+<text x="595" y="266" text-anchor="end">20 s</text>
+</g>
+<line x1="50" y1="141.9" x2="600" y2="141.9" stroke="#475569"
+  stroke-width="1" stroke-dasharray="2,3"/>
+<text x="596" y="138" fill="#94a3b8" font-size="9"
+  text-anchor="end">&delta;_0 = 28.2&deg;</text>
+<clipPath id="clip31"><rect x="50" y="20" width="550"
+  height="230"/></clipPath>
+<g clip-path="url(#clip31)">
+<polyline points="50.0,141.9 52.8,139.3 55.5,132.9 58.2,127.3
+61.0,126.8 63.8,131.9 66.5,139.2 69.2,143.2 72.0,140.8 74.8,133.3
+77.5,126.3 80.2,125.0 83.0,130.7 85.8,139.4 88.5,144.8 91.2,142.6
+94.0,134.0 96.8,125.3 99.5,123.0 102.2,129.1 105.0,139.5 107.8,146.6
+110.5,144.7 113.2,134.9 116.0,124.2 118.8,120.5 121.5,127.0 124.2,139.3
+127.0,148.5 129.8,147.4 132.5,136.2 135.2,123.1 138.0,117.7 140.8,124.4
+143.5,138.9 146.2,150.7 149.0,150.6 151.8,138.1 154.5,122.1 157.2,114.4
+160.0,121.2 162.8,138.0 165.5,153.0 168.2,154.4 171.0,140.5 173.8,121.2
+176.5,110.7 179.2,117.1 182.0,136.6 184.8,155.4 187.5,159.0 190.2,143.7
+193.0,120.5 195.8,106.4 198.5,112.0 201.2,134.3 204.0,157.7 206.8,164.3
+209.5,147.9 212.3,120.2 215.0,101.6 217.8,105.8 220.5,130.9 223.2,159.8
+226.0,170.5 228.8,153.4 231.5,120.7 234.2,96.3 237.0,98.2 239.8,126.1
+242.5,161.4 245.3,177.6 248.0,160.6 250.8,122.1 253.5,90.7 256.2,88.9
+259.0,119.2 261.8,161.9 264.5,185.4 267.2,169.7 270.0,125.3 272.8,85.0
+275.5,77.7 278.2,109.5 281.0,160.5 283.8,193.7 286.5,181.4 289.2,130.9
+292.0,80.0 294.8,64.7 297.5,96.1 300.2,155.8 303.0,201.7 305.8,196.0
+308.5,140.4 311.2,76.6 314.0,49.8 316.8,77.9 319.5,145.7 322.2,207.6
+325.0,213.9 327.8,155.8 330.5,77.2 333.2,34.2 336.0,54.0 338.8,127.2
+341.5,208.1 344.2,234.0 347.0,179.4 349.8,85.3 352.5,20.3"
+  fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<polyline points="50.0,141.9 52.8,138.9 55.5,132.7 58.2,128.0
+61.0,128.0 63.8,132.7 66.5,138.5 69.2,141.1 72.0,138.8 74.8,133.3
+77.5,128.8 80.2,128.5 83.0,132.5 85.8,137.8 88.5,140.5 91.2,138.6
+94.0,133.8 96.8,129.5 99.5,128.9 102.2,132.3 105.0,137.2 107.8,139.9
+110.5,138.5 113.2,134.2 116.0,130.2 118.8,129.4 121.5,132.2 124.2,136.6
+127.0,139.3 129.8,138.3 132.5,134.5 135.2,130.8 138.0,129.8 140.8,132.2
+143.5,136.2 146.2,138.7 149.0,138.1 151.8,134.8 154.5,131.3 157.2,130.2
+160.0,132.2 162.8,135.7 165.5,138.3 168.2,137.9 171.0,135.0 173.8,131.8
+176.5,130.6 179.2,132.2 182.0,135.4 184.8,137.8 187.5,137.7 190.2,135.2
+193.0,132.2 195.8,130.9 198.5,132.2 201.2,135.1 204.0,137.4 206.8,137.4
+209.5,135.3 212.3,132.6 215.0,131.3 217.8,132.3 220.5,134.8 223.2,137.0
+226.0,137.2 228.8,135.4 231.5,132.9 234.2,131.6 237.0,132.4 239.8,134.6
+242.5,136.7 245.3,137.0 248.0,135.5 250.8,133.2 253.5,131.9 256.2,132.5
+259.0,134.4 261.8,136.4 264.5,136.8 267.2,135.5 270.0,133.4 272.8,132.2
+275.5,132.6 278.2,134.3 281.0,136.1 283.8,136.6 286.5,135.5 289.2,133.7
+292.0,132.4 294.8,132.7 297.5,134.2 300.2,135.8 303.0,136.4 305.8,135.5
+308.5,133.8 311.2,132.6 314.0,132.8 316.8,134.1 319.5,135.6 322.2,136.2
+325.0,135.5 327.8,134.0 330.5,132.9 333.2,132.9 336.0,134.0 338.8,135.4
+341.5,136.1 344.2,135.5 347.0,134.1 349.8,133.1 352.5,133.0 355.2,134.0
+358.0,135.3 360.8,135.9 363.5,135.4 366.2,134.3 369.0,133.2 371.8,133.1
+374.5,133.9 377.2,135.1 380.0,135.7 382.8,135.4 385.5,134.4 388.2,133.4
+391.0,133.2 393.8,133.9 396.5,135.0 399.2,135.6 402.0,135.4 404.8,134.4
+407.5,133.5 410.2,133.3 413.0,133.9 415.8,134.8 418.5,135.5 421.2,135.3
+424.0,134.5 426.8,133.7 429.5,133.4 432.3,133.9 435.0,134.7 437.8,135.4
+440.5,135.3 443.3,134.6 446.0,133.8 448.8,133.5 451.5,133.9 454.3,134.7
+457.0,135.2 459.8,135.2 462.5,134.6 465.2,133.9 468.0,133.6 470.8,133.9
+473.5,134.6 476.2,135.1 479.0,135.2 481.8,134.6 484.5,134.0 487.2,133.7
+490.0,133.9 492.8,134.5 495.5,135.1 498.3,135.1 501.0,134.7 503.8,134.1
+506.5,133.7 509.2,133.9 512.0,134.5 514.8,135.0 517.5,135.1 520.2,134.7
+523.0,134.1 525.8,133.8 528.5,133.9 531.2,134.4 534.0,134.9 536.8,135.0
+539.5,134.7 542.2,134.2 545.0,133.9 547.8,134.0 550.5,134.4 553.2,134.8
+556.0,135.0 558.8,134.7 561.5,134.2 564.2,133.9 567.0,134.0 569.8,134.4
+572.5,134.8 575.2,134.9 578.0,134.7 580.8,134.3 583.5,134.0 586.2,134.0
+589.0,134.3 591.8,134.7 594.5,134.9 597.3,134.7 600.0,134.3"
+  fill="none" stroke="#2dd4bf" stroke-width="2.2"/>
+<polyline points="50.0,141.9 52.8,139.1 55.5,133.0 58.2,128.1
+61.0,127.9 63.8,132.4 66.5,138.2 69.2,141.1 72.0,139.0 74.8,133.6
+77.5,128.9 80.2,128.4 83.0,132.2 85.8,137.5 88.5,140.4 91.2,138.9
+94.0,134.1 96.8,129.7 99.5,128.8 102.2,132.0 105.0,136.9 107.8,139.8
+110.5,138.7 113.2,134.5 116.0,130.4 118.8,129.3 121.5,131.9 124.2,136.3
+127.0,139.2 129.8,138.5 132.5,134.9 135.2,131.0 138.0,129.7 140.8,131.9
+143.5,135.8 146.2,138.6 149.0,138.3 151.8,135.1 154.5,131.5 157.2,130.1
+160.0,131.9 162.8,135.4 165.5,138.1 168.2,138.0 171.0,135.3 173.8,132.0
+176.5,130.6 179.2,131.9 182.0,135.1 184.8,137.7 187.5,137.8 190.2,135.5
+193.0,132.5 195.8,130.9 198.5,132.0 201.2,134.8 204.0,137.2 206.8,137.6
+209.5,135.6 212.3,132.8 215.0,131.3 217.8,132.1 220.5,134.5 223.2,136.8
+226.0,137.3 228.8,135.7 231.5,133.2 234.2,131.6 237.0,132.2 239.8,134.3
+242.5,136.5 245.3,137.1 248.0,135.7 250.8,133.5 253.5,132.0 256.2,132.3
+259.0,134.2 261.8,136.2 264.5,136.9 267.2,135.7 270.0,133.7 272.8,132.2
+275.5,132.4 278.2,134.0 281.0,135.9 283.8,136.6 286.5,135.7 289.2,133.9
+292.0,132.5 294.8,132.5 297.5,133.9 300.2,135.6 303.0,136.4 305.8,135.7
+308.5,134.1 311.2,132.8 314.0,132.7 316.8,133.8 319.5,135.4 322.2,136.2
+325.0,135.7 327.8,134.3 330.5,133.0 333.2,132.8 336.0,133.8 338.8,135.2
+341.5,136.0 344.2,135.6 347.0,134.4 349.8,133.2 352.5,132.9 355.2,133.8
+358.0,135.1 360.8,135.9 363.5,135.6 366.2,134.5 369.0,133.4 371.8,133.0
+374.5,133.7 377.2,134.9 380.0,135.7 382.8,135.5 385.5,134.6 388.2,133.5
+391.0,133.2 393.8,133.7 396.5,134.8 399.2,135.5 402.0,135.5 404.8,134.6
+407.5,133.7 410.2,133.3 413.0,133.7 415.8,134.7 418.5,135.4 421.2,135.4
+424.0,134.7 426.8,133.8 429.5,133.4 432.3,133.7 435.0,134.6 437.8,135.3
+440.5,135.3 443.3,134.7 446.0,133.9 448.8,133.5 451.5,133.8 454.3,134.5
+457.0,135.2 459.8,135.3 462.5,134.8 465.2,134.0 468.0,133.6 470.8,133.8
+473.5,134.4 476.2,135.1 479.0,135.2 481.8,134.8 484.5,134.1 487.2,133.7
+490.0,133.8 492.8,134.4 495.5,135.0 498.3,135.1 501.0,134.8 503.8,134.2
+506.5,133.8 509.2,133.8 512.0,134.3 514.8,134.9 517.5,135.1 520.2,134.8
+523.0,134.2 525.8,133.8 528.5,133.9 531.2,134.3 534.0,134.8 536.8,135.0
+539.5,134.8 542.2,134.3 545.0,133.9 547.8,133.9 550.5,134.3 553.2,134.7
+556.0,135.0 558.8,134.8 561.5,134.3 564.2,134.0 567.0,133.9 569.8,134.3
+572.5,134.7 575.2,134.9 578.0,134.8 580.8,134.4 583.5,134.0 586.2,134.0
+589.0,134.2 591.8,134.6 594.5,134.9 597.3,134.8 600.0,134.4"
+  fill="none" stroke="#e2e8f0" stroke-width="1.2"
+  stroke-dasharray="5,3"/>
+</g>
+<text x="356" y="16" fill="#fb923c" font-size="10">forward Euler
+grows and leaves the plot near t = 11 s (continues to the 16.93 s
+slip of &sect;4)</text>
+</svg>
+<figcaption><b>Fig. 3.2.</b>
+&delta;(<var>t</var>) for the Lesson 2 step
+(<var>P</var><sub>m</sub>: 0.8&rarr;0.85 pu) at
+<var>h</var> = 10 ms, three methods, 0&ndash;20 s. Semi-implicit
+Euler (teal) and RK4 (dashed light grey) sit on top of each other,
+decaying to the new equilibrium 30.15&deg;. Forward Euler (orange)
+grows on every cycle and is clipped by the plot boundary near
+<var>t</var> &asymp; 11 s, having already reached 59.9&deg;; run
+further (not shown) it slips at <var>t</var> = 16.93 s.</figcaption>
+</figure>
+
+<h3>4.1 The energy check</h3>
+<p>A second listing (<code class="inline">lesson3_exercises.py</code>,
+shipped beside this page; &sect;6 quotes its output) sweeps step size and larger RK4 steps to confirm the
+thresholds of &sect;3, and the figure below runs the undamped
+(<var>K</var><sub>D</sub> = 0) machine for 10 s at
+<var>h</var> = 10 ms under forward Euler and semi-implicit Euler,
+tracking &Delta;<var>W</var>(<var>t</var>) = <var>W</var>(<var>t</var>)
+&minus; <var>W</var>(0) with <var>W</var>(0) = &minus;1.9098 (from
+&sect;3.3, evaluated at &delta;<sub>0</sub>, &Delta;&omega; = 0,
+<var>P</var><sub>m</sub> = 0.85 pu).</p>
+<figure id="fig-3-3">
+<svg viewBox="0 0 620 300" role="img" aria-labelledby="fig33title">
+<title id="fig33title">Energy drift under forward Euler versus
+semi-implicit Euler, undamped machine</title>
+<line x1="50" y1="20" x2="50" y2="250" stroke="#334155"/>
+<line x1="50" y1="250" x2="600" y2="250" stroke="#334155"/>
+<g stroke="#1e293b" stroke-width="1">
+<line x1="50" y1="187.5" x2="600" y2="187.5"/>
+<line x1="50" y1="135" x2="600" y2="135"/>
+<line x1="50" y1="82.5" x2="600" y2="82.5"/>
+<line x1="50" y1="30" x2="600" y2="30"/>
+</g>
+<g fill="#94a3b8" font-size="10">
+<text x="44" y="243" text-anchor="end">0</text>
+<text x="44" y="191" text-anchor="end">0.3</text>
+<text x="44" y="138" text-anchor="end">0.6</text>
+<text x="44" y="86" text-anchor="end">0.9</text>
+<text x="44" y="33" text-anchor="end">1.2</text>
+<text x="50" y="266">0</text>
+<text x="187.5" y="266" text-anchor="middle">2.5</text>
+<text x="325" y="266" text-anchor="middle">5</text>
+<text x="462.5" y="266" text-anchor="middle">7.5</text>
+<text x="595" y="266" text-anchor="end">10 s</text>
+<text x="10" y="140" transform="rotate(-90 10 140)"
+  text-anchor="middle">&Delta;W</text>
+</g>
+<line x1="50" y1="240" x2="600" y2="240" stroke="#2dd4bf"
+  stroke-width="2.2"/>
+<polyline points="50.0,240.0 55.5,240.0 61.0,240.0 66.5,240.0 72.0,239.9 77.5,239.9
+83.0,239.9 88.5,239.9 94.0,239.9 99.5,239.8 105.0,239.8 110.5,239.8
+116.0,239.8 121.5,239.7 127.0,239.7 132.5,239.7 138.0,239.6 143.5,239.6
+149.0,239.5 154.5,239.5 160.0,239.4 165.5,239.4 171.0,239.3 176.5,239.2
+182.0,239.2 187.5,239.1 193.0,239.0 198.5,238.9 204.0,238.8 209.5,238.7
+215.0,238.6 220.5,238.5 226.0,238.3 231.5,238.2 237.0,238.0 242.5,237.9
+248.0,237.7 253.5,237.4 259.0,237.2 264.5,237.0 270.0,236.8 275.5,236.5
+281.0,236.2 286.5,235.9 292.0,235.5 297.5,235.1 303.0,234.7 308.5,234.3
+314.0,233.9 319.5,233.3 325.0,232.7 330.5,232.1 336.0,231.4 341.5,230.8
+347.0,230.1 352.5,229.4 358.0,228.5 363.5,227.5 369.0,226.3 374.5,225.2
+380.0,224.1 385.5,223.0 391.0,221.9 396.5,220.3 402.0,218.5 407.5,216.6
+413.0,214.5 418.5,212.8 424.0,211.1 429.5,209.3 435.0,206.9 440.5,203.8
+446.0,200.5 451.5,196.9 457.0,193.9 462.5,191.4 468.0,188.8 473.5,185.5
+479.0,180.6 484.5,175.0 490.0,169.0 495.5,163.4 501.0,159.7 506.5,156.5
+512.0,152.9 517.5,146.6 523.0,137.9 528.5,128.4 534.0,118.0 539.5,110.6
+545.0,107.0 550.5,104.0 556.0,100.7 561.5,93.2 567.0,79.7 572.5,65.3
+578.0,49.2 583.5,35.4 589.0,32.1 594.5,32.2 600.0,32.7"
+  fill="none" stroke="#fb923c" stroke-width="1.8"/>
+<text x="425" y="178" fill="#fb923c" font-size="10"
+  text-anchor="end">forward Euler: &Delta;W = +1.18 at t = 10 s</text>
+<text x="425" y="192" fill="#fb923c" font-size="10"
+  text-anchor="end">(&delta; passes 180&deg; at t = 10.19 s)</text>
+<text x="590" y="232" fill="#2dd4bf" font-size="10"
+  text-anchor="end">semi-implicit: flat at this scale</text>
+<rect x="60" y="30" width="200" height="115" fill="#0f172a"
+  stroke="#334155" stroke-dasharray="3,3"/>
+<text x="65" y="42" fill="#94a3b8" font-size="9">semi-implicit,
+zoomed: &plusmn;4&times;10&#8315;&#8309; band, 0-4 s</text>
+<line x1="70" y1="85" x2="250" y2="85" stroke="#475569"
+  stroke-dasharray="2,2"/>
+<polyline points="70.0,85.0 70.9,92.3 71.8,98.6 72.7,103.0 73.6,105.1 74.5,104.4
+75.4,101.2 76.3,95.9 77.2,89.1 78.1,81.7 79.0,74.6 79.9,68.7 80.8,64.7
+81.7,63.2 82.6,64.2 83.5,67.6 84.4,73.1 85.3,79.9 86.2,87.3 87.1,94.2
+88.0,99.9 88.9,103.6 89.8,105.0 90.7,103.7 91.6,100.0 92.5,94.4
+93.4,87.4 94.3,80.0 95.2,73.0 96.1,67.5 97.0,64.0 97.9,63.0 98.8,64.7
+99.7,68.8 100.6,74.9 101.5,82.1 102.4,89.6 103.3,96.4 104.2,101.6
+105.1,104.6 106.0,105.0 106.9,102.7 107.8,98.2 108.7,91.8 109.6,84.5
+110.5,77.2 111.4,70.8 112.3,66.0 113.2,63.5 114.1,63.5 115.0,66.1
+115.9,70.8 116.8,77.2 117.7,84.5 118.6,91.6 119.5,97.9 120.4,102.5
+121.3,104.8 122.2,104.5 123.1,101.7 124.0,96.7 124.9,90.1 125.8,82.8
+126.7,75.5 127.6,69.4 128.5,65.0 129.4,63.0 130.3,63.7 131.2,67.0
+132.1,72.4 133.0,79.3 133.9,86.8 134.8,94.0 135.7,99.9 136.6,103.8
+137.5,105.2 138.4,103.9 139.3,100.1 140.2,94.4 141.1,87.4 142.0,79.9
+142.9,73.1 143.8,67.6 144.7,64.1 145.6,63.2 146.5,64.8 147.4,68.8
+148.3,74.7 149.2,81.7 150.1,89.0 151.0,95.7 151.9,101.0 152.8,104.2
+153.7,104.9 154.6,103.1 155.5,98.9 156.4,92.8 157.3,85.6 158.2,78.2
+159.1,71.5 160.0,66.4 160.9,63.5 161.8,63.1 162.7,65.4 163.6,70.1
+164.5,76.5 165.4,83.9 166.3,91.3 167.2,97.8 168.1,102.5 169.0,104.9
+169.9,104.7 170.8,101.8 171.7,96.8 172.6,90.1 173.5,82.8 174.4,75.6
+175.3,69.5 176.2,65.2 177.1,63.2 178.0,63.9 178.9,67.0 179.8,72.2
+180.7,78.9 181.6,86.2 182.5,93.3 183.4,99.2 184.3,103.2 185.2,104.9
+186.1,104.1 187.0,100.7 187.9,95.3 188.8,88.4 189.7,81.0 190.6,73.9
+191.5,68.1 192.4,64.3 193.3,63.0 194.2,64.3 195.1,68.1 196.0,73.9
+196.9,81.1 197.8,88.6 198.7,95.5 199.6,101.0 200.5,104.3 201.4,105.1
+202.3,103.2 203.2,98.9 204.1,92.8 205.0,85.6 205.9,78.2 206.8,71.6
+207.7,66.5 208.6,63.7 209.5,63.3 210.4,65.5 211.3,70.0 212.2,76.3
+213.1,83.4 214.0,90.7 214.9,97.1 215.8,101.9 216.7,104.6 217.6,104.7
+218.5,102.3 219.4,97.5 220.3,91.1 221.2,83.8 222.1,76.5 223.0,70.1
+223.9,65.5 224.8,63.2 225.7,63.5 226.6,66.4 227.5,71.5 228.4,78.3
+229.3,85.7 230.2,93.0 231.1,99.1 232.0,103.3 232.9,105.1 233.8,104.2
+234.7,100.8 235.6,95.3 236.5,88.4 237.4,81.0 238.3,74.0 239.2,68.2
+240.1,64.5 241.0,63.2 241.9,64.4 242.8,68.1 243.7,73.7 244.6,80.6
+245.5,88.0 246.4,94.8 247.3,100.3 248.2,103.9 249.1,105.0 250.0,103.5"
+  fill="none" stroke="#2dd4bf" stroke-width="1.4"/>
+</svg>
+<figcaption><b>Fig. 3.3.</b> &Delta;<var>W</var>(<var>t</var>) for
+the undamped machine (<var>K</var><sub>D</sub> = 0) at
+<var>h</var> = 10 ms, 0&ndash;10 s. Forward Euler (orange) drifts from
+0 to +1.185 at <var>t</var> = 10 s &mdash; 0.62 times the magnitude of
+<var>W</var>(0) = &minus;1.910 &mdash; injecting energy the model has
+no source for; at <var>t</var> = 10.19 s &delta; passes 180&deg;, and
+<var>W</var> after that slip has no meaning, so the plot stops at
+10 s. Semi-implicit Euler (teal) is indistinguishable from 0 at the
+main scale; the inset, sampled every second step (20 ms) over the
+first 4 s, shows it rippling inside a bounded
+&plusmn;4&times;10<sup>&minus;5</sup> band (measured maximum
+|&Delta;<var>W</var>| = 3.94&times;10<sup>&minus;5</sup> over 15 s)
+at roughly twice the swing frequency. Euler's 10 s drift is about
+3&times;10<sup>4</sup> times that band, and the semi-implicit ripple
+does not grow with time.</figcaption>
+</figure>
+<p>The full code:</p>
+<pre>"""Forward Euler, semi-implicit Euler, and RK4 on the SMIB swing
+equation: which one lies about stability at h = 10 ms?
+
+Swing convention: 2H d(dw)/dt = P_m - P_e - K_D dw
+                   d(delta)/dt = omega_0 dw
+Stdlib only. Run: python lesson3_euler_drift.py
+"""
+import cmath
+import math
+
+H = 3.5
+K_D = 2.0
+OMEGA_0 = 2.0 * math.pi * 60.0
+P_MAX = 1.1 * 1.0 / 0.65
+
+
+def f(x, p_m, k_d=K_D):
+    delta, dw = x
+    ddelta = OMEGA_0 * dw
+    ddw = (p_m - P_MAX * math.sin(delta) - k_d * dw) / (2.0 * H)
+    return (ddelta, ddw)
+
+
+def equilibrium(p_m):
+    delta = math.asin(p_m / P_MAX)
+    k_s = P_MAX * math.cos(delta)
+    a10, a11 = -k_s / (2.0 * H), -K_D / (2.0 * H)
+    disc = cmath.sqrt(a11 * a11 + 4.0 * a10 * OMEGA_0)
+    return delta, (a11 + disc) / 2.0
+
+
+def euler_step(x, p_m, h):
+    dx = f(x, p_m)
+    return (x[0] + h * dx[0], x[1] + h * dx[1])
+
+
+def semi_implicit_step(x, p_m, h):
+    delta, dw = x
+    ddw = (p_m - P_MAX * math.sin(delta) - K_D * dw) / (2.0 * H)
+    dw_new = dw + h * ddw
+    return (delta + h * OMEGA_0 * dw_new, dw_new)
+
+
+def rk4_step(x, p_m, h):
+    k1 = f(x, p_m)
+    x2 = (x[0] + 0.5*h*k1[0], x[1] + 0.5*h*k1[1])
+    k2 = f(x2, p_m)
+    x3 = (x[0] + 0.5*h*k2[0], x[1] + 0.5*h*k2[1])
+    k3 = f(x3, p_m)
+    x4 = (x[0] + h*k3[0], x[1] + h*k3[1])
+    k4 = f(x4, p_m)
+    dd = (k1[0] + 2*k2[0] + 2*k3[0] + k4[0]) / 6.0
+    dw = (k1[1] + 2*k2[1] + 2*k3[1] + k4[1]) / 6.0
+    return (x[0] + h*dd, x[1] + h*dw)
+
+
+def late_amplitude(step_fn, delta0, delta_new, p_m, h, t_end):
+    x = (delta0, 0.0)
+    n = int(round(t_end / h))
+    amp = 0.0
+    for i in range(n):
+        x = step_fn(x, p_m, h)
+        t = (i + 1) * h
+        if 8.0 &lt;= t &lt;= 10.0:
+            amp = max(amp, abs(x[0] - delta_new))
+    return math.degrees(amp)
+
+
+def slip_time(delta0, p_m, h, t_end):
+    x = (delta0, 0.0)
+    n = int(round(t_end / h))
+    for i in range(n):
+        x = euler_step(x, p_m, h)
+        if abs(x[0]) &gt; math.pi:
+            return (i + 1) * h
+    return None
+
+
+def main():
+    delta0, lam = equilibrium(0.8)
+    sigma, omega_d = lam.real, lam.imag
+    print("lambda = %.4f %+.4fj 1/s (sigma, omega_d)" % (sigma, omega_d))
+
+    h = 0.01
+    mag = abs(1.0 + h * lam)
+    growth = math.log(mag) / h
+    print("h = %.3f s: |1 + h*lambda| = %.5f" % (h, mag))
+    print("Euler growth rate  = %+.3f 1/s (physical = %+.3f 1/s)" %
+          (growth, sigma))
+    print("Euler amplitude x10s  = %.3f" % (mag ** (10.0 / h)))
+    print("True amplitude x10s   = %.3f" % math.exp(sigma * 10.0))
+
+    h_crit = -2.0 * sigma / (sigma * sigma + omega_d * omega_d)
+    print("h_crit (formula) = %.5f s = %.2f ms" % (h_crit, h_crit * 1000))
+
+    lo, hi = 0.0001, 0.02
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        if abs(1.0 + mid * lam) &lt; 1.0:
+            lo = mid
+        else:
+            hi = mid
+    print("h_crit (bisection) = %.5f s = %.2f ms" % (lo, lo * 1000))
+
+    h1 = 0.001
+    mag1 = abs(1.0 + h1 * lam)
+    print("h = %.3f s: Euler amplitude x10s = %.3f" %
+          (h1, mag1 ** (10.0 / h1)))
+
+    p_m_new = 0.85
+    delta_new, _ = equilibrium(p_m_new)
+    amp0 = math.degrees(delta_new - delta0)
+    print("\nInitial amplitude |delta_new - delta0| = %.2f deg" % amp0)
+    for name, step_fn in (("forward Euler", euler_step),
+                           ("semi-implicit Euler", semi_implicit_step),
+                           ("RK4", rk4_step)):
+        amp = late_amplitude(step_fn, delta0, delta_new, p_m_new, 0.01, 10.0)
+        print("%-20s late amplitude (8-10 s) = %.3f deg" % (name, amp))
+
+    t_slip = slip_time(delta0, p_m_new, 0.01, 60.0)
+    print("\nForward Euler, h = 10 ms, run to 60 s:")
+    print("slip time (|delta| &gt; 180 deg) = %.2f s" % t_slip)
+
+
+if __name__ == "__main__":
+    main()</pre>
+
+<h2 id="sec-limits">5. Model limits</h2>
+<p>Everything above is exact only for the <b>linearised</b> machine:
+one fixed eigenvalue &lambda;, valid near
+&delta;<sub>0</sub> = 28.21&deg;. The full nonlinear swing equation has
+&minus;<var>P</var><sub>max</sub>sin&delta; on its right-hand side, and
+its local eigenvalue changes as &delta; moves along the trajectory
+&mdash; by Lesson 2's eigenvalue formula applied at
+<var>P</var><sub>m</sub> = 0.85 pu the eigenvalue's oscillatory part
+alone shifts from &omega;<sub>d</sub> = 8.9607 to about 8.876 rad/s at
+the new equilibrium, a small but real change. Once forward Euler's
+error has grown large enough to carry &delta; far from either
+equilibrium &mdash; which is exactly what happens between
+<var>t</var> = 11 s and the 16.93 s slip &mdash; the linear analysis
+of &sect;3 no longer describes the trajectory at all; §3's numbers
+explain <i>why</i> the divergence starts, not the exact shape of the
+runaway once it is underway. Variable-step (adaptive) solvers exist
+precisely to catch a growing local error and shrink <var>h</var>
+automatically; this lesson deliberately keeps every step fixed so
+the reader can see the raw error grow instead of having a solver hide
+it. Exercise 4 asks what a programmer should check before trusting an
+adaptive tool's own "unstable" verdict.</p>
+
+<h2 id="sec-exercises">6. Exercises</h2>
+<div class="exercise">
+<h4>1. Computational &mdash; find h_crit by bisection</h4>
+<p>Using only the linear test equation and this eigenvalue, bisect on
+<var>h</var> to find the largest forward-Euler step for which the
+linearised machine still decays.</p>
+<details><summary>Answer target</summary>
+<p>3.56 ms. <code class="inline">lesson3_exercises.py</code> bisects
+60 times between 0.1 ms and 20 ms and prints
+<code class="inline">h_crit = 0.00356 s = 3.56 ms</code>, matching
+&sect;3.2's closed form exactly.</p>
+</details>
+</div>
+<div class="exercise">
+<h4>2. Derivational &mdash; derive dW/dt</h4>
+<p>Starting from
+<code class="inline">2H d(dw)/dt = P_m - P_e - K_D dw</code> and
+<code class="inline">d(delta)/dt = omega_0 dw</code>, derive
+<var>dW</var>/<var>dt</var> = &minus;K<sub>D</sub>&omega;<sub>0</sub>
+&Delta;&omega;&sup2;.</p>
+<details><summary>Answer target</summary>
+<p>Multiply the first equation by
+&omega;<sub>0</sub>&Delta;&omega;, use
+<var>d&delta;</var>/<var>dt</var> = &omega;<sub>0</sub>&Delta;&omega;
+to rewrite the left side as
+<var>H d</var>(&omega;<sub>0</sub>&Delta;&omega;&sup2;)/<var>dt</var>,
+and the (<var>P</var><sub>m</sub> &minus;
+<var>P</var><sub>max</sub>sin&delta;)<var>d&delta;</var>/<var>dt</var>
+term as
++<var>d</var>/<var>dt</var>[<var>P</var><sub>m</sub>&delta; +
+<var>P</var><sub>max</sub>cos&delta;], which moves to the left side
+with a minus sign to form <var>W</var>; the remaining
+&minus;K<sub>D</sub>&omega;<sub>0</sub>&Delta;&omega;&sup2; term is
+exactly the claimed result. See &sect;3.3 for the full steps.</p>
+</details>
+</div>
+<div class="exercise">
+<h4>3. Computational &mdash; RK4 at larger steps</h4>
+<p>Run RK4 at <var>h</var> = 0.1, 0.2, 0.3, 0.35 s and report where it
+stops decaying.</p>
+<details><summary>Answer target</summary>
+<p>Between 0.3 s and 0.35 s, matching &sect;3.4's value of 0.319 s
+for the base-point eigenvalue (the simulation settles at the
+<var>P</var><sub>m</sub> = 0.85 pu eigenvalue, whose RK4 limit is
+0.322 s &mdash; also inside the bracket).
+<code class="inline">lesson3_exercises.py</code> runs each step size
+to max(10, 6/<var>h</var>) s (60, 30, 20 and 17.1 s) and takes the
+largest |&delta; &minus; &delta;<sub>new</sub>| over the last 2 s. It
+reports late amplitudes of 0.0001&deg;, 0.0000&deg; and 0.0000&deg; at
+<var>h</var> = 0.1, 0.2, 0.3 s (decaying) against 101545.2096&deg; at
+<var>h</var> = 0.35 s (diverging). The near-zero values at 0.2 s
+and 0.3 s include strong RK4 numerical damping (|<var>R</var>| well
+below <var>e</var><sup>&sigma;<var>h</var></sup>), so "decaying" there
+means stable, not accurate.</p>
+</details>
+</div>
+<div class="exercise">
+<h4>4. Conceptual &mdash; a tool reports "unstable"</h4>
+<p>A simulation tool reports a machine "unstable" at a 20 ms step.
+List two checks before believing it.</p>
+<details><summary>Answer target</summary>
+<p>(1) Halve the step and re-run: if the "instability" shrinks or
+disappears, it was the integrator, not the machine (&sect;3.1&ndash;
+&sect;3.2 show this exact pattern at 10 ms versus 1 ms). (2) Compute
+|1 + <var>h</var>&lambda;| (or the method's own amplification factor)
+for the model's fastest eigenvalue at that step, independent of
+running any simulation at all &mdash; this is the check
+&sect;1 asks for "before trusting a plot".</p>
+</details>
+</div>
+<div class="exercise">
+<h4>5. Computational &mdash; how close to the true value 0.240?</h4>
+<p>Plot the forward-Euler 10 s amplitude factor against <var>h</var>
+from 1 ms to 10 ms. Show that it never reaches the true value 0.240
+for any <var>h</var> &gt; 0, and find the step at which it is within
+10% of 0.240.</p>
+<details><summary>Answer target</summary>
+<p>The run's values, from <code class="inline">lesson3_exercises.py
+</code>: 1 ms&rarr;0.358, 2 ms&rarr;0.535, 3 ms&rarr;0.799,
+4 ms&rarr;1.194, 5 ms&rarr;1.784, 6 ms&rarr;2.665, 7 ms&rarr;3.979,
+8 ms&rarr;5.938, 9 ms&rarr;8.858, 10 ms&rarr;13.203. Expanding
+ln|1 + <var>h</var>&lambda;| = <var>h</var>&sigma; +
+(<var>h</var>&sup2;/2)(&omega;<sub>d</sub>&sup2; &minus; &sigma;&sup2;)
++ <var>O</var>(<var>h</var>&sup3;) gives a 10 s factor of about
+0.240&middot;<var>e</var><sup>5<var>h</var>(&omega;<sub>d</sub>&sup2;
+&minus; &sigma;&sup2;)</sup>, which is above 0.240 for every
+<var>h</var> &gt; 0 (at 1 ms: 0.240&middot;<var>e</var><sup>0.401</sup>
+= 0.358), so there is no crossing. The factor is within 10% of 0.240
+(below 0.264) only for <var>h</var> &lt; 0.237 ms &mdash; forward Euler
+is measurably inaccurate for this mode at any step a working engineer
+would consider "small".</p>
+</details>
+</div>
+
+<footer>
+Swing convention: 2H d(&Delta;&omega;)/dt = P_m &minus; P_e &minus;
+K_D&Delta;&omega;, d&delta;/dt = &omega;_0&Delta;&omega; (damping
+K_D, never D). Machine parameters and base-point numbers
+(&delta;_0, K_s, &omega;_n, &zeta;, &lambda;) carried over unchanged
+from Lesson 2. Listings: lesson3_euler_drift.py,
+lesson3_exercises.py &mdash; both run with stdlib-only Python 3, PEP
+8, lines &le;79 characters.
+</footer>
+</main>
+</body>
+</html>

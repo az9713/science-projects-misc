@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>P5 BESS Sizing Memo</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--text2:#cbd5e1;--muted:#94a3b8;--orange:#fb923c;--teal:#2dd4bf;--border:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text2);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:900px;margin:0 auto;padding:32px 16px 64px}
+h1{color:var(--text);font-size:1.7rem;margin:0 0 4px}
+h2{color:var(--text);font-size:1.2rem;margin:36px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+p.sub{color:var(--muted);margin:0 0 24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0}
+.rec{border-left:4px solid var(--orange)}
+.big{font-size:1.9rem;color:var(--orange);font-weight:700;line-height:1.2}
+.big span{color:var(--teal)}
+code{font:0.82em ui-monospace,Consolas,monospace;color:var(--teal);background:#0f172a;border:1px solid var(--border);border-radius:4px;padding:0 4px;word-break:break-word}
+table{width:100%;border-collapse:collapse;font-size:0.92rem}
+th,td{border-bottom:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+th{color:var(--text);font-weight:600}
+td.n{text-align:right;white-space:nowrap}
+.tw{overflow-x:auto}
+.muted{color:var(--muted)}
+.warn{color:var(--orange);font-weight:600}
+ol li,ul li{margin:6px 0}
+svg{width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+<main>
+<h1>P5 BESS sizing: design memo</h1>
+<p class="sub">Grid-forming BESS to replace a 1.6 GVA synchronous condenser fleet (8 x 200 MVA) for frequency response. Written 2026-09-22 from the scenario JSON files in <code>p5-sizing/</code>. Each number shows its source as <code>file.json → key → percentile</code>. A derived number shows its inputs and the operation.</p>
+
+<div class="card rec">
+<div class="muted">Recommended size (for a 1.0 Hz/s RoCoF grid code, for example GB)</div>
+<div class="big">1,840 MW <span>/ 2,135 MWh</span></div>
+<p style="margin:10px 0 0">Installed at beginning of life (BOL), so that the plant still meets the requirement after 15 years of fade. Range: <strong>1,176 MW / 1,348 MWh to 2,400 MW / 2,912 MWh</strong>. MWh no longer equals MW, because the assumed energy fade (mode 20%) is larger than the assumed power fade (mode 8%). For a 2.0 Hz/s code (Continental Europe, generic weak island), the floor moves to <strong>2,240 MW</strong> at end of life (EOL), which is 2,449 MW at BOL at the p50 power retention (2,240 / 0.914558), before any delay or outage margin (see conflict 1).</p>
+<p class="muted" style="margin:8px 0 0">MW = MVA at unity power factor (four JSONs state this; <code>cost-curve.json</code> declares the same base model in its <code>source</code> field). The recommendation is 46 blocks of 40 MVA at BOL, with 2,135 MWh in total (46.4 MWh per block). Without fade, this memo recommended 1,680 MW / 1,680 MWh (42 blocks of 40 MVA / 40 MWh) and a range of 1,120 MW to 2,120 MW. Step 5 below shows why fade changes these figures.</p>
+</div>
+
+<h2>How the recommended number is built</h2>
+<ol>
+<li><strong>Required available rating with the response delay, at p50:</strong> 1,407 MVA, from <code>response-time.json → bess_converter_rating_MVA → p50</code> (1,407.39).</li>
+<li><strong>Outage redundancy, at p50:</strong> the outage scenario needs 34 installed blocks to keep 28 blocks available with probability 0.999 (<code>outage-rate.json → n_blocks → p50</code> = 34; 1,120 / 40 = 28 blocks, <code>outage-rate.json → assumptions</code>). The ratio is 34 / 28 = 1.214.</li>
+<li><strong>Stack the two:</strong> a plain ratio gives 1,407.39 x 1.214 = 1,709 MVA, but binomial redundancy does not scale linearly. A direct count is more accurate. Round 1,407.39 MVA up to 36 required blocks (1,440 MVA). Then run <code>blocks_needed(q)</code> from <code>outage-rate.py</code> with <code>N_REQ = 36</code> and q = 0.036833 (<code>outage-rate.json → forced_outage_rate → p50</code>). The result is 42 blocks = 1,680 MVA before fade. (This memo ran that call on 2026-09-22; the result is not in a JSON.)</li>
+<li><strong>Energy, before fade:</strong> 1,680 MVA x 1 h = 1,680 MWh (one-hour store, ch4 Constraint 1, "assumed for this case"). The physical energy need is only 0.0498 MWh (<code>response-time.json → bess_energy_required_MWh → p50</code> = 0.049778). The one-hour store is a design choice, not a requirement.</li>
+<li><strong>End-of-life fade, at p50:</strong> the plant must still meet steps 1 to 4 at year 15. Power retention at EOL p50 is 0.914558 (<code>degradation.json → power_retention_at_EOL → p50</code>). One 40 MVA block then delivers 40 x 0.914558 = 36.58 MVA. The required available rating needs 1,407.39 / 36.58 = 38.47, rounded up to 39 blocks at EOL. <code>blocks_needed(q)</code> with <code>N_REQ = 39</code> and q = 0.036833 gives 46 blocks = 1,840 MVA at BOL. (This memo ran that call on 2026-09-22; the result is not in a JSON.) At EOL, 46 x 36.58 = 1,683 MVA remains installed. The plain ratio 1,680 / 0.914558 = 1,837 MVA gives the same 46 blocks after rounding up. Energy retention at EOL p50 is 0.786787 (<code>degradation.json → energy_retention_at_EOL → p50</code>). The memo keeps the step 4 basis for the EOL energy target: 1,680 MWh, one hour at the no-fade 1,680 MW. It applies the <code>degradation.json</code> rule "BOL install = EOL requirement / retention at EOL": 1,680 / 0.786787 = 2,135 MWh at BOL.</li>
+</ol>
+<p><span class="warn">Why stack, and why only p50.</span> Response delay and block outages are two different effects. The delay raises the rating that must be available. Outages raise the installed rating that keeps that available rating online. They add together; they do not compete. Fade is a third separate effect: it lowers the rating and the energy that each installed block delivers at EOL. <code>degradation.json</code> finding 3 states that the power over-build and the energy over-build do not interact, so each channel uses its own retention figure. No JSON varies two factors in one run, so this stack is a derived figure. The p50 of each is used because combining two p95 values assumes both extremes occur together.</p>
+<p><strong>Low end, 1,176 MW / 1,348 MWh:</strong> the textbook value with zero delay, zero outage, H = 3.5 s (1,120 MVA, <code>inertia-constant.json → textbook_reference_at_H_3p5 → bess_converter_rating_MVA</code>), installed at BOL for the least fade. <code>degradation.json → bess_installed_power_BOL_MVA → p5</code> = 1,175.86 (1,120 / 0.952495, the p95 power retention). <code>degradation.json → bess_installed_energy_BOL_MWh → p5</code> = 1,348.20 (1,120 / 0.830739, the p95 energy retention). The no-fade low end was 1,120 MW. The power retention distribution has a maximum of 0.97, so no sample reaches zero fade. In 40 MVA blocks, 1,175.86 MVA rounds up to 30 blocks (1,200 MVA). No scenario goes below 1,120 MVA except the low-H tail of the inertia scenario (795 MVA at p5, no fade applied).</p>
+<p><strong>High end, 2,400 MW / 2,912 MWh:</strong> the p95 of all three effects stacked. Without fade: round 1,649.88 MVA (<code>response-time.json → bess_converter_rating_MVA → p95</code>) up to 42 required blocks. Then <code>blocks_needed(q)</code> with <code>N_REQ = 42</code> and q = 0.076112 (<code>outage-rate.json → forced_outage_rate → p95</code>) gives 53 blocks = 2,120 MVA. The plain ratio 1,649.88 x 37 / 28 = 2,180 MVA overstates it by 60 MVA. Then add fade at the p5 retentions (the most fade). One block delivers 40 x 0.870176 = 34.81 MVA at EOL (<code>degradation.json → power_retention_at_EOL → p5</code>). The EOL requirement needs 1,649.88 / 34.81 = 47.40, rounded up to 48 blocks. <code>blocks_needed(q)</code> with <code>N_REQ = 48</code> and q = 0.076112 gives 60 blocks = <strong>2,400 MVA</strong> at BOL (run by this memo on 2026-09-22; not in a JSON). Energy: 2,120 MWh (one hour at the no-fade 2,120 MW) / 0.727914 (<code>degradation.json → energy_retention_at_EOL → p5</code>) = <strong>2,912 MWh</strong>. The no-fade high end was 2,120 MW / 2,120 MWh. This is a joint-extreme bound of three effects, not a p95 of a joint distribution.</p>
+<p><strong>Not in the recommendation:</strong> the H uncertainty. The recommended figure uses H = 3.5 s. At the inertia p95 (H = 4.53 s), the base rating is 1,449 MVA, 1.294 times the 1,120 MVA base (<code>inertia-constant.json → bess_converter_rating_MVA → p95</code>). Measure H on the real fleet before the bid; it scales the whole size 1:1.</p>
+
+<h2>What each scenario contributes</h2>
+<div class="card">
+<svg viewBox="0 0 720 370" role="img" aria-label="Converter rating p5 to p95 per scenario">
+<g font-family="system-ui,sans-serif" font-size="12" fill="#cbd5e1">
+<!-- axis ticks: x(v)=200+(v-700)*0.3125 -->
+<g stroke="#334155">
+<line x1="231.3" y1="20" x2="231.3" y2="330"/><line x1="356.3" y1="20" x2="356.3" y2="330"/>
+<line x1="481.3" y1="20" x2="481.3" y2="330"/><line x1="606.3" y1="20" x2="606.3" y2="330"/>
+</g>
+<g fill="#94a3b8" text-anchor="middle">
+<text x="231.3" y="348">800</text><text x="356.3" y="348">1,200</text><text x="481.3" y="348">1,600</text><text x="606.3" y="348">2,000</text>
+<text x="450" y="366">Converter / installed rating, MVA (bar = p5 to p95, tick = p50)</text>
+</g>
+<!-- reference lines -->
+<line x1="331.3" y1="14" x2="331.3" y2="330" stroke="#94a3b8" stroke-dasharray="4 4"/>
+<text x="331.3" y="12" text-anchor="middle" fill="#94a3b8">1,120 base</text>
+<line x1="556.3" y1="14" x2="556.3" y2="330" stroke="#fb923c" stroke-width="2"/>
+<text x="556.3" y="12" text-anchor="middle" fill="#fb923c">1,840 rec.</text>
+<!-- rows -->
+<text x="0" y="44">inertia-constant</text>
+<rect x="229.7" y="34" width="204.4" height="12" rx="3" fill="#2dd4bf" opacity="0.55"/><line x1="331.6" y1="30" x2="331.6" y2="50" stroke="#e2e8f0" stroke-width="2"/>
+<text x="0" y="84">response-time</text>
+<rect x="373.4" y="74" width="123.5" height="12" rx="3" fill="#2dd4bf" opacity="0.55"/><line x1="420.9" y1="70" x2="420.9" y2="90" stroke="#e2e8f0" stroke-width="2"/>
+<text x="0" y="124">outage-rate (installed)</text>
+<rect x="368.8" y="114" width="75.0" height="12" rx="3" fill="#2dd4bf" opacity="0.55"/><line x1="406.3" y1="110" x2="406.3" y2="130" stroke="#e2e8f0" stroke-width="2"/>
+<text x="0" y="164">grid-code, as reported</text>
+<circle cx="331.3" cy="160" r="6" fill="#2dd4bf"/>
+<text x="0" y="204">grid-code, 0.20 pu cap</text>
+<rect x="331.3" y="194" width="350.0" height="12" rx="3" fill="#fb923c" opacity="0.55"/><line x1="331.3" y1="190" x2="331.3" y2="210" stroke="#e2e8f0" stroke-width="2"/>
+<text x="681" y="224" text-anchor="end" fill="#fb923c">2,240 (derived)</text>
+<text x="0" y="264">cost-curve</text>
+<circle cx="331.3" cy="260" r="6" fill="#2dd4bf"/>
+<text x="0" y="304">degradation (BOL)</text>
+<rect x="348.7" y="294" width="34.8" height="12" rx="3" fill="#2dd4bf" opacity="0.55"/><line x1="364.0" y1="290" x2="364.0" y2="310" stroke="#e2e8f0" stroke-width="2"/>
+</g>
+</svg>
+<p class="muted" style="margin:6px 0 0">The grid-code row with the 0.20 pu cap is derived in this memo (conflict 1); the JSON reports a flat 1,120 MVA. The degradation row is the BOL converter rating that still gives 1,120 MVA at year 15.</p>
+</div>
+
+<div class="tw">
+<table>
+<tr><th>Scenario</th><th>Varied input</th><th class="n">p5</th><th class="n">p50</th><th class="n">p95</th><th>Contribution</th></tr>
+<tr><td>inertia-constant</td><td>Condenser H ~ triangular(2.0, 3.5, 5.0) s</td><td class="n">795</td><td class="n">1,121</td><td class="n">1,449</td><td>Converter MVA (<code>bess_converter_rating_MVA</code>). Power scales 1:1 with H: 64 MW per second of H.</td></tr>
+<tr><td>response-time</td><td>T_d ~ triangular(0.05, 0.15, 0.30) s</td><td class="n">1,255</td><td class="n">1,407</td><td class="n">1,650</td><td>Converter MVA. Amplification k = 0.8 / (0.8 − T_d): 1.12 / 1.26 / 1.47 (<code>amplification_factor</code>).</td></tr>
+<tr><td>outage-rate</td><td>Block FOR ~ Beta(4, 96)</td><td class="n">1,240</td><td class="n">1,360</td><td class="n">1,480</td><td>Installed MW (<code>bess_power_mw</code>); blocks 31 / 34 / 37 against 28 required. A multiplier on the required rating.</td></tr>
+<tr><td>grid-code</td><td>6 codes, 1/6 each</td><td class="n">1,120</td><td class="n">1,120</td><td class="n">1,120</td><td>Headroom 224 / 224 / 448 MW (<code>bess_power_headroom_MW</code>). Reported MVA is flat; see conflict 1.</td></tr>
+<tr><td>cost-curve</td><td>USD/kW ~ tri(100, 200, 350); USD/kWh ~ tri(150, 250, 450)</td><td class="n">1,120</td><td class="n">1,120</td><td class="n">1,120</td><td>No sizing effect. One-hour-store capex 418.7 / 555.4 / 714.1 MUSD (<code>capex_one_hour_store_MUSD</code>).</td></tr>
+<tr><td>degradation</td><td>15-year retention: energy ~ triangular(0.70, 0.80, 0.85); power ~ triangular(0.85, 0.92, 0.97); independent</td><td class="n">1,176</td><td class="n">1,225</td><td class="n">1,287</td><td>BOL converter MVA (<code>bess_installed_power_BOL_MVA</code>) to keep 1,120 MVA at EOL. BOL energy 1,348 / 1,424 / 1,539 MWh (<code>bess_installed_energy_BOL_MWh</code>) to keep 1,120 MWh at EOL. BOL capex 579.8 / 601.9 / 631.8 MUSD (<code>capex_BOL_MUSD</code>) against 504.0 MUSD with no fade. A multiplier of 1 / retention on each channel.</td></tr>
+</table>
+</div>
+<p class="muted">MVA figures rounded from the JSON values: inertia 794.71 / 1,121.03 / 1,449.03; response-time 1,254.97 / 1,407.39 / 1,649.88; degradation 1,175.86 / 1,224.64 / 1,287.10 MVA and 1,348.20 / 1,423.51 / 1,538.64 MWh. Retention percentiles: energy 0.727914 / 0.786787 / 0.830739, power 0.870176 / 0.914558 / 0.952495. The retention distributions are "not in ch4.html". They are an assumption of this study, anchored to the 70-80% retained-capacity EOL convention for grid-scale Li-ion (<code>degradation.json → varied_uncertainty</code>).</p>
+
+<h2>Which scenario drives the size</h2>
+<p><strong>As the JSONs report it:</strong> response-time. Its p95 of 1,650 MVA is the largest single-factor p95. It is 1.47 times the 1,120 MVA base, against 1.32 for outage-rate (1,480 / 1,120), 1.29 for inertia-constant (1,449 / 1,120) and 1.15 for degradation (1,287 / 1,120).</p>
+<p><strong>With the current limit enforced:</strong> the grid code drives the size if the site is under a 2.0 Hz/s code. The corrected rating for those codes is 2,240 MVA, 2.0 times the base, before delay or outage. The grid code is a site fact, not a random draw. Confirm the code first; it selects between the 1,840 MW recommendation above and a size near 2,240 MW at EOL or more.</p>
+<p><strong>Fade drives the MWh figure.</strong> Energy retention is lower than power retention (p50 0.786787 against 0.914558). So the BOL store is 1 / 0.786787 = 1.27 times its EOL target, and the BOL converter is 1 / 0.914558 = 1.09 times its EOL target. <code>degradation.json</code> finding 2 states that energy retention drives most of the capex spread, because the one-hour store dominates capex.</p>
+<p><strong>Physical energy need never drives the size.</strong> The one-hour store is 22,500 times the physical energy need at every H (<code>inertia-constant.json → textbook_reference_at_H_3p5 → store_to_need_ratio</code>). The need ranges from 0.031 MWh to 0.064 MWh across all scenarios (<code>grid-code.json → bess_energy_required_MWh → p5</code> = 0.031111; <code>inertia-constant.json → bess_energy_required_MWh → p95</code> = 0.064401). The MWh figure is set only by the one-hour store assumption.</p>
+
+<h2>Conflicts between scenario assumptions</h2>
+<ol>
+<li><strong>Grid-code breaks the 1.2 pu current limit.</strong> <code>grid-code.py:91</code> sets the headroom fraction to <code>2 x H_v x RoCoF / f0</code> with no cap. At 2.0 Hz/s that is 2 x 5.0 x 2.0 / 50 = 0.40 pu. All five JSONs state "current limit 1.2 pu at 1.0 pu dispatch" (ch4 Constraint 3), which allows 0.20 pu headroom. The flat 1,120 MVA in <code>grid-code.json</code> therefore needs 1.4 pu current, which its own assumptions forbid. The script tests confirm there is no cap downstream: <code>grid-code.py:165</code> asserts the rating equals 5600 / H_V_S, and <code>:187</code> asserts p5 equals p95. With the cap: 448 MW (<code>grid-code.json → bess_power_headroom_MW → p95</code>) / 0.20 pu = 2,240 MVA. Its finding 2 ("converter rating does NOT vary with the grid code") holds only without the cap.</li>
+<li><strong>Grid-code capex finding contradicts its own output.</strong> Finding 4 says one-hour-store capex "doubles between the 1.0 Hz/s and 2.0 Hz/s RoCoF codes". But <code>grid-code.json → capex_one_hour_store_MUSD</code> is 504.0 at p5, p50 and p95. The capex follows the flat MVA, not the headroom. With the cap, capex at 2,240 MVA / 2,240 MWh would be 2,240 x 0.200 + 2,240 x 0.250 = 1,008 MUSD, which does double.</li>
+<li><strong>Unit costs differ.</strong> inertia-constant, response-time and grid-code use 200 USD/kW + 250 USD/kWh (fixed placeholders). outage-rate uses 250 USD/kW + 300 USD/kWh. cost-curve samples around modes 200 and 250. The same 1,120 MW / 1,120 MWh plant costs 504 MUSD under the first set and 1,120 x 0.250 + 1,120 x 0.300 = 616 MUSD under the outage set, a ratio of 1.22. The outage-rate capex (682 / 748 / 814 MUSD, <code>bess_cost_musd</code>) is not comparable with the other capex figures.</li>
+<li><strong>"Power" has two meanings.</strong> <code>bess_power_headroom_MW</code> (224 MW) in four JSONs is response power above dispatch. <code>bess_power_mw</code> in <code>outage-rate.json</code> (1,240 to 1,480) is installed nameplate. The nameplate that matches the 224 MW headroom is the 1,120 MVA converter rating.</li>
+<li><strong>Response-time model depends on the GB code.</strong> Its t_natural = 0.8 Hz / 1.0 Hz/s = 0.8 s (<code>response-time.json → effect_model → t_natural_s</code>). Under a 2.0 Hz/s code, t_natural becomes 0.4 s and k at T_d = 0.257 s becomes 0.4 / 0.143 = 2.80, against 1.47. This interaction is not simulated.</li>
+<li><strong>H is fixed at 3.5 s in four scenarios</strong> and varied only in inertia-constant. The outage-rate criterion targets the full 224 MW and does not credit condenser availability; the other scenarios are silent on availability.</li>
+<li><strong>Fleet rating wording.</strong> The brief says "1.6 GW"; the textbook and all JSONs use 1.6 GVA (8 x 200 MVA).</li>
+</ol>
+
+<h2>Caveats</h2>
+<ul>
+<li><strong>Fade model is simple and unsourced.</strong> The retention distributions are assumptions of this study; verify them against a specific product warranty before a bid. <code>degradation.py</code> uses a single 15-year figure: no fade-curve shape, no calendar-versus-cycling split, no augmentation or replacement partway through life. Energy and power retention are drawn independently. Augmentation (adding cells later) could replace part of the BOL over-build; the memo does not cost it.</li>
+<li><strong>No joint run.</strong> Each scenario varies one factor. The 1,840 MW and 2,400 MW figures stack three single-factor results: a delay percentile, a power-retention percentile, then a block count at an outage percentile. The MWh figures divide the no-fade one-hour store by an energy-retention percentile. <code>cost-curve.json</code> finding 3 states that combining uncertainties widens the range.</li>
+<li><strong>Response-time model is first-order.</strong> The k factor is a remaining-time approximation, "not a full swing-equation/RoCoF-relay simulation", and the T_d distribution is "not in ch4.html" (<code>response-time.json → effect_model → caveat</code>).</li>
+<li><strong>Outage inputs are assumed.</strong> FOR ~ Beta(4, 96), block size 40 MVA / 40 MWh, and the 0.999 target are all "assumed - verify". Outages are independent; common-mode failure (control software, grid connection, site event) "would raise the required rating".</li>
+<li><strong>H bounds are unsourced.</strong> The 2.0 s and 5.0 s bounds are "an assumption of this study". The 3.5 s mode is itself "assumed for this case - verify against a manufacturer figure".</li>
+<li><strong>Grid-code rows are illustrative,</strong> "not audited against the current in-force text" of any code.</li>
+<li><strong>The one-hour store is a textbook assumption.</strong> It sets 100% of the MWh figure. At mode unit costs, energy is 280 of the 504 MUSD one-hour-store capex (56%). A shorter store changes capex more than any sizing scenario: capex with the store sized to the physical need only is 238.98 MUSD at p50 (<code>cost-curve.json → capex_min_energy_MUSD → p50</code>) against 555.39 MUSD (<code>capex_one_hour_store_MUSD → p50</code>), a ratio of 2.32.</li>
+<li><strong>All unit costs are placeholders.</strong> None is read from a source; verify against a vendor quote or a benchmark (NREL ATB, Lazard LCOS) before a bid.</li>
+<li><strong>Excluded everywhere:</strong> O&amp;M, financing, land, discounting, reactive power and fault-current duty (the 1.2 pu limit leaves 0.00 pu margin for these, <code>outage-rate.json → assumptions</code>).</li>
+</ul>
+</main>
+</body>
+</html>

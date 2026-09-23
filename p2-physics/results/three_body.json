@@ -1,0 +1,30 @@
+{
+  "target": "Period of the figure-eight periodic three-body orbit (equal unit masses, G=1)",
+  "method": "First return of the full 12-D state y=(r1,r2,r3,v1,v2,v3) to y0, located as a root of g(t)=(y(t)-y0).y'(t) via scipy.integrate.solve_ivp DOP853, rtol=1e-12/atol=1e-14 over t in [0,10]; cross-checked with an independent body-3 x=0 return event",
+  "measured": 6.3259139829,
+  "published": 6.32591398292621,
+  "tolerance": 3.315659e-09,
+  "abs_diff": 8.175682e-12,
+  "error_estimate": 1.105158e-09,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 0.29,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": null,
+  "runs": [
+    {"exit_code": 0, "runtime_s": 0.29},
+    {"exit_code": 0, "runtime_s": 0.29}
+  ],
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "previous": {
+    "measured": 6.3259140120,
+    "published": 6.32591398,
+    "tolerance": 1.886232e-07,
+    "abs_diff": 3.200811e-08
+  },
+  "notes": "Verify2, second pass after fix stage. Fix stage change 1 (referee.md, three_body section) is already applied in scripts/three_body.py: R1, V3, T_PUBLISHED now use the 14-digit Fenucci (arXiv:2201.01205, section 5, after Simo/Chenciner-Montgomery) initial data and published period 6.32591398292621, with T_PUB_ROUND=IC_ROUND=5e-15; the script prints MEASURED to 10 decimals and PUBLISHED to 14 decimals as specified. Change 2 (retained 8-decimal cross-check printed after the measurement) is also present in the script's output. Two full runs both exited 0 and printed RESULT=PASS with bit-identical numeric lines: MEASURED=6.3259139829, PUBLISHED=6.32591398292621, ERROR_ESTIMATE=1.105158e-09, TOLERANCE=3.315659e-09, ABS_DIFF=8.175682e-12, RUNTIME_S=0.29 both times; no stderr in either run. Recomputing abs_diff from the printed 10-decimal MEASURED gives |6.3259139829-6.32591398292621|=2.621e-11, larger than the printed ABS_DIFF=8.175682e-12 because the printed MEASURED is truncated to 10 decimals while the script's internal ABS_DIFF is computed from the untruncated t_tight=6.325913982918; using that full-precision value, |6.325913982918-6.32591398292621|=8.209e-12, which matches the printed ABS_DIFF to within further rounding (8.209e-12 vs 8.175682e-12) -- a printing/rounding gap, not a computation error, and well inside TOLERANCE. TOLERANCE=3.315659e-09 = 3*ERROR_ESTIMATE(1.105158e-09=3.315474e-09) + IC bias 1.803e-13 (measured, four +5e-9-style but now 5e-15-scale perturbations, summed sensitivity 36.062) + T_PUB_ROUND 5e-15; ratio tolerance/(3*error) is now about 1.00006, i.e. essentially 3x error alone, as referee change 1 predicted (previously the IC term was 96% of tolerance and the ratio was 171). Compared to the previous JSON (see \"previous\" above): measured moved from 6.3259140120 to 6.3259139829 (8-decimal-IC value to 14-digit-IC value), published moved from the 8-decimal 6.32591398 to the 14-digit 6.32591398292621, tolerance shrank from 1.886232e-07 to 3.315659e-09 (factor ~57), and abs_diff shrank from 3.200811e-08 to 8.175682e-12 (factor ~3900) -- consistent with referee's statement that the IC-rounding bias (96% of the old tolerance) is removed by switching to 14-digit input data. Referee change 2 (8-decimal cross-check line) is present in stdout: '8-decimal Chenciner-Montgomery data: T = 6.3259140120; predicted from rounding errors x sensitivities: 6.3259140120; published 6.32591398 differs by 3.201e-08, of which 2.909e-08 is IC rounding and 2.926e-09 is the rounding of the published period. Prediction residual: 7.105e-15' -- matching referee's own derivation (predicted T 6.3259140120, residual 7e-15). Independent sanity check: residual return distance d_min=5.605e-12 in both runs, well under the docstring's revised ~1e-11 threshold. Wall time measured externally via shell date; script's own self-reported RUNTIME_S was 0.29 in both runs (identical, so no discrepancy to note this pass)."
+}

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Numerical Linear Algebra: Blind-Spot Index</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --text-dim: #cbd5e1;
+    --muted: #94a3b8;
+    --accent: #fb923c;
+    --accent2: #2dd4bf;
+    --border: #334155;
+    --border-soft: #1e293b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 24px 16px 64px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 6px;
+    color: var(--text);
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card .num {
+    color: var(--accent2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    margin: 0 0 8px;
+    color: var(--text);
+  }
+  .card .scope {
+    color: var(--text-dim);
+    font-size: 0.87rem;
+    margin: 0 0 12px;
+  }
+  .card .mis-label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 10px 0 4px;
+  }
+  .card ol {
+    margin: 0 0 12px;
+    padding-left: 18px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .card ol li { margin-bottom: 6px; }
+  .card a.mdlink {
+    margin-top: auto;
+    align-self: flex-start;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+  }
+  .card a.mdlink:hover { border-color: var(--accent); }
+
+  h2.section-title {
+    font-size: 1.2rem;
+    color: var(--text);
+    margin: 0 0 4px;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 32px;
+  }
+  .section-note {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 18px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: var(--card);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    background: #172033;
+  }
+  td.concept { color: var(--accent2); font-weight: 600; white-space: nowrap; }
+  td.topics a {
+    color: var(--text-dim);
+    text-decoration: none;
+    margin-right: 10px;
+    border-bottom: 1px dotted var(--border);
+  }
+  td.topics a:hover { color: var(--accent); }
+  tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Numerical Linear Algebra — Blind-Spot Pass Index (P6)</h1>
+  <p class="sub">Twelve subtopics covering the field, graduate-student level. Each card lists the topic's scope and its three most consequential misconceptions, with a link to the full pass.</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div class="num">01</div>
+      <h2>Floating point, conditioning, and backward stability</h2>
+      <p class="scope">IEEE 754 formats, unit roundoff u = 2^-53, the standard model fl(x op y) = (x op y)(1+delta), condition numbers kappa(A), forward/backward error, and backward stability as the central standard for judging an algorithm.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>Binary64's ~15-17 decimal digits do not mean a computed answer is accurate to 15-17 digits — accuracy depends on kappa(A) times backward error, and can collapse to zero digits even with every operation correctly rounded.</li>
+        <li>Catastrophic cancellation is not caused by subtraction being inaccurate; the subtraction itself is nearly exact. It amplifies pre-existing rounding error in the two inputs because the result's magnitude shrinks while the absolute error stays fixed.</li>
+        <li>An ill-conditioned problem and an unstable algorithm are not the same idea: a stable algorithm can still return a bad answer on an ill-conditioned problem, and an unstable algorithm can look fine on a well-conditioned one.</li>
+      </ol>
+      <a class="mdlink" href="floating-point-conditioning.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">02</div>
+      <h2>Gaussian elimination, LU, and pivoting</h2>
+      <p class="scope">LU via Gaussian elimination at (2/3)n^3 flops, partial/complete/rook pivoting, growth factor rho_n and Wilkinson's 2^(n-1) worst case, Cholesky and LDL^T, blocked/communication-avoiding variants, and cheap condition-number estimation.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>Partial pivoting is not "unstable" merely because rho_n can reach 2^(n-1) in Wilkinson's constructed worst case — that growth is vanishingly rare on random and most practical matrices.</li>
+        <li>Pivoting does not make a solve accurate no matter what A is: pivoting controls the growth factor, but the solution's accuracy still depends on kappa(A).</li>
+        <li>LU and Cholesky are not the same algorithm under different names — Cholesky exploits symmetric positive definiteness and needs no pivoting for stability, unlike general LU.</li>
+      </ol>
+      <a class="mdlink" href="lu-pivoting.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">03</div>
+      <h2>QR factorization and least squares</h2>
+      <p class="scope">min ||Ax-b||_2, normal equations vs Householder/Givens QR, classical vs modified Gram-Schmidt loss of orthogonality (kappa(A)^2 u vs kappa(A) u), rank-revealing QRCP, and Tikhonov regularization.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>Normal equations and QR do not give the same accuracy — normal equations square the condition number (working with kappa(A)^2), while QR works with kappa(A) directly.</li>
+        <li>Classical and modified Gram-Schmidt are not the same algorithm with harmless reordering: CGS loses orthogonality proportional to kappa(A)^2 u, MGS only to kappa(A) u.</li>
+        <li>Reorthogonalizing more than twice does not keep improving accuracy — "twice is enough" is the actual rule, and further passes buy little beyond that.</li>
+      </ol>
+      <a class="mdlink" href="qr-least-squares.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">04</div>
+      <h2>The singular value decomposition</h2>
+      <p class="scope">SVD A = U Sigma V^T, Eckart-Young-Mirsky optimal rank-k approximation, pseudoinverse, perturbation theory (Weyl, Wedin sin-theta), Golub-Kahan bidiagonalization, divide-and-conquer, and one-sided Jacobi SVD.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>Forming A^T A and eigendecomposing it is not a safe way to get the SVD — it squares the condition number and destroys accuracy for small singular values, unlike direct SVD algorithms.</li>
+        <li>Truncating the SVD at rank k is optimal in both the Frobenius norm and the spectral (2-)norm simultaneously, by Eckart-Young-Mirsky, not just in Frobenius as sometimes assumed.</li>
+        <li>The pseudoinverse A⁺ is not automatically well-behaved just because A has full rank — it can still be extremely sensitive to perturbation when A is near rank-deficient (small but nonzero smallest singular value).</li>
+      </ol>
+      <a class="mdlink" href="svd.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">05</div>
+      <h2>Dense eigenvalue algorithms</h2>
+      <p class="scope">Power/inverse/Rayleigh-quotient iteration, reduction to Hessenberg/tridiagonal form, QR algorithm with Wilkinson/Francis shifts, symmetric tridiagonal methods (MRRR), Bauer-Fike conditioning, pseudospectra, and the QZ algorithm for Ax = lambda Bx.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>The condition number of an eigenvalue is not the condition number of the matrix — each eigenvalue has its own condition number 1/|y*x|, and these can differ by orders of magnitude across eigenvalues of the same matrix.</li>
+        <li>Rayleigh quotient iteration does not always converge, nor always at cubic rate — cubic convergence is local and holds for symmetric/normal matrices; general non-normal matrices get only quadratic convergence, and RQI is not globally convergent.</li>
+        <li>Reduction to Hessenberg/tridiagonal form is not itself an approximation like the later QR steps — it is an exact similarity transform (up to unit roundoff) in finite O(n^3) operations, with no iteration or tolerance involved.</li>
+      </ol>
+      <a class="mdlink" href="eigenvalue-algorithms.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">06</div>
+      <h2>Krylov subspace methods</h2>
+      <p class="scope">Krylov subspaces K_k(A,b), Arnoldi/Lanczos, CG with bound 2((sqrt(kappa)-1)/(sqrt(kappa)+1))^k, MINRES/SYMMLQ, GMRES(m), BiCGSTAB, finite-precision loss of orthogonality, and Krylov eigensolvers.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>The CG convergence bound 2((sqrt(kappa)-1)/(sqrt(kappa)+1))^k is a worst-case bound over all right-hand sides and eigenvalue distributions, not a prediction of the actual iteration count for a specific problem.</li>
+        <li>Lanczos vectors do not stay orthogonal just because the three-term recurrence guarantees it in exact arithmetic — finite precision causes measurable loss of orthogonality that the recurrence alone does not prevent.</li>
+        <li>GMRES(m) restarted is not simply "GMRES done in cheaper chunks" that converges to the same answer more slowly — restarting can stagnate or fail to converge at all where full GMRES would succeed.</li>
+      </ol>
+      <a class="mdlink" href="krylov-methods.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">07</div>
+      <h2>Preconditioning</h2>
+      <p class="scope">Left/right/split preconditioning, Jacobi/Gauss-Seidel/SOR as preconditioners, ILU(0)/ILU(k)/ILUT, sparse approximate inverses, algebraic/geometric multigrid, domain decomposition (Schwarz, FETI, BDDC), and mesh-independent convergence.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>A diagonal (Jacobi) preconditioner does not "fix" ill-conditioning in general — it rescales the matrix and can help when conditioning stems from scaling differences, but it does not address ill-conditioning from other sources.</li>
+        <li>GMRES's reported residual norm does not always mean the true residual ||b - Ax||; with certain preconditioning or restart choices it can be a preconditioned or otherwise transformed residual that diverges from the true one.</li>
+        <li>ILU(0) does not always exist, and is not simply "a slower version of full LU" — it can break down (encounter a zero or unstable pivot) even when full LU with pivoting succeeds.</li>
+      </ol>
+      <a class="mdlink" href="preconditioning.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">08</div>
+      <h2>Sparse direct methods</h2>
+      <p class="scope">CSR/CSC/COO storage, fill-in and elimination graphs/trees, fill-reducing orderings (AMD, nested dissection, RCM), supernodal/multifrontal factorization, and nested dissection complexity: O(n^1.5) flops in 2D vs O(n^2) in 3D.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>A sparse matrix does not stay roughly sparse after direct factorization — fill-in during elimination can turn a sparse A into a dense (or far denser) factor, which is exactly why fill-reducing orderings matter.</li>
+        <li>Fill-reducing orderings like AMD or nested dissection do not find the exactly optimal ordering — they are heuristics that reduce fill substantially but do not guarantee the minimum possible fill-in.</li>
+        <li>Nested dissection does not scale the same way in 3D as in 2D with just a different constant — 2D gives O(n^1.5) flops and O(n log n) fill, while 3D gives O(n^2) flops and O(n^(4/3)) fill, a genuine change in growth rate.</li>
+      </ol>
+      <a class="mdlink" href="sparse-direct-methods.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">09</div>
+      <h2>Randomized numerical linear algebra</h2>
+      <p class="scope">Random sketching (Gaussian, SRHT, CountSketch), Johnson-Lindenstrauss, randomized range finder and randomized SVD with oversampling/power iteration (Halko-Martinsson-Tropp), Nystrom approximation, sketch-and-solve/precondition least squares, and randomized trace estimation.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>A random Gaussian sketch's distortion of vector norms does not depend on the ambient dimension d — by the JL lemma, distortion concentrates at a rate governed by the sketch size k alone; d drops out of the bound.</li>
+        <li>Randomized SVD's approximation quality is not "about as good as" the exact SVD by default — its error depends on the singular value decay and the amount of oversampling/power iteration used, and can be far worse without enough of either.</li>
+        <li>Sketch-and-solve for least squares does not give the same answer as solving the original problem — it gives a solution to the sketched problem, whose accuracy relative to the true least-squares solution depends on the embedding's distortion.</li>
+      </ol>
+      <a class="mdlink" href="randomized-nla.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">10</div>
+      <h2>Structured and data-sparse matrices</h2>
+      <p class="scope">Banded, Toeplitz, Hankel, circulant (FFT-diagonalizable, O(n log n)), Cauchy, Vandermonde matrices, displacement rank, Levinson-Durbin, Bartels-Stewart for Sylvester/Lyapunov equations, and hierarchical low-rank formats (H-matrices, HSS, HODLR).</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>A circulant matrix's eigenvalues do not need a general eigenvalue solver — the FFT diagonalizes circulant matrices directly, computing the eigenvalues themselves in O(n log n), not just speeding up matrix-vector products.</li>
+        <li>Levinson-Durbin is not simply a faster way to solve any Toeplitz system — it can be numerically unstable for certain (e.g. non-positive-definite or ill-conditioned) Toeplitz matrices where a general solver remains the safer choice.</li>
+        <li>Bartels-Stewart is not an approximate or iterative method for the Sylvester equation — it is a direct method, based on Schur decomposition, that computes the exact solution (up to floating-point rounding) in a finite number of steps.</li>
+      </ol>
+      <a class="mdlink" href="structured-matrices.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">11</div>
+      <h2>Mixed-precision and hardware-aware algorithms</h2>
+      <p class="scope">fp16 (u=2^-11), bfloat16 (u=2^-8), fp8, TF32, mixed-precision iterative refinement (Carson-Higham GMRES-IR), probabilistic error bounds growing as sqrt(n)u rather than nu, stochastic rounding, Kahan/TwoSum compensated summation, and roofline-model communication-avoiding algorithms.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>fp16 and bf16 do not differ only in decimal digits of precision — they trade off precision against exponent range differently (bf16 keeps fp32's exponent range with fewer mantissa bits), which changes which failure mode (overflow vs. rounding) dominates.</li>
+        <li>Mixed-precision iterative refinement does not always converge just because refinement runs at higher precision than the factorization — convergence depends on kappa(A) staying within specific bounds tied to the precisions used (Carson-Higham conditions).</li>
+        <li>Kahan summation and other error-free transformations do not give you the equivalent of secretly switching to fp64 or fp128 — they reduce the accumulated rounding error of a specific operation (like summation) without changing the working precision elsewhere.</li>
+      </ol>
+      <a class="mdlink" href="mixed-precision.md">Read full pass →</a>
+    </div>
+
+    <div class="card">
+      <div class="num">12</div>
+      <h2>Matrix functions and matrix equations</h2>
+      <p class="scope">f(A) via Jordan form/Cauchy integral/polynomial interpolation, Frechet-derivative conditioning, matrix exponential by scaling and squaring with Pade approximants, Schur-Parlett, matrix square root/logarithm/sign via Newton iterations, and f(A)b via Krylov/rational Krylov methods.</p>
+      <div class="mis-label">Top misconceptions</div>
+      <ol>
+        <li>Computing f(A) = V f(D) V^-1 via diagonalization is not numerically fine for any diagonalizable A — when V is ill-conditioned (A is close to non-diagonalizable), this approach amplifies error badly, unlike Schur-Parlett or scaling-and-squaring.</li>
+        <li>A Taylor series for exp(A) with 20 or 30 terms is not "surely plenty" — for A with large norm, the series converges too slowly and suffers catastrophic cancellation, which is exactly why scaling and squaring with Pade approximants is used instead.</li>
+        <li>Newton's method for sign(A) or sqrtm does not always converge quadratically and safely — it can be numerically unstable or fail to converge for matrices with eigenvalues near the branch cut or near zero, requiring safeguards.</li>
+      </ol>
+      <a class="mdlink" href="matrix-functions.md">Read full pass →</a>
+    </div>
+
+  </div>
+
+  <h2 class="section-title">Cross-topic links</h2>
+  <p class="section-note">Concepts that appear as load-bearing material in two or more of the twelve passes above.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Concept</th>
+        <th>Appears in</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="concept">Condition number kappa(A)</td>
+        <td class="topics">
+          <a href="floating-point-conditioning.md">Floating point &amp; conditioning</a>
+          <a href="lu-pivoting.md">LU &amp; pivoting</a>
+          <a href="qr-least-squares.md">QR &amp; least squares</a>
+          <a href="eigenvalue-algorithms.md">Eigenvalue algorithms</a>
+          <a href="krylov-methods.md">Krylov methods</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Backward stability / error analysis</td>
+        <td class="topics">
+          <a href="floating-point-conditioning.md">Floating point &amp; conditioning</a>
+          <a href="lu-pivoting.md">LU &amp; pivoting</a>
+          <a href="mixed-precision.md">Mixed-precision</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Unit roundoff u / IEEE precision formats</td>
+        <td class="topics">
+          <a href="floating-point-conditioning.md">Floating point &amp; conditioning</a>
+          <a href="mixed-precision.md">Mixed-precision</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Householder reflections / QR factorization</td>
+        <td class="topics">
+          <a href="qr-least-squares.md">QR &amp; least squares</a>
+          <a href="eigenvalue-algorithms.md">Eigenvalue algorithms (Hessenberg reduction)</a>
+          <a href="svd.md">SVD (bidiagonalization)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Schur decomposition / Schur form</td>
+        <td class="topics">
+          <a href="eigenvalue-algorithms.md">Eigenvalue algorithms</a>
+          <a href="structured-matrices.md">Structured matrices (Bartels-Stewart)</a>
+          <a href="matrix-functions.md">Matrix functions (Schur-Parlett)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">LU / Cholesky factorization</td>
+        <td class="topics">
+          <a href="lu-pivoting.md">LU &amp; pivoting</a>
+          <a href="sparse-direct-methods.md">Sparse direct methods</a>
+          <a href="preconditioning.md">Preconditioning (incomplete Cholesky)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Krylov subspaces K_k(A,b)</td>
+        <td class="topics">
+          <a href="krylov-methods.md">Krylov methods</a>
+          <a href="preconditioning.md">Preconditioning</a>
+          <a href="matrix-functions.md">Matrix functions (f(A)b via Krylov)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">GMRES / Krylov iterative solvers</td>
+        <td class="topics">
+          <a href="krylov-methods.md">Krylov methods</a>
+          <a href="preconditioning.md">Preconditioning</a>
+          <a href="randomized-nla.md">Randomized NLA (Blendenpik, LSRN)</a>
+          <a href="mixed-precision.md">Mixed-precision (GMRES-IR)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Preconditioning (general)</td>
+        <td class="topics">
+          <a href="preconditioning.md">Preconditioning</a>
+          <a href="krylov-methods.md">Krylov methods</a>
+          <a href="randomized-nla.md">Randomized NLA (randomized preconditioners)</a>
+          <a href="mixed-precision.md">Mixed-precision (low-precision factorizations as preconditioners)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Rank-revealing / rank-deficient problems</td>
+        <td class="topics">
+          <a href="qr-least-squares.md">QR &amp; least squares (QRCP)</a>
+          <a href="svd.md">SVD (numerical rank)</a>
+          <a href="randomized-nla.md">Randomized NLA (leverage scores, CUR, ID)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Low-rank approximation</td>
+        <td class="topics">
+          <a href="svd.md">SVD (Eckart-Young-Mirsky)</a>
+          <a href="randomized-nla.md">Randomized NLA (randomized SVD, Nystrom, CUR)</a>
+          <a href="structured-matrices.md">Structured matrices (H-matrices, HSS, HODLR)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Least-squares problems</td>
+        <td class="topics">
+          <a href="qr-least-squares.md">QR &amp; least squares</a>
+          <a href="krylov-methods.md">Krylov methods (LSQR, LSMR)</a>
+          <a href="randomized-nla.md">Randomized NLA (sketch-and-solve)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Fill-in / sparsity structure</td>
+        <td class="topics">
+          <a href="sparse-direct-methods.md">Sparse direct methods</a>
+          <a href="preconditioning.md">Preconditioning (ILU fill-in)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">FFT-based / fast transforms</td>
+        <td class="topics">
+          <a href="structured-matrices.md">Structured matrices (circulant, Toeplitz)</a>
+          <a href="randomized-nla.md">Randomized NLA (SRHT)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Iterative refinement</td>
+        <td class="topics">
+          <a href="lu-pivoting.md">LU &amp; pivoting</a>
+          <a href="mixed-precision.md">Mixed-precision (Carson-Higham GMRES-IR)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Perturbation theory (Weyl, Wedin, Bauer-Fike)</td>
+        <td class="topics">
+          <a href="svd.md">SVD (Weyl, Wedin sin-theta)</a>
+          <a href="eigenvalue-algorithms.md">Eigenvalue algorithms (Bauer-Fike, pseudospectra)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Level-3 BLAS / blocking / communication avoidance</td>
+        <td class="topics">
+          <a href="lu-pivoting.md">LU &amp; pivoting (blocked/CALU)</a>
+          <a href="qr-least-squares.md">QR &amp; least squares (TSQR)</a>
+          <a href="mixed-precision.md">Mixed-precision (roofline, GPU dense linear algebra)</a>
+        </td>
+      </tr>
+      <tr>
+        <td class="concept">Symmetric positive definite (SPD) matrices</td>
+        <td class="topics">
+          <a href="lu-pivoting.md">LU &amp; pivoting (Cholesky)</a>
+          <a href="krylov-methods.md">Krylov methods (CG)</a>
+          <a href="randomized-nla.md">Randomized NLA (Nystrom, randomly pivoted Cholesky)</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>

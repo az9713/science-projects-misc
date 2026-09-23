@@ -1,0 +1,24 @@
+{
+  "target": "Convergence order of the 5-point finite-difference Poisson solver, -Laplace(u)=f on unit square, u=sin(pi x) sin(pi y)",
+  "method": "Mean of the 3 finest order estimates p_k=log2(e_k/e_k+1) for grid pairs 32/64, 64/128, 128/256 (N=16,32,64,128,256), each grid solved once with scipy.sparse.linalg.spsolve (direct solve)",
+  "measured": 2.000228164,
+  "published": 2.0,
+  "tolerance": 0.002509711,
+  "abs_diff": 0.000228164,
+  "error_estimate": 0.000488943,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 0.764,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": null,
+  "runs": [
+    {"exit_code": 0, "runtime_s": 0.764},
+    {"exit_code": 0, "runtime_s": 0.707}
+  ],
+  "notes": "Verify2 (post-fix) pass: two full runs gave bit-identical printed lines (MEASURED=2.000228164, PUBLISHED=2.000000000, ERROR_ESTIMATE=0.000488943, TOLERANCE=0.002509711, ABS_DIFF=0.000228164, RESULT=PASS in both); only RUNTIME_S differed (0.764 s vs 0.707 s), so the result is deterministic. Recomputed abs_diff=|2.000228164-2.0|=0.000228164 matches the printed ABS_DIFF exactly and is inside the printed TOLERANCE=0.002509711 (margin about 11x). No stderr in either run. Closed-form gate passed at every grid, mismatch <=7.43e-10 at N=256, under its 1e-8 threshold. Script now prints an added 'Richardson limit of the order sequence: p_inf = 2.000000' line and a non-eigenvector control block (u=sin(pi x) sin(pi y)(1+x)) with p_k = 1.994014, 2.000523, 2.000131, 2.000033, both matching referee.md changes 1 and 2 (poisson section); this confirms the fix-stage script changes were applied. MEASURED/PUBLISHED/TOLERANCE/ABS_DIFF/ERROR_ESTIMATE are unchanged from the prior JSON (referee.md notes MEASURED is kept unchanged by change 2). referee.md lists no numbered change that edits results/poisson.json's notes text directly (unlike ising change 5, kepler change 5, fpu change 4), so no referee JSON-notes edit was applied here. Runtime rose from prior run's ~0.3 s to ~0.7-0.8 s, consistent with the added non-eigenvector control block; still far under the 240 s timeout. previous (prior JSON, before this verify2 pass): measured=2.000228164, tolerance=0.002509711, abs_diff=0.000228164, runtime_s=0.328 (unchanged except runtime_s, reflecting the added print block from the fix stage).",
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true
+}

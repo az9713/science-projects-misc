@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Lesson 5 — Rotating frames: the Park transform and the PLL</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --text2: #cbd5e1;
+    --muted: #94a3b8;
+    --accent1: #fb923c;
+    --accent2: #2dd4bf;
+    --border1: #1e293b;
+    --border2: #334155;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: Georgia, "Cambria", "Times New Roman", serif;
+    line-height: 1.6;
+    padding: 1.25rem 1rem 4rem;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 {
+    font-size: 1.5rem;
+    color: var(--text);
+    border-bottom: 2px solid var(--accent1);
+    padding-bottom: 0.5rem;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 1.15rem;
+    color: var(--accent2);
+    margin-top: 2.2rem;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 0.3rem;
+  }
+  h3 {
+    font-size: 1rem;
+    color: var(--text);
+    margin-top: 1.4rem;
+  }
+  p, li { color: var(--text2); font-size: 0.98rem; }
+  .lede {
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin: 1rem 0;
+  }
+  .problem {
+    background: var(--card);
+    border-left: 4px solid var(--accent1);
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+  }
+  .status {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-family: ui-monospace, Consolas, monospace;
+    padding: 0.05rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--border2);
+    color: var(--accent2);
+    margin-left: 0.3rem;
+    white-space: nowrap;
+  }
+  .status.cited { color: var(--accent1); }
+  var { font-style: italic; color: var(--text); }
+  sub, sup { color: var(--text); }
+  code, pre {
+    font-family: ui-monospace, Consolas, "Courier New", monospace;
+    font-size: 0.82rem;
+  }
+  pre {
+    background: #0b1222;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0.8rem;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  code.inline {
+    background: #0b1222;
+    padding: 0.05rem 0.3rem;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+  }
+  .out {
+    background: #06120f;
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    padding: 0.8rem;
+    overflow-x: auto;
+    color: var(--accent2);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    margin: 0.6rem 0;
+  }
+  .tablewrap { overflow-x: auto; max-width: 100%; }
+  th, td {
+    border: 1px solid var(--border2);
+    padding: 0.35rem 0.55rem;
+    text-align: left;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  th { color: var(--text); background: #17223a; }
+  figure {
+    margin: 1rem 0;
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 0.8rem;
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 0.5rem;
+  }
+  svg { max-width: 100%; height: auto; display: block; }
+  .exercise {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-left: 4px solid var(--accent2);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    margin: 0.9rem 0;
+  }
+  .exercise h3 { margin-top: 0; }
+  details {
+    margin-top: 0.5rem;
+    background: #0b1222;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 0.4rem 0.7rem;
+  }
+  summary {
+    cursor: pointer;
+    color: var(--accent1);
+    font-size: 0.88rem;
+  }
+  .sym-list dt {
+    font-family: ui-monospace, Consolas, monospace;
+    color: var(--text);
+    margin-top: 0.35rem;
+  }
+  .sym-list dd { color: var(--text2); margin-left: 0; margin-bottom: 0; }
+  .warn {
+    border-left: 4px solid var(--accent1);
+    background: var(--card);
+    padding: 0.6rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="lede">P7 &middot; Power-system dynamics for programmers &middot; Lesson 5 of 8</p>
+<h1>Rotating frames: the Park transform and the phase-locked loop</h1>
+
+<h2>1. The opening problem</h2>
+<div class="problem">
+<p>An inverter must inject current in step with a 50&nbsp;Hz grid voltage
+that it can only sample, sample by sample, through an
+analogue-to-digital converter. It does not know the grid's phase in
+advance; it must estimate it continuously from the samples. After a
+disturbance elsewhere on the grid, the local voltage angle jumps by
+30&deg; almost instantaneously. Two questions follow. How does code
+find the new angle, given only three sampled phase voltages? And how
+long does that take once found?</p>
+<p><strong>Answer computed by this lesson.</strong> A phase-locked
+loop tuned for a natural frequency of 10&nbsp;Hz (the lesson's "10&nbsp;Hz
+bandwidth", defined in §2.1) and a damping ratio
+<var>&zeta;<sub>pll</sub></var>&nbsp;=&nbsp;0.707 settles to within 2%
+of the jump in about
+<var>4</var>/(<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var>)&nbsp;=&nbsp;0.090&nbsp;s
+<span class="status">estimate, §2</span>. Section 4 runs the loop on
+sampled data and measures 0.0779&nbsp;s
+<span class="status">computed by the listing</span> — close to the
+estimate, and the gap between the two is itself informative (§4.1).</p>
+</div>
+
+<h2>2. The model</h2>
+
+<p><strong>Park convention (shared rule 7, stated before the first
+<var>d</var>,&nbsp;<var>q</var> quantity is written).</strong> This
+lesson uses the amplitude-invariant Park transform, with the Clarke
+step carrying the factor 2/3. The <var>d</var> axis is defined to lie
+on the measured voltage, so once the phase-locked loop has locked,
+<var>v<sub>q</sub></var>&nbsp;=&nbsp;0 and <var>v<sub>d</sub></var>
+carries the full voltage magnitude. Because the transform is
+amplitude-invariant rather than power-invariant, three-phase power in
+per unit is <var>P</var>&nbsp;=&nbsp;<var>v<sub>d</sub></var><var>i<sub>d</sub></var>&nbsp;+&nbsp;<var>v<sub>q</sub></var><var>i<sub>q</sub></var>
+with no leading factor; the factor 3/2 that the same transform
+produces in SI units is derived in Exercise 1.</p>
+
+<p>A balanced three-phase voltage set writes, with <var>V</var> the
+peak phase amplitude in per unit and <var>&theta;<sub>g</sub></var>
+the true grid angle in radians:</p>
+<p style="text-align:center">
+<var>v<sub>a</sub></var> = <var>V</var>&nbsp;cos(<var>&theta;<sub>g</sub></var>),&nbsp;
+<var>v<sub>b</sub></var> = <var>V</var>&nbsp;cos(<var>&theta;<sub>g</sub></var>&minus;120&deg;),&nbsp;
+<var>v<sub>c</sub></var> = <var>V</var>&nbsp;cos(<var>&theta;<sub>g</sub></var>+120&deg;).
+</p>
+<p>The Clarke transform maps the three phase quantities to two in a
+frame fixed to the stator (the "stationary" or <var>&alpha;&beta;</var>
+frame):</p>
+<p style="text-align:center">
+<var>v<sub>&alpha;</sub></var> = (2/3)(<var>v<sub>a</sub></var> &minus; &frac12;<var>v<sub>b</sub></var> &minus; &frac12;<var>v<sub>c</sub></var>) = <var>V</var>&nbsp;cos(<var>&theta;<sub>g</sub></var>),&nbsp;
+<var>v<sub>&beta;</sub></var> = (1/&radic;3)(<var>v<sub>b</sub></var> &minus; <var>v<sub>c</sub></var>) = <var>V</var>&nbsp;sin(<var>&theta;<sub>g</sub></var>).
+</p>
+<p>For a balanced set the two Clarke components are already only two
+numbers, but they still swing at 50&nbsp;Hz: <var>v<sub>&alpha;</sub></var>
+and <var>v<sub>&beta;</sub></var> trace a circle in the plane, one full
+turn per grid cycle. The Park transform then rotates that plane by
+the phase-locked loop's own angle estimate
+<var>&theta;<sub>pll</sub></var>, converting the circling vector into
+two numbers that stop moving once the frame's rotation matches the
+vector's rotation:</p>
+<p style="text-align:center">
+<var>v<sub>d</sub></var> = <var>v<sub>&alpha;</sub></var>cos(<var>&theta;<sub>pll</sub></var>) + <var>v<sub>&beta;</sub></var>sin(<var>&theta;<sub>pll</sub></var>) = <var>V</var>&nbsp;cos(<var>&theta;<sub>g</sub></var> &minus; <var>&theta;<sub>pll</sub></var>),
+</p>
+<p style="text-align:center">
+<var>v<sub>q</sub></var> = &minus;<var>v<sub>&alpha;</sub></var>sin(<var>&theta;<sub>pll</sub></var>) + <var>v<sub>&beta;</sub></var>cos(<var>&theta;<sub>pll</sub></var>) = <var>V</var>&nbsp;sin(<var>&theta;<sub>g</sub></var> &minus; <var>&theta;<sub>pll</sub></var>).
+</p>
+<p><span class="status">derived here</span>. Figure 5.1 shows both
+sides of this: three swinging phase voltages on the left, and the
+constant pair (<var>v<sub>d</sub></var>,&nbsp;<var>v<sub>q</sub></var>)
+= (1.000000,&nbsp;0.000000)&nbsp;pu on the right, once the loop's angle
+matches the grid's. Evaluating <code class="inline">clarke_park</code>
+from §4 with <var>&theta;<sub>pll</sub></var>&nbsp;=&nbsp;<var>&theta;<sub>g</sub></var>
+exactly gives (1.0000000000000002,&nbsp;1.7&times;10<sup>&minus;16</sup>)&nbsp;pu,
+which is floating-point round-off. Inside the running loop the two
+angles agree only approximately: at <var>t</var>&nbsp;=&nbsp;0.099&nbsp;s,
+before the jump, |<var>v<sub>q</sub></var>|&nbsp;=&nbsp;2.5&times;10<sup>&minus;4</sup>&nbsp;pu.</p>
+
+<figure>
+<svg viewBox="0 0 640 200" role="img" aria-labelledby="f51title">
+<title id="f51title">Fig. 5.1: three-phase voltages becoming two dq constants</title>
+<rect x="0" y="0" width="640" height="200" fill="#1e293b"/>
+<line x1="44" y1="95" x2="300" y2="95" stroke="#334155"/>
+<line x1="364" y1="95" x2="620" y2="95" stroke="#334155"/>
+<polyline points="44.0,20.0 45.6,20.2 47.2,20.9 48.8,22.1 50.4,23.7 52.0,25.7 53.6,28.2 55.2,31.1 56.8,34.3 58.4,38.0 60.0,42.0 61.6,46.3 63.2,50.9 64.8,55.8 66.4,61.0 68.0,66.3 69.6,71.8 71.2,77.5 72.8,83.3 74.4,89.1 76.0,95.0 77.6,100.9 79.2,106.7 80.8,112.5 82.4,118.2 84.0,123.7 85.6,129.0 87.2,134.2 88.8,139.1 90.4,143.7 92.0,148.0 93.6,152.0 95.2,155.7 96.8,158.9 98.4,161.8 100.0,164.3 101.6,166.3 103.2,167.9 104.8,169.1 106.4,169.8 108.0,170.0 109.6,169.8 111.2,169.1 112.8,167.9 114.4,166.3 116.0,164.3 117.6,161.8 119.2,158.9 120.8,155.7 122.4,152.0 124.0,148.0 125.6,143.7 127.2,139.1 128.8,134.2 130.4,129.0 132.0,123.7 133.6,118.2 135.2,112.5 136.8,106.7 138.4,100.9 140.0,95.0 141.6,89.1 143.2,83.3 144.8,77.5 146.4,71.8 148.0,66.3 149.6,61.0 151.2,55.8 152.8,50.9 154.4,46.3 156.0,42.0 157.6,38.0 159.2,34.3 160.8,31.1 162.4,28.2 164.0,25.7 165.6,23.7 167.2,22.1 168.8,20.9 170.4,20.2 172.0,20.0 173.6,20.2 175.2,20.9 176.8,22.1 178.4,23.7 180.0,25.7 181.6,28.2 183.2,31.1 184.8,34.3 186.4,38.0 188.0,42.0 189.6,46.3 191.2,50.9 192.8,55.8 194.4,61.0 196.0,66.3 197.6,71.8 199.2,77.5 200.8,83.3 202.4,89.1 204.0,95.0 205.6,100.9 207.2,106.7 208.8,112.5 210.4,118.2 212.0,123.7 213.6,129.0 215.2,134.2 216.8,139.1 218.4,143.7 220.0,148.0 221.6,152.0 223.2,155.7 224.8,158.9 226.4,161.8 228.0,164.3 229.6,166.3 231.2,167.9 232.8,169.1 234.4,169.8 236.0,170.0 237.6,169.8 239.2,169.1 240.8,167.9 242.4,166.3 244.0,164.3 245.6,161.8 247.2,158.9 248.8,155.7 250.4,152.0 252.0,148.0 253.6,143.7 255.2,139.1 256.8,134.2 258.4,129.0 260.0,123.7 261.6,118.2 263.2,112.5 264.8,106.7 266.4,100.9 268.0,95.0 269.6,89.1 271.2,83.3 272.8,77.5 274.4,71.8 276.0,66.3 277.6,61.0 279.2,55.8 280.8,50.9 282.4,46.3 284.0,42.0 285.6,38.0 287.2,34.3 288.8,31.1 290.4,28.2 292.0,25.7 293.6,23.7 295.2,22.1 296.8,20.9 298.4,20.2 300.0,20.0"
+  fill="none" stroke="#fb923c" stroke-width="1.6"/>
+<polyline points="44.0,132.5 45.6,127.3 47.2,121.9 48.8,116.3 50.4,110.6 52.0,104.8 53.6,98.9 55.2,93.0 56.8,87.2 58.4,81.3 60.0,75.6 61.6,70.0 63.2,64.5 64.8,59.2 66.4,54.2 68.0,49.3 69.6,44.8 71.2,40.6 72.8,36.7 74.4,33.2 76.0,30.0 77.6,27.3 79.2,25.0 80.8,23.1 82.4,21.6 84.0,20.6 85.6,20.1 87.2,20.0 88.8,20.4 90.4,21.3 92.0,22.6 93.6,24.3 95.2,26.5 96.8,29.1 98.4,32.1 100.0,35.5 101.6,39.3 103.2,43.4 104.8,47.8 106.4,52.5 108.0,57.5 109.6,62.7 111.2,68.1 112.8,73.7 114.4,79.4 116.0,85.2 117.6,91.1 119.2,97.0 120.8,102.8 122.4,108.7 124.0,114.4 125.6,120.0 127.2,125.5 128.8,130.8 130.4,135.8 132.0,140.7 133.6,145.2 135.2,149.4 136.8,153.3 138.4,156.8 140.0,160.0 141.6,162.7 143.2,165.0 144.8,166.9 146.4,168.4 148.0,169.4 149.6,169.9 151.2,170.0 152.8,169.6 154.4,168.7 156.0,167.4 157.6,165.7 159.2,163.5 160.8,160.9 162.4,157.9 164.0,154.5 165.6,150.7 167.2,146.6 168.8,142.2 170.4,137.5 172.0,132.5 173.6,127.3 175.2,121.9 176.8,116.3 178.4,110.6 180.0,104.8 181.6,98.9 183.2,93.0 184.8,87.2 186.4,81.3 188.0,75.6 189.6,70.0 191.2,64.5 192.8,59.2 194.4,54.2 196.0,49.3 197.6,44.8 199.2,40.6 200.8,36.7 202.4,33.2 204.0,30.0 205.6,27.3 207.2,25.0 208.8,23.1 210.4,21.6 212.0,20.6 213.6,20.1 215.2,20.0 216.8,20.4 218.4,21.3 220.0,22.6 221.6,24.3 223.2,26.5 224.8,29.1 226.4,32.1 228.0,35.5 229.6,39.3 231.2,43.4 232.8,47.8 234.4,52.5 236.0,57.5 237.6,62.7 239.2,68.1 240.8,73.7 242.4,79.4 244.0,85.2 245.6,91.1 247.2,97.0 248.8,102.8 250.4,108.7 252.0,114.4 253.6,120.0 255.2,125.5 256.8,130.8 258.4,135.8 260.0,140.7 261.6,145.2 263.2,149.4 264.8,153.3 266.4,156.8 268.0,160.0 269.6,162.7 271.2,165.0 272.8,166.9 274.4,168.4 276.0,169.4 277.6,169.9 279.2,170.0 280.8,169.6 282.4,168.7 284.0,167.4 285.6,165.7 287.2,163.5 288.8,160.9 290.4,157.9 292.0,154.5 293.6,150.7 295.2,146.6 296.8,142.2 298.4,137.5 300.0,132.5"
+  fill="none" stroke="#2dd4bf" stroke-width="1.6"/>
+<polyline points="44.0,132.5 45.6,137.5 47.2,142.2 48.8,146.6 50.4,150.7 52.0,154.5 53.6,157.9 55.2,160.9 56.8,163.5 58.4,165.7 60.0,167.4 61.6,168.7 63.2,169.6 64.8,170.0 66.4,169.9 68.0,169.4 69.6,168.4 71.2,166.9 72.8,165.0 74.4,162.7 76.0,160.0 77.6,156.8 79.2,153.3 80.8,149.4 82.4,145.2 84.0,140.7 85.6,135.8 87.2,130.8 88.8,125.5 90.4,120.0 92.0,114.4 93.6,108.7 95.2,102.8 96.8,97.0 98.4,91.1 100.0,85.2 101.6,79.4 103.2,73.7 104.8,68.1 106.4,62.7 108.0,57.5 109.6,52.5 111.2,47.8 112.8,43.4 114.4,39.3 116.0,35.5 117.6,32.1 119.2,29.1 120.8,26.5 122.4,24.3 124.0,22.6 125.6,21.3 127.2,20.4 128.8,20.0 130.4,20.1 132.0,20.6 133.6,21.6 135.2,23.1 136.8,25.0 138.4,27.3 140.0,30.0 141.6,33.2 143.2,36.7 144.8,40.6 146.4,44.8 148.0,49.3 149.6,54.2 151.2,59.2 152.8,64.5 154.4,70.0 156.0,75.6 157.6,81.3 159.2,87.2 160.8,93.0 162.4,98.9 164.0,104.8 165.6,110.6 167.2,116.3 168.8,121.9 170.4,127.3 172.0,132.5 173.6,137.5 175.2,142.2 176.8,146.6 178.4,150.7 180.0,154.5 181.6,157.9 183.2,160.9 184.8,163.5 186.4,165.7 188.0,167.4 189.6,168.7 191.2,169.6 192.8,170.0 194.4,169.9 196.0,169.4 197.6,168.4 199.2,166.9 200.8,165.0 202.4,162.7 204.0,160.0 205.6,156.8 207.2,153.3 208.8,149.4 210.4,145.2 212.0,140.7 213.6,135.8 215.2,130.8 216.8,125.5 218.4,120.0 220.0,114.4 221.6,108.7 223.2,102.8 224.8,97.0 226.4,91.1 228.0,85.2 229.6,79.4 231.2,73.7 232.8,68.1 234.4,62.7 236.0,57.5 237.6,52.5 239.2,47.8 240.8,43.4 242.4,39.3 244.0,35.5 245.6,32.1 247.2,29.1 248.8,26.5 250.4,24.3 252.0,22.6 253.6,21.3 255.2,20.4 256.8,20.0 258.4,20.1 260.0,20.6 261.6,21.6 263.2,23.1 264.8,25.0 266.4,27.3 268.0,30.0 269.6,33.2 271.2,36.7 272.8,40.6 274.4,44.8 276.0,49.3 277.6,54.2 279.2,59.2 280.8,64.5 282.4,70.0 284.0,75.6 285.6,81.3 287.2,87.2 288.8,93.0 290.4,98.9 292.0,104.8 293.6,110.6 295.2,116.3 296.8,121.9 298.4,127.3 300.0,132.5"
+  fill="none" stroke="#e2e8f0" stroke-width="1.2" stroke-dasharray="3,2"/>
+<line x1="364" y1="20" x2="620" y2="20" stroke="#fb923c" stroke-width="1.8"/>
+<line x1="364" y1="95" x2="620" y2="95" stroke="#2dd4bf" stroke-width="1.8"/>
+<text x="44" y="14" fill="#94a3b8" font-size="10">v_a v_b v_c, two cycles (0–0.04 s)</text>
+<text x="364" y="14" fill="#94a3b8" font-size="10">v_d (top, 1.0 pu) and v_q (bottom, 0.0 pu), same window</text>
+<text x="30" y="185" fill="#94a3b8" font-size="9">−1</text>
+<text x="30" y="24" fill="#94a3b8" font-size="9">+1</text>
+</svg>
+<figcaption>Fig. 5.1. Left: three balanced 50&nbsp;Hz phase voltages
+<var>v<sub>a</sub></var> (orange), <var>v<sub>b</sub></var> (teal),
+<var>v<sub>c</sub></var> (dashed) over two cycles. Right: the same
+signal after Clarke and Park, once <var>&theta;<sub>pll</sub></var>
+tracks <var>&theta;<sub>g</sub></var> — <var>v<sub>d</sub></var> pinned
+at 1.0&nbsp;pu, <var>v<sub>q</sub></var> pinned at 0.0&nbsp;pu, drawn from
+the formulas of §2 with <var>&theta;<sub>pll</sub></var>&nbsp;=&nbsp;<var>&theta;<sub>g</sub></var>.
+<span class="status">derived here</span></figcaption>
+</figure>
+
+<h3>2.1 Symbols used in this lesson</h3>
+<dl class="sym-list">
+<dt>V</dt><dd>peak phase-voltage amplitude, per unit (1.0&nbsp;pu on a
+stiff grid at rated voltage).</dd>
+<dt>&theta;<sub>g</sub></dt><dd>the true grid voltage angle, radians —
+unknown to the converter, only sampled indirectly through
+<var>v<sub>a</sub></var>, <var>v<sub>b</sub></var>,
+<var>v<sub>c</sub></var>.</dd>
+<dt>&theta;<sub>pll</sub></dt><dd>the loop's own running estimate of
+<var>&theta;<sub>g</sub></var>, radians; this is the angle the Park
+transform actually rotates by.</dd>
+<dt>v<sub>&alpha;</sub>, v<sub>&beta;</sub></dt><dd>the Clarke-transformed
+voltage in the stationary frame, per unit.</dd>
+<dt>v<sub>d</sub>, v<sub>q</sub></dt><dd>the Park-transformed voltage in
+the frame rotating at <var>&theta;<sub>pll</sub></var>, per unit.</dd>
+<dt>bandwidth</dt><dd>in this lesson, "an <var>f</var>&nbsp;Hz
+bandwidth" means &omega;<sub>n,pll</sub>&nbsp;=&nbsp;2&pi;<var>f</var>.
+It is not the &minus;3&nbsp;dB bandwidth: for the closed loop
+(2&zeta;&omega;<sub>n</sub>s&nbsp;+&nbsp;&omega;<sub>n</sub>&sup2;)/(s&sup2;&nbsp;+&nbsp;2&zeta;&omega;<sub>n</sub>s&nbsp;+&nbsp;&omega;<sub>n</sub>&sup2;)
+at &zeta;&nbsp;=&nbsp;0.707, the &minus;3&nbsp;dB frequency is
+2.058&nbsp;&omega;<sub>n</sub>, so the "10&nbsp;Hz" loop has a
+&minus;3&nbsp;dB bandwidth of 20.6&nbsp;Hz.</dd>
+<dt>&omega;<sub>0</sub></dt><dd>nominal angular frequency,
+2&pi;&times;50&nbsp;=&nbsp;314.159265&nbsp;rad/s.</dd>
+<dt>&omega;<sub>pll</sub></dt><dd>the loop's estimated instantaneous
+angular frequency; <var>d&theta;<sub>pll</sub></var>/<var>dt</var>&nbsp;=&nbsp;<var>&omega;<sub>pll</sub></var>.</dd>
+<dt>k<sub>p,pll</sub>, k<sub>i,pll</sub></dt><dd>proportional and
+integral gains of the PLL's PI controller, units 1/s and 1/s&sup2;.</dd>
+<dt>K<sub>pll</sub></dt><dd>the small-signal gain from angle error to
+<var>v<sub>q</sub></var> near lock; K<sub>pll</sub>&nbsp;=&nbsp;V on a
+stiff grid (Exercise 2).</dd>
+<dt>&omega;<sub>n,pll</sub>, &zeta;<sub>pll</sub></dt><dd>the closed
+PLL loop's natural frequency (rad/s) and damping ratio
+(dimensionless).</dd>
+<dt>z</dt><dd>the PI controller's integrator state,
+<var>z</var>&nbsp;=&nbsp;&int;<var>v<sub>q</sub></var>&nbsp;dt.</dd>
+</dl>
+
+<h2>3. The key derivation</h2>
+
+<p>Near lock, <var>&theta;<sub>g</sub></var>&nbsp;&minus;&nbsp;<var>&theta;<sub>pll</sub></var>
+is small, so <var>v<sub>q</sub></var>&nbsp;=&nbsp;<var>V</var>sin(<var>&theta;<sub>g</sub></var>&minus;<var>&theta;<sub>pll</sub></var>)
+&asymp;&nbsp;<var>V</var>(<var>&theta;<sub>g</sub></var>&minus;<var>&theta;<sub>pll</sub></var>).
+The gain from angle error to <var>v<sub>q</sub></var> is therefore
+<var>K<sub>pll</sub></var>&nbsp;=&nbsp;<var>V</var> on a stiff grid,
+where the converter's own current does not move the terminal voltage
+(Lesson 6 removes this assumption). <span class="status">derived
+here</span> This is the synchronous-reference-frame PLL's error
+signal: it needs no separate phase detector, because
+<var>v<sub>q</sub></var> already vanishes exactly at lock.</p>
+
+<p>The PI controller and the integrator that turns a frequency
+estimate into an angle estimate close the loop:</p>
+<p style="text-align:center">
+<var>&omega;<sub>pll</sub></var> = <var>&omega;<sub>0</sub></var> + <var>k<sub>p,pll</sub></var><var>v<sub>q</sub></var> + <var>k<sub>i,pll</sub></var>&int;<var>v<sub>q</sub></var>&nbsp;dt,&nbsp;&nbsp;
+d<var>&theta;<sub>pll</sub></var>/dt = <var>&omega;<sub>pll</sub></var>.
+</p>
+<p>Substituting <var>v<sub>q</sub></var>&nbsp;&asymp;&nbsp;<var>K<sub>pll</sub></var><var>e</var>,
+with the angle error <var>e</var>&nbsp;=&nbsp;<var>&theta;<sub>g</sub></var>&minus;<var>&theta;<sub>pll</sub></var>,
+and differentiating once to eliminate the integral gives a linear,
+second-order homogeneous equation in <var>e</var> whenever the grid's
+own frequency is not itself moving:</p>
+<p style="text-align:center">
+s&sup2; + <var>K<sub>pll</sub></var><var>k<sub>p,pll</sub></var>s + <var>K<sub>pll</sub></var><var>k<sub>i,pll</sub></var> = 0.
+</p>
+<p><span class="status">derived here</span> Matching coefficients
+against the standard form
+s&sup2;&nbsp;+&nbsp;2<var>&zeta;</var><var>&omega;<sub>n</sub></var>s&nbsp;+&nbsp;<var>&omega;<sub>n</sub></var>&sup2;&nbsp;=&nbsp;0
+gives:</p>
+<p style="text-align:center">
+<var>&omega;<sub>n,pll</sub></var> = &radic;(<var>K<sub>pll</sub></var><var>k<sub>i,pll</sub></var>),&nbsp;&nbsp;
+<var>&zeta;<sub>pll</sub></var> = <var>K<sub>pll</sub></var><var>k<sub>p,pll</sub></var> / (2<var>&omega;<sub>n,pll</sub></var>).
+</p>
+
+<p><strong>Tuning.</strong> For a target
+<var>&omega;<sub>n,pll</sub></var>&nbsp;=&nbsp;2&pi;&times;10&nbsp;=&nbsp;62.8319&nbsp;rad/s
+and <var>&zeta;<sub>pll</sub></var>&nbsp;=&nbsp;0.707 on a stiff grid
+(<var>K<sub>pll</sub></var>&nbsp;=&nbsp;1):</p>
+<p style="text-align:center">
+<var>k<sub>i,pll</sub></var> = <var>&omega;<sub>n,pll</sub></var>&sup2; / <var>K<sub>pll</sub></var> = 3947.8418&nbsp;1/s&sup2;&nbsp;&asymp;&nbsp;3948&nbsp;1/s&sup2;,&nbsp;&nbsp;
+<var>k<sub>p,pll</sub></var> = 2<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var> / <var>K<sub>pll</sub></var> = 88.8442&nbsp;1/s&nbsp;&asymp;&nbsp;88.84&nbsp;1/s.
+</p>
+<p><span class="status">computed by the listing</span> §4 uses these
+exact gains (before rounding) throughout.</p>
+
+<figure>
+<svg viewBox="0 0 640 230" role="img" aria-labelledby="f52title">
+<title id="f52title">Fig. 5.2: PLL block diagram</title>
+<rect x="0" y="0" width="640" height="230" fill="#1e293b"/>
+<rect x="30" y="90" width="110" height="46" rx="6" fill="#0b1222" stroke="#334155"/>
+<text x="85" y="110" fill="#e2e8f0" font-size="11" text-anchor="middle">Clarke +</text>
+<text x="85" y="124" fill="#e2e8f0" font-size="11" text-anchor="middle">Park (&theta;_pll)</text>
+<rect x="205" y="90" width="110" height="46" rx="6" fill="#0b1222" stroke="#fb923c" stroke-width="1.6"/>
+<text x="260" y="110" fill="#fb923c" font-size="11" text-anchor="middle">v_q &asymp; K_pll&middot;e</text>
+<text x="260" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">gain, Lesson 6 weakens this</text>
+<rect x="380" y="90" width="110" height="46" rx="6" fill="#0b1222" stroke="#334155"/>
+<text x="435" y="110" fill="#e2e8f0" font-size="11" text-anchor="middle">PI: k_p_pll,</text>
+<text x="435" y="124" fill="#e2e8f0" font-size="11" text-anchor="middle">k_i_pll &middot;&int;dt</text>
+<rect x="530" y="90" width="90" height="46" rx="6" fill="#0b1222" stroke="#2dd4bf" stroke-width="1.6"/>
+<text x="575" y="110" fill="#2dd4bf" font-size="11" text-anchor="middle">&int;dt</text>
+<text x="575" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">&theta;_pll</text>
+<line x1="10" y1="113" x2="30" y2="113" stroke="#e2e8f0" marker-end="url(#arrow5)"/>
+<text x="10" y="105" fill="#94a3b8" font-size="9">v_a,v_b,v_c</text>
+<line x1="140" y1="113" x2="205" y2="113" stroke="#e2e8f0" marker-end="url(#arrow5)"/>
+<line x1="315" y1="113" x2="380" y2="113" stroke="#e2e8f0" marker-end="url(#arrow5)"/>
+<text x="347" y="105" fill="#94a3b8" font-size="9" text-anchor="middle">v_q</text>
+<line x1="490" y1="113" x2="530" y2="113" stroke="#e2e8f0" marker-end="url(#arrow5)"/>
+<text x="510" y="105" fill="#94a3b8" font-size="9" text-anchor="middle">&omega;_pll</text>
+<path d="M 575 136 V 190 H 85 V 136" fill="none" stroke="#94a3b8" stroke-dasharray="3,3" marker-end="url(#arrow5)"/>
+<text x="330" y="205" fill="#94a3b8" font-size="10" text-anchor="middle">&theta;_pll fed back into Clarke/Park (the loop closes here)</text>
+<defs>
+<marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+<path d="M0,0 L6,3 L0,6 z" fill="#e2e8f0"/>
+</marker>
+</defs>
+</svg>
+<figcaption>Fig. 5.2. The synchronous-reference-frame PLL as a block
+diagram. <var>K<sub>pll</sub></var>, the gain between angle error and
+<var>v<sub>q</sub></var>, is marked at the block where Lesson 6
+replaces the stiff-grid value <var>K<sub>pll</sub></var>&nbsp;=&nbsp;<var>V</var>
+with a gain that falls as the grid weakens.
+<span class="status">derived here</span></figcaption>
+</figure>
+
+<h2>4. The code</h2>
+
+<p>The listing below samples a balanced 50&nbsp;Hz three-phase
+voltage at 10&nbsp;kHz, runs the PI loop with the gains from §3, jumps
+the grid angle by 30&deg; at <var>t</var>&nbsp;=&nbsp;0.1&nbsp;s, and
+steps the grid frequency to 50.5&nbsp;Hz at
+<var>t</var>&nbsp;=&nbsp;0.4&nbsp;s. Following the convention set in
+Lesson&nbsp;3, the two internal integrators (the PI integral state and
+the angle itself) use semi-implicit Euler, not forward Euler: at each
+sample the integral state is advanced first, then the frequency
+estimate, then the angle — never the other order.
+<span class="status">derived here</span></p>
+
+<pre><code>"""SRF-PLL: lock time after a phase jump, error after a freq step."""
+import math
+
+FS = 10000.0
+DT = 1.0 / FS
+OMEGA0 = 2.0 * math.pi * 50.0
+V = 1.0
+ZETA = 0.707
+WN = 2.0 * math.pi * 10.0
+KP = 2.0 * ZETA * WN / V
+KI = WN * WN / V
+JUMP_T, JUMP = 0.1, math.pi / 6
+STEP_T, DHZ = 0.4, 0.5
+
+
+def theta_grid(t):
+    th = OMEGA0 * t
+    if t &gt;= JUMP_T:
+        th += JUMP
+    if t &gt;= STEP_T:
+        th += 2.0 * math.pi * DHZ * (t - STEP_T)
+    return th
+
+
+def clarke_park(va, vb, vc, theta_pll):
+    valpha = (2.0 / 3.0) * (va - 0.5 * vb - 0.5 * vc)
+    vbeta = (1.0 / math.sqrt(3.0)) * (vb - vc)
+    vd = valpha * math.cos(theta_pll) + vbeta * math.sin(theta_pll)
+    vq = -valpha * math.sin(theta_pll) + vbeta * math.cos(theta_pll)
+    return vd, vq
+
+
+def run(kp, ki, t_end=0.6):
+    theta_pll, z = 0.0, 0.0
+    n = int(round(t_end / DT))
+    err, t_hist = [], []
+    for k in range(1, n + 1):
+        t = k * DT
+        tg = theta_grid(t)
+        va = V * math.cos(tg)
+        vb = V * math.cos(tg - 2 * math.pi / 3)
+        vc = V * math.cos(tg + 2 * math.pi / 3)
+        vd, vq = clarke_park(va, vb, vc, theta_pll)
+        z += DT * vq  # semi-implicit Euler: integral first, then angle
+        omega_pll = OMEGA0 + kp * vq + ki * z
+        theta_pll += DT * omega_pll
+        e = math.atan2(math.sin(tg - theta_pll), math.cos(tg - theta_pll))
+        err.append(e)
+        t_hist.append(t)
+    return t_hist, err
+
+
+def settling_time(t_hist, err, band, window_end=STEP_T):
+    band_abs = band * JUMP
+    final_val = err[int(round(window_end / DT)) - 2]
+    last_out = None
+    for i, (t, e) in enumerate(zip(t_hist, err)):
+        if JUMP_T &lt;= t &lt; window_end and abs(e - final_val) &gt; band_abs:
+            last_out = i
+    return 0.0 if last_out is None else t_hist[last_out + 1] - JUMP_T
+
+
+if __name__ == "__main__":
+    t_hist, err = run(KP, KI)
+    ts = settling_time(t_hist, err, 0.02)
+    i1 = int(round((STEP_T - DT) / DT)) - 1
+    i2 = int(round((0.6 - DT) / DT)) - 1
+    print("omega_n_pll = %.4f rad/s" % WN)
+    print("k_p_pll = %.4f 1/s, k_i_pll = %.4f 1/s^2" % (KP, KI))
+    print("settling time (2%% of 30 deg jump) = %.4f s" % ts)
+    print("angle error just before freq step = %.6f rad" % err[i1])
+    print("angle error at end (after freq step)  = %.6f rad" % err[i2])
+    w_new = OMEGA0 + 2.0 * math.pi * DHZ
+    print("residual beyond -omega*DT bias: before = %.2e rad, "
+          "after = %.2e rad" % (err[i1] + OMEGA0 * DT, err[i2] + w_new * DT))
+</code></pre>
+
+<p>Run as printed (<code class="inline">lesson5_pll.py</code>), stdlib
+only, PEP8, 75 lines including docstring and blank lines:</p>
+<div class="out"><pre>omega_n_pll = 62.8319 rad/s
+k_p_pll = 88.8442 1/s, k_i_pll = 3947.8418 1/s^2
+settling time (2% of 30 deg jump) = 0.0779 s
+angle error just before freq step = -0.031416 rad
+angle error at end (after freq step)  = -0.031725 rad
+residual beyond -omega*DT bias: before = 2.84e-08 rad, after = 4.84e-06 rad</pre></div>
+
+<h3>4.1 Reading the settling-time number</h3>
+<p>The measured settling time, 0.0779&nbsp;s, is 13.5% below the
+0.0900&nbsp;s envelope estimate (0.0779/0.0900&nbsp;=&nbsp;0.865)
+<var>4</var>/(<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var>)
+quoted in §1. <span class="status">computed by the listing</span> The
+gap is the estimate's own approximation, not a modelling error: "4"
+approximates &minus;ln(0.02)&nbsp;=&nbsp;3.912 (the number of time
+constants exp(&minus;<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var>t)
+needs to fall to 2%), and it ignores the response's specific
+oscillatory shape — this loop starts a phase jump with a non-zero
+initial rate of change of the error
+(d<var>e</var>/dt(0)&nbsp;=&nbsp;&minus;2<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var>&Delta;<var>&theta;</var>,
+not zero), which is not the textbook unit-step case the envelope
+formula is built for. Both numbers describe the same lock: use the
+formula for a quick estimate before code exists, use the listing's
+number once it does.</p>
+
+<h3>4.2 Fig. 5.3: speed against overshoot</h3>
+<p>Holding <var>&omega;<sub>n,pll</sub></var> fixed at 62.8319&nbsp;rad/s
+and varying only <var>&zeta;<sub>pll</sub></var>
+(<var>k<sub>i,pll</sub></var> unchanged at 3947.8418&nbsp;1/s&sup2;,
+only <var>k<sub>p,pll</sub></var>&nbsp;=&nbsp;2<var>&zeta;<sub>pll</sub></var><var>&omega;<sub>n,pll</sub></var>
+moving) reruns the same jump three times:</p>
+<div class="tablewrap">
+<table>
+<tr><th>&zeta;<sub>pll</sub></th><th>k<sub>p,pll</sub> (1/s)</th><th>2% settling time (s)</th><th>overshoot past final value (rad, % of jump)</th><th>minimum error, past zero (rad, % of jump)</th></tr>
+<tr><td>0.4</td><td>50.2655</td><td>0.1593</td><td>0.1912 (36.5%)</td><td>0.2225 (42.5%)</td></tr>
+<tr><td>0.707</td><td>88.8442</td><td>0.0779</td><td>0.1089 (20.8%)</td><td>0.1403 (26.8%)</td></tr>
+<tr><td>1.0</td><td>125.6637</td><td>0.0858</td><td>0.0710 (13.6%)</td><td>0.1024 (19.6%)</td></tr>
+</table>
+</div>
+<p><span class="status">computed by the listing
+(<code class="inline">lesson5_fig53.py</code>; settling and overshoot
+use the same 0.1&ndash;0.4&nbsp;s window as §4)</span> The error
+settles on the listing's &minus;&omega;&Delta;t measurement bias
+(&minus;0.0314&nbsp;rad, §4.3), not on zero. The "past final value"
+column is therefore the loop's overshoot, and the "past zero" column
+also contains that 0.0314&nbsp;rad bias. Lower damping settles slower
+and overshoots more (0.4 overshoots its final value by 36.5% of the
+jump and takes 0.1593&nbsp;s). Higher damping overshoots less but is
+not simply faster: 1.0's 2%-settling time, 0.0858&nbsp;s, is 10%
+longer than 0.707's 0.0779&nbsp;s. Even the critically damped case
+overshoots, by 13.6% of the jump. The error response to a phase step
+is <var>E</var>(s)/<var>&Theta;<sub>g</sub></var>(s)&nbsp;=&nbsp;s&sup2;/(s&sup2;&nbsp;+&nbsp;2&zeta;&omega;<sub>n</sub>s&nbsp;+&nbsp;&omega;<sub>n</sub>&sup2;);
+at &zeta;&nbsp;=&nbsp;1 this gives
+<var>e</var>(<var>t</var>)&nbsp;=&nbsp;&Delta;&theta;(1&nbsp;&minus;&nbsp;&omega;<sub>n</sub><var>t</var>)e<sup>&minus;&omega;<sub>n</sub><var>t</var></sup>,
+with minimum &minus;e<sup>&minus;2</sup>&Delta;&theta;&nbsp;=&nbsp;&minus;0.135&Delta;&theta;
+at <var>t</var>&nbsp;=&nbsp;2/&omega;<sub>n</sub>. The initial rate
+d<var>e</var>/dt(0)&nbsp;=&nbsp;&minus;2&zeta;&omega;<sub>n</sub>&Delta;&theta;
+from §4.1 carries the error through its final value. Figure 5.3 plots
+the three traces from 0 to 0.18&nbsp;s after the jump.</p>
+
+<figure>
+<svg viewBox="0 0 640 210" role="img" aria-labelledby="f53title">
+<title id="f53title">Fig. 5.3: angle error after the jump, three damping ratios</title>
+<rect x="0" y="0" width="640" height="210" fill="#1e293b"/>
+<line x1="44" y1="15" x2="44" y2="195" stroke="#334155"/>
+<line x1="44" y1="195" x2="616" y2="195" stroke="#334155"/>
+<line x1="44" y1="134.3" x2="616" y2="134.3" stroke="#94a3b8" stroke-dasharray="2,3"/>
+<text x="620" y="137" fill="#94a3b8" font-size="9">e=0</text>
+<line x1="44" y1="138.8" x2="616" y2="138.8" stroke="#2dd4bf" stroke-dasharray="1,2"/>
+<line x1="44" y1="143.4" x2="616" y2="143.4" stroke="#2dd4bf" stroke-dasharray="1,2"/>
+<text x="540" y="156" fill="#2dd4bf" font-size="9">&plusmn;2% of final</text>
+<polyline points="44.3,28.0 47.5,33.7 50.7,39.4 53.9,45.3 57.0,51.3 60.2,57.4 63.4,63.5 66.6,69.6 69.7,75.7 72.9,81.8 76.1,87.8 79.3,93.7 82.5,99.5 85.6,105.2 88.8,110.7 92.0,116.1 95.2,121.4 98.3,126.4 101.5,131.3 104.7,136.0 107.9,140.4 111.1,144.7 114.2,148.7 117.4,152.5 120.6,156.0 123.8,159.3 126.9,162.4 130.1,165.3 133.3,167.9 136.5,170.3 139.7,172.5 142.8,174.4 146.0,176.2 149.2,177.7 152.4,178.9 155.5,180.0 158.7,180.9 161.9,181.6 165.1,182.1 168.3,182.4 171.4,182.5 174.6,182.5 177.8,182.3 181.0,182.0 184.1,181.5 187.3,180.9 190.5,180.2 193.7,179.3 196.9,178.4 200.0,177.3 203.2,176.2 206.4,175.0 209.6,173.7 212.7,172.3 215.9,170.9 219.1,169.5 222.3,168.0 225.5,166.5 228.6,164.9 231.8,163.4 235.0,161.8 238.2,160.2 241.3,158.7 244.5,157.1 247.7,155.6 250.9,154.0 254.1,152.5 257.2,151.1 260.4,149.6 263.6,148.2 266.8,146.9 269.9,145.5 273.1,144.3 276.3,143.1 279.5,141.9 282.7,140.8 285.8,139.7 289.0,138.7 292.2,137.8 295.4,136.9 298.5,136.1 301.7,135.3 304.9,134.6 308.1,134.0 311.3,133.4 314.4,132.9 317.6,132.4 320.8,132.0 324.0,131.6 327.1,131.3 330.3,131.1 333.2,130.9 336.4,130.8 339.5,130.7 342.7,130.6 345.9,130.6 349.1,130.6 352.2,130.7 355.4,130.8 358.6,130.9 361.8,131.1 365.0,131.3 368.1,131.5 371.3,131.7 374.5,132.0 377.7,132.3 380.8,132.6 384.0,133.0 387.2,133.3 390.4,133.7 393.6,134.0 396.7,134.4 399.9,134.8 403.1,135.2 406.3,135.6 409.4,136.0 412.6,136.4 415.8,136.8 419.0,137.2 422.2,137.6 425.3,138.0 428.5,138.3 431.7,138.7 434.9,139.1 438.0,139.4 441.2,139.8 444.4,140.1 447.6,140.4 450.8,140.7 453.9,141.0 457.1,141.3 460.3,141.5 463.5,141.8 466.6,142.0 469.8,142.2 473.0,142.4 476.2,142.6 479.4,142.8 482.5,142.9 485.7,143.1 488.9,143.2 492.1,143.3 495.2,143.4 498.4,143.5 501.6,143.6 504.8,143.6 508.0,143.7 511.1,143.7 514.3,143.7 517.5,143.8 520.7,143.8 523.8,143.7 527.0,143.7 530.2,143.7 533.4,143.7 536.6,143.6 539.7,143.6 542.9,143.5 546.1,143.4 549.3,143.4 552.4,143.3 555.6,143.2 558.8,143.1 562.0,143.0 565.2,142.9 568.3,142.8 571.5,142.7 574.7,142.6 577.9,142.5 581.0,142.4 584.2,142.3 587.4,142.2 590.6,142.1 593.8,142.0 596.9,141.9 600.1,141.8 603.3,141.7 606.5,141.6 609.6,141.6 612.8,141.5 616.0,141.4"
+  fill="none" stroke="#fb923c" stroke-width="1.5"/>
+<polyline points="44.3,29.4 47.5,38.9 50.7,48.0 53.9,56.7 57.0,65.1 60.2,73.1 63.4,80.7 66.6,87.9 69.7,94.6 72.9,101.0 76.1,107.1 79.3,112.7 82.5,118.0 85.6,122.9 88.8,127.4 92.0,131.6 95.2,135.5 98.3,139.1 101.5,142.4 104.7,145.4 107.9,148.1 111.1,150.6 114.2,152.8 117.4,154.8 120.6,156.6 123.8,158.2 126.9,159.5 130.1,160.7 133.3,161.7 136.5,162.5 139.7,163.2 142.8,163.8 146.0,164.2 149.2,164.5 152.4,164.6 155.5,164.7 158.7,164.7 161.9,164.6 165.1,164.4 168.3,164.1 171.4,163.8 174.6,163.4 177.8,163.0 181.0,162.5 184.1,162.0 187.3,161.4 190.5,160.8 193.7,160.2 196.9,159.6 200.0,158.9 203.2,158.3 206.4,157.6 209.6,156.9 212.7,156.2 215.9,155.6 219.1,154.9 222.3,154.2 225.5,153.6 228.6,152.9 231.8,152.3 235.0,151.6 238.2,151.0 241.3,150.4 244.5,149.8 247.7,149.3 250.9,148.7 254.1,148.2 257.2,147.7 260.4,147.2 263.6,146.7 266.8,146.2 269.9,145.8 273.1,145.4 276.3,145.0 279.5,144.6 282.7,144.2 285.8,143.9 289.0,143.6 292.2,143.3 295.4,143.0 298.5,142.7 301.7,142.5 304.9,142.2 308.1,142.0 311.3,141.8 314.4,141.6 317.6,141.4 320.8,141.3 324.0,141.1 327.1,141.0 330.3,140.9 333.2,140.8 336.4,140.7 339.5,140.6 342.7,140.5 345.9,140.4 349.1,140.3 352.2,140.3 355.4,140.2 358.6,140.2 361.8,140.2 365.0,140.1 368.1,140.1 371.3,140.1 374.5,140.1 377.7,140.1 380.8,140.1 384.0,140.1 387.2,140.1 390.4,140.1 393.6,140.1 396.7,140.1 399.9,140.1 403.1,140.2 406.3,140.2 409.4,140.2 412.6,140.2 415.8,140.3 419.0,140.3 422.2,140.3 425.3,140.3 428.5,140.4 431.7,140.4 434.9,140.4 438.0,140.4 441.2,140.5 444.4,140.5 447.6,140.5 450.8,140.6 453.9,140.6 457.1,140.6 460.3,140.6 463.5,140.7 466.6,140.7 469.8,140.7 473.0,140.7 476.2,140.8 479.4,140.8 482.5,140.8 485.7,140.8 488.9,140.9 492.1,140.9 495.2,140.9 498.4,140.9 501.6,140.9 504.8,140.9 508.0,141.0 511.1,141.0 514.3,141.0 517.5,141.0 520.7,141.0 523.8,141.0 527.0,141.0 530.2,141.0 533.4,141.1 536.6,141.1 539.7,141.1 542.9,141.1 546.1,141.1 549.3,141.1 552.4,141.1 555.6,141.1 558.8,141.1 562.0,141.1 565.2,141.1 568.3,141.1 571.5,141.1 574.7,141.1 577.9,141.1 581.0,141.1 584.2,141.1 587.4,141.1 590.6,141.1 593.8,141.1 596.9,141.1 600.1,141.1 603.3,141.1 606.5,141.1 609.6,141.1 612.8,141.1 616.0,141.1"
+  fill="none" stroke="#2dd4bf" stroke-width="1.8"/>
+<polyline points="44.3,30.3 47.5,43.3 50.7,55.2 53.9,66.2 57.0,76.2 60.2,85.3 63.4,93.5 66.6,101.0 69.7,107.7 72.9,113.8 76.1,119.3 79.3,124.2 82.5,128.6 85.6,132.5 88.8,136.0 92.0,139.0 95.2,141.8 98.3,144.2 101.5,146.3 104.7,148.1 107.9,149.7 111.1,151.1 114.2,152.2 117.4,153.2 120.6,154.0 123.8,154.7 126.9,155.3 130.1,155.7 133.3,156.0 136.5,156.3 139.7,156.4 142.8,156.5 146.0,156.5 149.2,156.4 152.4,156.3 155.5,156.2 158.7,156.0 161.9,155.8 165.1,155.5 168.3,155.3 171.4,155.0 174.6,154.7 177.8,154.3 181.0,154.0 184.1,153.7 187.3,153.3 190.5,152.9 193.7,152.6 196.9,152.2 200.0,151.9 203.2,151.5 206.4,151.2 209.6,150.8 212.7,150.5 215.9,150.2 219.1,149.8 222.3,149.5 225.5,149.2 228.6,148.9 231.8,148.6 235.0,148.3 238.2,148.0 241.3,147.7 244.5,147.4 247.7,147.2 250.9,146.9 254.1,146.7 257.2,146.5 260.4,146.2 263.6,146.0 266.8,145.8 269.9,145.6 273.1,145.4 276.3,145.2 279.5,145.0 282.7,144.8 285.8,144.7 289.0,144.5 292.2,144.4 295.4,144.2 298.5,144.1 301.7,143.9 304.9,143.8 308.1,143.7 311.3,143.5 314.4,143.4 317.6,143.3 320.8,143.2 324.0,143.1 327.1,143.0 330.3,142.9 333.2,142.8 336.4,142.8 339.5,142.7 342.7,142.6 345.9,142.5 349.1,142.5 352.2,142.4 355.4,142.3 358.6,142.3 361.8,142.2 365.0,142.2 368.1,142.1 371.3,142.1 374.5,142.0 377.7,142.0 380.8,141.9 384.0,141.9 387.2,141.8 390.4,141.8 393.6,141.8 396.7,141.7 399.9,141.7 403.1,141.7 406.3,141.6 409.4,141.6 412.6,141.6 415.8,141.6 419.0,141.5 422.2,141.5 425.3,141.5 428.5,141.5 431.7,141.4 434.9,141.4 438.0,141.4 441.2,141.4 444.4,141.4 447.6,141.4 450.8,141.3 453.9,141.3 457.1,141.3 460.3,141.3 463.5,141.3 466.6,141.3 469.8,141.3 473.0,141.3 476.2,141.3 479.4,141.3 482.5,141.2 485.7,141.2 488.9,141.2 492.1,141.2 495.2,141.2 498.4,141.2 501.6,141.2 504.8,141.2 508.0,141.2 511.1,141.2 514.3,141.2 517.5,141.2 520.7,141.2 523.8,141.2 527.0,141.2 530.2,141.2 533.4,141.2 536.6,141.2 539.7,141.1 542.9,141.1 546.1,141.1 549.3,141.1 552.4,141.1 555.6,141.1 558.8,141.1 562.0,141.1 565.2,141.1 568.3,141.1 571.5,141.1 574.7,141.1 577.9,141.1 581.0,141.1 584.2,141.1 587.4,141.1 590.6,141.1 593.8,141.1 596.9,141.1 600.1,141.1 603.3,141.1 606.5,141.1 609.6,141.1 612.8,141.1 616.0,141.1"
+  fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="4,2"/>
+<text x="48" y="27" fill="#fb923c" font-size="10">&zeta;=0.4</text>
+<text x="48" y="45" fill="#2dd4bf" font-size="10">&zeta;=0.707</text>
+<text x="48" y="63" fill="#e2e8f0" font-size="10">&zeta;=1.0</text>
+<text x="44" y="207" fill="#94a3b8" font-size="9">t &minus; t_jump, 0 to 0.18 s</text>
+</svg>
+<figcaption>Fig. 5.3. Angle error after the 30&deg; jump for
+<var>&zeta;<sub>pll</sub></var>&nbsp;=&nbsp;0.4 (orange), 0.707 (teal),
+1.0 (dashed) at fixed <var>&omega;<sub>n,pll</sub></var>&nbsp;=&nbsp;62.8319&nbsp;rad/s.
+The dotted grey line is <var>e</var>&nbsp;=&nbsp;0. The teal band
+is &plusmn;2% of the jump around the final value final value &minus;0.0315&nbsp;radminus;0.0314&nbsp;rad;
+the settling time uses this band. Lower damping rings and overshoots
+more. <span class="status">computed by the listing</span></figcaption>
+</figure>
+
+<h3>4.3 The steady angle error after the frequency step</h3>
+<p>Just before the 0.5&nbsp;Hz frequency step (<var>t</var>&nbsp;=&nbsp;0.4&nbsp;s&minus;&Delta;t),
+the angle error is &minus;0.031416&nbsp;rad; 200&nbsp;ms after the
+step (<var>t</var>&nbsp;=&nbsp;0.6&nbsp;s&minus;&Delta;t) it is
+&minus;0.031725&nbsp;rad, a change of 0.000309&nbsp;rad (0.0177&deg;).
+<span class="status">computed by the listing</span> Neither value is
+a control error. The listing computes <var>e</var> after it advances
+<var>&theta;<sub>pll</sub></var>, so it compares the grid angle at
+sample <var>k</var> with the loop's angle for sample <var>k</var>+1.
+When the Park angle is exactly on the grid angle at sample
+<var>k</var>, that comparison reads &minus;&omega;<sub>g</sub>&Delta;t,
+where &omega;<sub>g</sub> is the grid's angular frequency. Before the
+step this is
+&minus;314.159265&nbsp;rad/s&nbsp;&times;&nbsp;1&times;10<sup>&minus;4</sup>&nbsp;s&nbsp;=&nbsp;&minus;0.031416&nbsp;rad;
+after the step it is
+&minus;2&pi;&times;50.5&nbsp;rad/s&nbsp;&times;&nbsp;1&times;10<sup>&minus;4</sup>&nbsp;s&nbsp;=&nbsp;&minus;0.031730&nbsp;rad.
+The bias moves by 0.000314&nbsp;rad, which accounts for the observed
+change. The last output line removes the bias: the residual angle
+error is 2.84&times;10<sup>&minus;8</sup>&nbsp;rad before the step and
+4.84&times;10<sup>&minus;6</sup>&nbsp;rad 200&nbsp;ms after it, and the
+second value is still decaying toward zero. A type-2 loop (two
+integrators: the PI's own integral and the angle integrator) tracks a
+frequency step with zero steady angle error, as Exercise 5 predicts.</p>
+
+<h2>5. What the model captures and what it misses</h2>
+<p>The model captures: a balanced, undistorted three-phase voltage;
+amplitude-invariant Clarke and Park transforms; a linearised,
+second-order PLL whose gains follow directly from a target bandwidth
+and damping ratio; and a stiff grid, meaning the converter's own
+injected current does not move the terminal voltage it is trying to
+track — Lesson&nbsp;6 removes exactly this assumption and replaces
+<var>K<sub>pll</sub></var>&nbsp;=&nbsp;<var>V</var> with a gain that
+falls as the grid weakens. It also omits any measurement filter (no
+anti-alias or notch stage before the Park transform).</p>
+<p>Unbalance is named, not modelled beyond Exercise 3: a negative-sequence
+component appears in the rotating frame at twice grid frequency
+(100&nbsp;Hz at 50&nbsp;Hz), because a phasor rotating at
+&minus;<var>&theta;<sub>g</sub></var> viewed from a frame rotating at
++<var>&theta;<sub>pll</sub></var>&nbsp;&asymp;&nbsp;+<var>&theta;<sub>g</sub></var>
+appears to rotate at &minus;2<var>&theta;<sub>g</sub></var>, producing
+a ripple on <var>v<sub>q</sub></var> rather than a constant offset.
+Exercise 3 measures that ripple's amplitude directly.</p>
+
+<h2>6. Exercises</h2>
+
+<div class="exercise">
+<h3>Exercise 1 (Derivational)</h3>
+<p>Show that the three-phase instantaneous power in SI units is
+<var>p</var>&nbsp;=&nbsp;1.5(<var>v<sub>d</sub></var><var>i<sub>d</sub></var>&nbsp;+&nbsp;<var>v<sub>q</sub></var><var>i<sub>q</sub></var>)
+with the amplitude-invariant transform, and that the factor 1.5
+vanishes in per unit.</p>
+<details><summary>Target</summary>
+<p>In SI, <var>p</var>&nbsp;=&nbsp;<var>v<sub>a</sub></var><var>i<sub>a</sub></var>&nbsp;+&nbsp;<var>v<sub>b</sub></var><var>i<sub>b</sub></var>&nbsp;+&nbsp;<var>v<sub>c</sub></var><var>i<sub>c</sub></var>.
+The inverse amplitude-invariant Clarke map is
+<var>v<sub>a</sub></var>&nbsp;=&nbsp;<var>v<sub>&alpha;</sub></var>&nbsp;+&nbsp;<var>v<sub>0</sub></var>,
+<var>v<sub>b</sub></var>&nbsp;=&nbsp;&minus;&frac12;<var>v<sub>&alpha;</sub></var>&nbsp;+&nbsp;(&radic;3/2)<var>v<sub>&beta;</sub></var>&nbsp;+&nbsp;<var>v<sub>0</sub></var>,
+<var>v<sub>c</sub></var>&nbsp;=&nbsp;&minus;&frac12;<var>v<sub>&alpha;</sub></var>&nbsp;&minus;&nbsp;(&radic;3/2)<var>v<sub>&beta;</sub></var>&nbsp;+&nbsp;<var>v<sub>0</sub></var>,
+and the same for the currents, with <var>v<sub>0</sub></var> the
+zero-sequence component. Multiply and sum. The
+<var>v<sub>&alpha;</sub></var><var>i<sub>&alpha;</sub></var> coefficient
+is 1&nbsp;+&nbsp;&frac14;&nbsp;+&nbsp;&frac14;&nbsp;=&nbsp;1.5; the
+<var>v<sub>&beta;</sub></var><var>i<sub>&beta;</sub></var> coefficient is
+&frac34;&nbsp;+&nbsp;&frac34;&nbsp;=&nbsp;1.5; the
+<var>v<sub>&alpha;</sub></var><var>i<sub>&beta;</sub></var> and
+<var>v<sub>&beta;</sub></var><var>i<sub>&alpha;</sub></var> coefficients are
+&minus;&radic;3/4&nbsp;+&nbsp;&radic;3/4&nbsp;=&nbsp;0; the
+zero-sequence terms give 3<var>v<sub>0</sub></var><var>i<sub>0</sub></var>.
+In a three-wire system <var>i<sub>0</sub></var>&nbsp;=&nbsp;0 (and a
+balanced set has <var>v<sub>0</sub></var>&nbsp;=&nbsp;0), so
+<var>p</var>&nbsp;=&nbsp;1.5(<var>v<sub>&alpha;</sub></var><var>i<sub>&alpha;</sub></var>&nbsp;+&nbsp;<var>v<sub>&beta;</sub></var><var>i<sub>&beta;</sub></var>)&nbsp;=&nbsp;1.5(<var>v<sub>d</sub></var><var>i<sub>d</sub></var>&nbsp;+&nbsp;<var>v<sub>q</sub></var><var>i<sub>q</sub></var>),
+because the Park rotation preserves the dot product. Per-unit power
+uses <var>S<sub>base</sub></var>&nbsp;=&nbsp;1.5&nbsp;<var>V<sub>base</sub></var><var>I<sub>base</sub></var>,
+with <var>V<sub>base</sub></var> and <var>I<sub>base</sub></var> the
+peak phase voltage and current (so <var>S<sub>base</sub></var> equals
+3&nbsp;&times;&nbsp;RMS phase voltage&nbsp;&times;&nbsp;RMS phase current), so
+dividing both sides by <var>S<sub>base</sub></var> cancels the factor
+and leaves
+<var>P</var>&nbsp;=&nbsp;<var>v<sub>d</sub></var><var>i<sub>d</sub></var>&nbsp;+&nbsp;<var>v<sub>q</sub></var><var>i<sub>q</sub></var>
+in per unit — the per-unit bases absorb it, as shared rule 7
+states.</p>
+</details>
+</div>
+
+<div class="exercise">
+<h3>Exercise 2 (Derivational)</h3>
+<p>Show that <var>K<sub>pll</sub></var>&nbsp;=&nbsp;d<var>v<sub>q</sub></var>/d<var>&theta;<sub>error</sub></var>
+at lock equals <var>V</var>.</p>
+<details><summary>Target</summary>
+<p><var>v<sub>q</sub></var>&nbsp;=&nbsp;<var>V</var>sin(<var>&theta;<sub>error</sub></var>)
+with <var>&theta;<sub>error</sub></var>&nbsp;=&nbsp;<var>&theta;<sub>g</sub></var>&minus;<var>&theta;<sub>pll</sub></var>.
+d<var>v<sub>q</sub></var>/d<var>&theta;<sub>error</sub></var>&nbsp;=&nbsp;<var>V</var>cos(<var>&theta;<sub>error</sub></var>),
+which at lock (<var>&theta;<sub>error</sub></var>&nbsp;=&nbsp;0) equals
+<var>V</var>cos(0)&nbsp;=&nbsp;<var>V</var>. On a stiff grid at rated
+voltage <var>V</var>&nbsp;=&nbsp;1&nbsp;pu, so
+<var>K<sub>pll</sub></var>&nbsp;=&nbsp;1.</p>
+</details>
+</div>
+
+<div class="exercise">
+<h3>Exercise 3 (Computational)</h3>
+<p>Add a 10% negative-sequence component to the input and report the
+ripple on <var>v<sub>q</sub></var>.</p>
+<details><summary>Target</summary>
+<p>A 100&nbsp;Hz ripple. <code class="inline">lesson5_ex3_negseq.py</code>
+adds a 10%-amplitude set rotating at &minus;<var>&theta;<sub>g</sub></var>
+to <var>v<sub>a</sub></var>, <var>v<sub>b</sub></var>,
+<var>v<sub>c</sub></var> and re-runs the locked loop. Measured
+result: <span class="status">computed by the listing</span></p>
+<div class="out"><pre>negative-sequence fraction = 0.10
+v_q ripple amplitude = 0.10044 pu (predicted 0.10000 pu)
+mean v_q over tail = -0.000001 pu</pre></div>
+<p>The ripple amplitude, 0.10044&nbsp;pu, matches the injected 10%
+fraction to within 0.5%, and the mean of <var>v<sub>q</sub></var> over
+the settled tail is &minus;0.000001&nbsp;pu — the ripple has no DC offset, as
+the twice-frequency-rotation argument in §5 predicts.</p>
+</details>
+</div>
+
+<div class="exercise">
+<h3>Exercise 4 (Computational)</h3>
+<p>Retune <var>k<sub>p,pll</sub></var> and <var>k<sub>i,pll</sub></var>
+for a 20&nbsp;Hz bandwidth (&omega;<sub>n,pll</sub>&nbsp;=&nbsp;2&pi;&times;20&nbsp;rad/s, §2.1)
+and repeat the 30&deg; jump.</p>
+<details><summary>Target</summary>
+<p><var>k<sub>i,pll</sub></var>&nbsp;=&nbsp;15791&nbsp;1/s&sup2;,
+<var>k<sub>p,pll</sub></var>&nbsp;=&nbsp;177.7&nbsp;1/s; settling time
+about halves. <code class="inline">lesson5_ex4_20hz.py</code> gives
+<span class="status">computed by the listing</span>:</p>
+<div class="out"><pre>omega_n_pll (20 Hz) = 125.6637 rad/s
+k_p_pll = 177.6885 1/s, k_i_pll = 15791.3670 1/s^2
+settling time (2% of 30 deg jump) = 0.0388 s
+ratio to 10 Hz settling time (0.0779 s) = 0.498</pre></div>
+<p>0.0388&nbsp;s is 0.498&times; the 10&nbsp;Hz-bandwidth settling time
+of 0.0779&nbsp;s — doubling the bandwidth halves the settling time, as
+expected for a linear second-order loop with fixed damping ratio.</p>
+</details>
+</div>
+
+<div class="exercise">
+<h3>Exercise 5 (Conceptual)</h3>
+<p>Why does a frequency step leave zero steady angle error but a
+frequency ramp does not?</p>
+<details><summary>Target</summary>
+<p>A frequency step is a ramp in angle. This PLL is a type-2 loop (two
+integrators in the forward path: the PI's own integral term, and the
+angle integrator d<var>&theta;<sub>pll</sub></var>/dt&nbsp;=&nbsp;<var>&omega;<sub>pll</sub></var>),
+and a type-2 loop tracks a ramp input with zero steady-state error —
+confirmed numerically in §4.3, where the residual angle error after
+the frequency step, with the listing's &minus;&omega;&Delta;t bias
+removed, is 4.84&times;10<sup>&minus;6</sup>&nbsp;rad. A frequency <em>ramp</em>
+is a parabola in angle (angle proportional to
+<var>t</var>&sup2;), and tracking a parabola with zero steady error
+needs a third integrator in the forward path, which this loop does
+not have; a type-2 loop tracks a parabolic input with a bounded but
+non-zero steady error instead. For a frequency ramp of
+<var>R</var>&nbsp;rad/s&sup2;, the final-value theorem applied to
+<var>E</var>(s)&nbsp;=&nbsp;s&sup2;/(s&sup2;&nbsp;+&nbsp;<var>K<sub>pll</sub></var><var>k<sub>p,pll</sub></var>s&nbsp;+&nbsp;<var>K<sub>pll</sub></var><var>k<sub>i,pll</sub></var>)&nbsp;&middot;&nbsp;<var>R</var>/s&sup3;
+gives <var>e<sub>ss</sub></var>&nbsp;=&nbsp;<var>R</var>/(<var>K<sub>pll</sub></var><var>k<sub>i,pll</sub></var>)&nbsp;=&nbsp;<var>R</var>/&omega;<sub>n,pll</sub>&sup2;.</p>
+</details>
+</div>
+
+<div class="warn">
+<strong>Sources.</strong> The Park/Clarke transform convention and
+the synchronous-reference-frame PLL structure used throughout this
+lesson follow [S06, Yazdani, A. and Iravani, R. (2010).
+<em>Voltage-Sourced Converters in Power Systems: Modeling, Control,
+and Applications</em>. Wiley-IEEE Press. Park transform convention;
+current control design; phase-locked loop]. No other published number is used in this lesson; every
+number above is derived or computed by a listing named in the text.
+</div>
+
+</div>
+</body>
+</html>

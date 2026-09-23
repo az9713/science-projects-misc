@@ -1,0 +1,40 @@
+{
+  "target": "Kepler two-body orbit integrator convergence and long-term energy conservation (leapfrog vs RK4)",
+  "method": "Compare measured convergence order / late-early energy-drift ratio of a leapfrog integrator against RK4 on an exact two-body Kepler orbit, printed as two blocks (primary and _2 suffix)",
+  "measured": 2.001910,
+  "published": 2.000000,
+  "tolerance": 0.009803,
+  "abs_diff": 0.00191,
+  "error_estimate": 0.002631,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 0.6,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": null,
+  "second_quantity": {
+    "measured_2": 1.000000,
+    "published_2": 1.000000,
+    "error_estimate_2": 1.738e-06,
+    "tolerance_2": 7.889e-06,
+    "abs_diff_2": 6.708e-08,
+    "runtime_s_2": 0.6,
+    "result_2": "PASS"
+  },
+  "runs": [
+    {"exit_code": 0, "runtime_s": 0.6},
+    {"exit_code": 0, "runtime_s": 0.6}
+  ],
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "previous": {
+    "measured": 2.001910,
+    "tolerance": 0.027893,
+    "abs_diff": 0.00191,
+    "tolerance_2": 0.010008,
+    "abs_diff_2": 0.0
+  },
+  "notes": "Two full runs of kepler.py (verify2 pass) both exited 0 and printed RESULT=PASS and RESULT_2=PASS, with identical numeric output lines between the two runs (only the internal RUNTIME_S/RUNTIME_S_2 lines varied trivially), so the run is deterministic. Block 1 is the leapfrog position-error convergence order (quantity a, expected 2): MEASURED=2.001910, PUBLISHED=2.000000, ERROR_ESTIMATE=0.002631 (std of the 4 pairwise orders, a spread of a converging sequence, not a sigma), TOLERANCE=0.009803 = 3x0.002631 + a measured bias allowance of 0.0019 (mean of the 4 orders minus the Richardson limit 2.0000; this replaces the previously asserted BIAS_A=0.02 per referee.md kepler change 1), printed ABS_DIFF=0.001910; recomputation |2.001910-2.000000|=0.001910 matches and is well inside tolerance (ratio 5.1x vs the old 10.6x). Block 2 is the leapfrog late/early long-run energy-drift ratio (quantity b, expected 1), with the RK4 run as its control, not the measured quantity (referee.md kepler change 5 relabeling applied: the two blocks in the prior JSON were mislabeled as \"long-run energy-drift ratio vs RK4\" / \"self-check RK4 control ratio\" and are corrected here): MEASURED_2=1.000000, PUBLISHED_2=1.000000, ERROR_ESTIMATE_2=1.738e-06, TOLERANCE_2=7.889e-06 (the 0.01 floor from the prior version, 99.9% of the old tolerance, is removed per referee.md kepler change 2), printed ABS_DIFF_2=6.708e-08; recomputation |1.000000-1.000000| rounds to 0.000000 but the printed full-precision ABS_DIFF_2=6.708e-08 is used per the printed-value rule and is well inside tolerance. Control: RK4 late/early ratio 87.988 (gate >10, ok). Angular momentum drift in the long leapfrog run 6.40e-14 (gate <=1e-12, ok). Self-checks: exact-orbit energy/angular-momentum conservation at machine precision (max|dE/E0| 1.78e-15, max|dL/L0| 4.16e-16); leapfrog position-error order 2.000 and RK4 order 4.054 over one period. No stderr in either run. No random number is drawn; seed recorded as null. Change vs previous JSON: tolerance dropped from 0.027893 to 0.009803 (BIAS_A replaced by the measured Richardson-limit bias per change 1) and tolerance_2 dropped from 0.010008 to 7.889e-06 (0.01 floor removed per change 2); abs_diff and abs_diff_2 are essentially unchanged (0.00191 and ~6.7e-8); both blocks still PASS at the tighter tolerances. referee.md kepler changes 1, 2, and 5 are reflected in this file (script-side changes 3 and 4 are docstring/print-precision only, outside this JSON's scope); fix_applied=true because the underlying script already emits the un-floored, measured-bias tolerances that changes 1 and 2 call for."
+}

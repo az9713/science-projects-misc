@@ -1,0 +1,62 @@
+{
+  "method": "pinn",
+  "scheme": "PINN, tanh MLP depth 4, inputs (cos x, sin x, t/T) for exact periodicity, hard IC u=u0+t*NN, residual-only loss, Adam then L-BFGS, torch 2.11.0+cu128 on cuda, float32",
+  "benchmark": "1D viscous Burgers, Cole-Hopf, nu=0.07, x in [0,2pi] periodic, t_end=0.5",
+  "grids": [
+    2000,
+    8000,
+    32000
+  ],
+  "grids_meaning": "number of random collocation points N_c in [0,2pi]x[0,0.5]",
+  "widths": [
+    32,
+    64,
+    128
+  ],
+  "params": [
+    3329,
+    12801,
+    50177
+  ],
+  "residual_loss": [
+    0.428786039352417,
+    73.11483764648438,
+    2.375192880630493
+  ],
+  "adam_steps": [
+    412,
+    479,
+    530
+  ],
+  "lbfgs_evals": [
+    485,
+    408,
+    435
+  ],
+  "lbfgs_hit_time_cap": [
+    true,
+    true,
+    true
+  ],
+  "errors": [
+    6.0423399832279046,
+    6.965223437473485,
+    0.9413210484124999
+  ],
+  "error_norm": "discrete L2: sqrt(dx*sum(err^2)) at t=0.5 on 2048 uniform points",
+  "size_abscissa": "h = sqrt(2pi*0.5/N_c), mean collocation spacing; slope of log(err) vs log(h)",
+  "pairwise_orders": [
+    -0.20506227159263057,
+    2.8874108740011835
+  ],
+  "observed_order": 1.3411743012042763,
+  "observed_order_fit": "least squares on all 3 sizes",
+  "theoretical_order": null,
+  "theoretical_order_note": "none: PINN error is limited by optimization and network capacity; there is no a-priori rate in h",
+  "seed": 1234,
+  "runtime_s": 241.32845309999902,
+  "pass": false,
+  "self_check_failures": [
+    "largest-size error 0.9413210484124999 too large"
+  ]
+}

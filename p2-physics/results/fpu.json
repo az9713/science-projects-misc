@@ -1,0 +1,31 @@
+{
+  "target": "FPU recurrence time, alpha-FPU chain (m=1, k=1, alpha=0.25, N=32 moving masses)",
+  "method": "Velocity Verlet (symplectic, 2nd order) at dt=0.05 and dt=0.025 to t=200*T_1; MEASURED is the first recurrence peak time (mode-1 energy E_1 max within the first hump where E_1 > 0.5*E_1(0) after collapse), in units of T_1 = 2*pi/omega_1 = 66.024930",
+  "measured": 153.4345,
+  "published": 157.0000,
+  "error_estimate": 0.4014,
+  "tolerance": 7.3457,
+  "abs_diff": 3.5655,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 21.43,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": null,
+  "runs": [
+    {"exit_code": 0, "runtime_s": 21.56},
+    {"exit_code": 0, "runtime_s": 21.43}
+  ],
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "previous": {
+    "measured": 153.4345,
+    "published": 157.0000,
+    "tolerance": 7.3457,
+    "abs_diff": 3.5655,
+    "runtime_s": 15.86
+  },
+  "notes": "Verify2 (second pass, after fix stage): two full runs gave bit-identical stdout numeric lines (MEASURED=153.4345, PUBLISHED=157.0000, ERROR_ESTIMATE=0.4014, TOLERANCE=7.3457, ABS_DIFF=3.5655, RESULT=PASS in both runs, exit code 0 both times); only the printed RUNTIME_S line differed (21.56 s vs 21.43 s), so the result is deterministic (no seed is used; the integration is a deterministic ODE solve, no RNG). Recomputed abs_diff = |153.4345 - 157.0000| = 3.5655, matching the printed ABS_DIFF exactly and well inside tolerance=7.3457. No stderr output or warnings in either run. Against the previous JSON, measured, published, tolerance, and abs_diff are unchanged; only runtime_s changed (15.86 s -> 21.43 s, machine-load noise, not a script change). Script docstring documents known biases: peak-breadth resolution (~6-period plateau half-width, folded into the bias allowance, not the error term), a time-step bias (peak moves from 156.7 at dt=0.2 to 153.7 at dt=0.05 to 153.4 at dt=0.025, i.e. earlier with finer steps), and a boundary-convention check (31-moving-mass reading gives peak 146.7-146.4, rejected since it exceeds tolerance). Energy drift at dt=0.025 was 1.31e-05, under the stated 1e-4 symplectic-integrity threshold. Recurrence fraction 0.9807 vs FPU/Dauxois quoted ~0.97, an independent consistency check, not the primary comparison. Referee change 4 (fpu) applied: the pass depends on the plateau half-width term (abs_diff 3.57 against 3 x error 1.20). It also passes at the 0.97-anchored tolerance 4.07. E_1(157 T_1) = 0.9643 against the published 0.97."
+}

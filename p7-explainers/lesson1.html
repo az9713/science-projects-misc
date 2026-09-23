@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Frequency Is Shared State</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --text2: #cbd5e1;
+  --muted: #94a3b8;
+  --accent1: #fb923c;
+  --accent2: #2dd4bf;
+  --border1: #1e293b;
+  --border2: #334155;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+  font-size: 16px;
+}
+main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: var(--text);
+  border-bottom: 2px solid var(--accent1);
+  padding-bottom: 12px;
+  margin-top: 4px;
+}
+h2 {
+  font-size: 1.15rem;
+  color: var(--accent2);
+  margin-top: 2.2em;
+  border-left: 4px solid var(--accent2);
+  padding-left: 10px;
+}
+h3 {
+  font-size: 1rem;
+  color: var(--text);
+  margin-top: 1.6em;
+}
+p, li { color: var(--text2); }
+.lede {
+  font-size: 1.02rem;
+  color: var(--text);
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 1.1em 0;
+}
+.problem {
+  background: var(--card);
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 1em 0;
+}
+.status {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+.status.assumed { background: var(--muted); }
+.status.cited { background: var(--accent1); }
+var, .sym { font-style: normal; color: var(--accent2); }
+code, pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+}
+pre {
+  background: #0b1220;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  max-width: 100%;
+  color: var(--text2);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 0.92rem;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  border: 1px solid var(--border2);
+  padding: 6px 10px;
+  text-align: left;
+  color: var(--text2);
+  white-space: nowrap;
+}
+th { color: var(--text); background: #16233b; }
+.eq {
+  background: #0b1220;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0.9em 0;
+  text-align: center;
+  color: var(--text);
+  font-size: 1.02rem;
+  overflow-x: auto;
+}
+.figure {
+  margin: 1.3em 0;
+  text-align: center;
+}
+.figure svg {
+  max-width: 100%;
+  height: auto;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+}
+.caption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: left;
+}
+.exercise {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1em 0;
+}
+details {
+  margin-top: 8px;
+  color: var(--text2);
+}
+summary {
+  cursor: pointer;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.limits li { margin-bottom: 6px; }
+.limits b { color: var(--text); }
+a { color: var(--accent2); }
+@media (max-width: 400px) {
+  main { padding: 14px 10px 50px; }
+  h1 { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Lesson 1 — Frequency Is Shared State: The Swing Equation as One Integrator</h1>
+
+<p class="lede">Series: Power-system dynamics for programmers. Lesson 1 of 8.
+This lesson treats grid frequency as the output of one integrator driven by
+a power imbalance, derives that integrator from Newton's law for a
+spinning rotor, and runs the integrator in twenty-five lines of Python.</p>
+
+<h2>The opening problem</h2>
+
+<div class="problem">
+<p>A 50&nbsp;Hz grid stores <var class="sym">E<sub>kin,sys</sub></var> =
+200&nbsp;GVA·s of kinetic energy in the spinning mass of its machines
+<span class="status assumed">assumed for this lesson</span> — if you
+attach this number to a real grid, cite it with a year and mark it
+<code>verify</code>. A 1000&nbsp;MW power station trips instantly. No
+governor, no primary response, and no automatic load shedding acts. How
+many seconds pass until frequency reaches 49.2&nbsp;Hz, and how many
+until it reaches 48.8&nbsp;Hz?</p>
+<p><b>Answer, computed by this lesson:</b> frequency falls at a constant
+0.125&nbsp;Hz/s, so it takes 6.40&nbsp;s to reach 49.2&nbsp;Hz and
+9.60&nbsp;s to reach 48.8&nbsp;Hz. The rest of the lesson builds the one
+equation that produces those two numbers, and a program that checks
+them.</p>
+</div>
+
+<p>49.2&nbsp;Hz and 48.8&nbsp;Hz are in the frequency band at which grid
+operators stage automatic actions — load shedding, generator trips,
+protection relays. The time to reach such a threshold sets the time budget
+for a control action: an action that arrives later than that time cannot
+prevent the threshold action. This lesson shows that, with no control
+acting, this time is proportional to the kinetic energy spinning on the
+grid at the moment of the disturbance and inversely proportional to the
+power lost.</p>
+
+<h2>The model and its symbols</h2>
+
+<p>An AC grid connects many generators through wires. Every generator's
+rotor turns at a mechanical speed tied to the grid's electrical frequency
+by its number of poles. If two generators ran at different average
+electrical frequencies for any length of time, the phase angle between
+their internal voltages would drift without bound, and the power flowing
+between them (which depends on the sine of that angle) would swing from
+motoring to generating every time the angle passed through a multiple of
+180°. No physical grid can sustain that, so — to first order, and while
+the grid stays connected — <b>every synchronous machine on the same AC
+grid must run at the same average electrical frequency</b>. That is the
+central claim of this lesson: on the timescale of seconds, frequency is
+not "a property of each machine." It is one shared state variable, common
+to the whole interconnected system.</p>
+
+<p>Because it is one shared quantity, the question "what happens to
+frequency after a disturbance" can be answered by one aggregated
+equation, before any machine, network, or converter model is introduced
+individually. That equation is the <b>swing equation</b>, and this lesson
+derives it, aggregates it, and turns it into a program.</p>
+
+<h3>Per-unit quantities</h3>
+
+<p>Power-system quantities are conventionally expressed in <b>per
+unit</b> (p.u.): every physical quantity is divided by a chosen base
+quantity of the same dimension, so that "1.0 p.u." means "at rated
+value." Two bases are chosen (<var class="sym">S<sub>base</sub></var> and
+<var class="sym">V<sub>base</sub></var>); the other two follow from circuit
+laws:</p>
+
+<ul>
+<li><var class="sym">S<sub>base</sub></var> — base apparent power
+(MVA), usually the rated power of the piece of equipment or the system
+under study.</li>
+<li><var class="sym">V<sub>base</sub></var> — base line-to-line voltage
+(kV).</li>
+<li><var class="sym">I<sub>base</sub></var> — base current (A), derived
+as <var class="sym">I<sub>base</sub></var> =
+<var class="sym">S<sub>base</sub></var> / (√3 ·
+<var class="sym">V<sub>base</sub></var>).</li>
+<li><var class="sym">Z<sub>base</sub></var> — base impedance (Ω),
+derived as <var class="sym">Z<sub>base</sub></var> =
+<var class="sym">V<sub>base</sub></var>² /
+<var class="sym">S<sub>base</sub></var>.</li>
+</ul>
+
+<p>The payoff of per unit is not cosmetic. A transformer changes voltage
+by its turns ratio, so a quantity expressed in volts or amps changes
+value crossing every transformer in a network — bookkeeping that a
+hand or a program must track winding by winding. Choose the base
+voltages on the two sides of an ideal transformer in the same ratio as its
+rated turns ratio, and the transformer's per-unit impedance is the same
+seen from either side: the ratio disappears from the equations entirely.
+That is why the powers <var class="sym">P</var> and the speed deviation
+<var class="sym">Δω</var> in the swing equation below are in per unit, and
+<var class="sym">H</var> is in seconds on the machine's own
+<var class="sym">S<sub>base</sub></var>: the equation can then be applied to a machine, a plant, or an entire
+interconnected system without re-deriving it for each voltage level.</p>
+
+<h3>The inertia constant H</h3>
+
+<p>A rotor of moment of inertia <var class="sym">J</var> (kg·m²), turning
+at its rated mechanical angular speed
+<var class="sym">ω<sub>m0</sub></var> (rad/s), stores kinetic energy
+<var class="sym">E<sub>kin</sub></var> = ½ <var class="sym">J</var>
+<var class="sym">ω<sub>m0</sub></var>². The <b>inertia constant</b>
+<var class="sym">H</var> is that stored energy divided by the machine's
+own base power:</p>
+
+<div class="eq">
+<var class="sym">H</var> = <var class="sym">E<sub>kin</sub></var> /
+<var class="sym">S<sub>base</sub></var>
+&nbsp;=&nbsp; ½ <var class="sym">J</var>
+<var class="sym">ω<sub>m0</sub></var>² /
+<var class="sym">S<sub>base</sub></var>
+</div>
+
+<p><var class="sym">H</var> has the unit of <b>seconds</b> (Exercise 4
+asks you to show this), and it has a direct physical reading: it is the
+number of seconds the machine's own rated power could be supplied purely
+from its own stored kinetic energy, with no other source, before that
+energy ran out. Typical turbo-generator values are 2&nbsp;s to 8&nbsp;s
+<span class="status cited">cited [S01 — verify]</span>. For a turbo-set,
+<var class="sym">J</var> is the total of the generator rotor and every
+turbine stage on the same shaft. Exercise 1 computes a worked example.</p>
+
+<h3>The swing-equation symbols</h3>
+
+<p>The remaining symbols, all defined before they are used in the
+derivation below:</p>
+
+<ul>
+<li><var class="sym">ω</var>, <var class="sym">ω<sub>0</sub></var> —
+electrical angular speed and its rated value,
+<var class="sym">ω<sub>0</sub></var> = 2π <var class="sym">f<sub>0</sub></var>
+(rad/s).</li>
+<li><var class="sym">Δω</var> (written <code>dw</code> in code) — the
+per-unit speed deviation, <var class="sym">Δω</var> =
+(<var class="sym">ω</var> − <var class="sym">ω<sub>0</sub></var>) /
+<var class="sym">ω<sub>0</sub></var>.</li>
+<li><var class="sym">δ</var> — the rotor angle (rad, electrical),
+measured relative to a frame rotating at
+<var class="sym">ω<sub>0</sub></var>.</li>
+<li><var class="sym">P<sub>m</sub></var>,
+<var class="sym">P<sub>e</sub></var> — mechanical power in and
+electrical power out, in per unit.</li>
+<li><var class="sym">K<sub>D</sub></var> — a per-unit damping
+coefficient (never called <var class="sym">D</var> in this series — see
+below).</li>
+</ul>
+
+<h2>The key derivation</h2>
+
+<p>Start from Newton's second law for rotation applied to one rotor:</p>
+
+<div class="eq">
+<var class="sym">J</var>
+d<var class="sym">ω<sub>m</sub></var>/d<var class="sym">t</var>
+&nbsp;=&nbsp; <var class="sym">T<sub>m</sub></var> −
+<var class="sym">T<sub>e</sub></var>
+</div>
+
+<p>with <var class="sym">T<sub>m</sub></var> and
+<var class="sym">T<sub>e</sub></var> the mechanical and electrical
+torques (N·m) and <var class="sym">ω<sub>m</sub></var> the mechanical
+angular speed. Multiply both sides by
+<var class="sym">ω<sub>m</sub></var> and use power = torque × speed,
+<var class="sym">P</var> = <var class="sym">T</var>
+<var class="sym">ω<sub>m</sub></var>:</p>
+
+<div class="eq">
+<var class="sym">J</var> <var class="sym">ω<sub>m</sub></var>
+d<var class="sym">ω<sub>m</sub></var>/d<var class="sym">t</var>
+&nbsp;=&nbsp; <var class="sym">P<sub>m</sub></var> −
+<var class="sym">P<sub>e</sub></var>
+</div>
+
+<p>Near an electromechanical disturbance, <var class="sym">ω<sub>m</sub></var>
+stays close to its rated value <var class="sym">ω<sub>m0</sub></var> (a
+few percent deviation at most before protection acts), so
+<var class="sym">ω<sub>m</sub></var> on the left can be replaced by the
+constant <var class="sym">ω<sub>m0</sub></var> without materially
+changing the equation — this is the small-deviation assumption behind
+every swing-equation model in this series. Next, write the speed in per
+unit. The electrical speed is <var class="sym">ω</var> =
+<var class="sym">p</var> <var class="sym">ω<sub>m</sub></var>, with
+<var class="sym">p</var> the number of pole pairs, so the per-unit
+deviation is the same for mechanical and electrical speed:
+<var class="sym">Δω</var> = (<var class="sym">ω<sub>m</sub></var> −
+<var class="sym">ω<sub>m0</sub></var>) / <var class="sym">ω<sub>m0</sub></var>,
+and therefore d<var class="sym">ω<sub>m</sub></var>/d<var class="sym">t</var>
+= <var class="sym">ω<sub>m0</sub></var> d(<var class="sym">Δω</var>)/d<var class="sym">t</var>.
+Substitute this and divide both sides by the machine's base power
+<var class="sym">S<sub>base</sub></var>:</p>
+
+<div class="eq">
+(<var class="sym">J</var> <var class="sym">ω<sub>m0</sub></var>² /
+<var class="sym">S<sub>base</sub></var>)
+d(<var class="sym">Δω</var>)/d<var class="sym">t</var>
+&nbsp;=&nbsp; <var class="sym">P<sub>m</sub></var> −
+<var class="sym">P<sub>e</sub></var> &nbsp;(per unit)
+</div>
+
+<p>From the definition above, <var class="sym">J</var>
+<var class="sym">ω<sub>m0</sub></var>² /
+<var class="sym">S<sub>base</sub></var> = 2<var class="sym">H</var>. With
+a damping term added (next paragraph), the result — <b>derived here</b> —
+is the per-unit swing equation used through this whole series:</p>
+
+<div class="eq">
+2<var class="sym">H</var> d(<var class="sym">Δω</var>)/d<var class="sym">t</var>
+&nbsp;=&nbsp; <var class="sym">P<sub>m</sub></var> −
+<var class="sym">P<sub>e</sub></var> −
+<var class="sym">K<sub>D</sub></var> <var class="sym">Δω</var>
+</div>
+
+<div class="eq">
+d<var class="sym">δ</var>/d<var class="sym">t</var> &nbsp;=&nbsp;
+<var class="sym">ω<sub>0</sub></var> <var class="sym">Δω</var>
+</div>
+
+<p>The damping term <var class="sym">K<sub>D</sub> Δω</var> is added here
+by convention, representing effects — turbine friction, damper windings,
+frequency-sensitive load — that oppose a speed deviation. This series
+always writes that coefficient as <var class="sym">K<sub>D</sub></var>,
+multiplying the per-unit speed deviation <var class="sym">Δω</var>. A
+second convention exists in the literature, where a damping torque is
+instead written proportional to the speed deviation in electrical rad/s
+and called <var class="sym">D</var>, so that
+<var class="sym">K<sub>D</sub></var> = <var class="sym">ω<sub>0</sub></var>
+<var class="sym">D</var>; this lesson names that alternative once and
+does not use it — mixing the two conventions inside one model multiplies
+the damping coefficient, and so the damping ratio, by
+<var class="sym">ω<sub>0</sub></var> — a factor of 314 at 50&nbsp;Hz (or
+its reciprocal). A <var class="sym">D</var> quoted per mechanical rad/s
+adds a further factor of the pole-pair count.</p>
+
+<p>Read as a block diagram, the frequency dynamics is one integrator
+with one feedback path: the power imbalance
+<var class="sym">P<sub>m</sub></var> − <var class="sym">P<sub>e</sub></var>,
+minus a damping signal fed back from the output, is scaled by
+1/(2<var class="sym">H</var>) and integrated to produce
+<var class="sym">Δω</var>; that in turn is scaled by
+<var class="sym">ω<sub>0</sub></var> and integrated again to produce the
+rotor angle <var class="sym">δ</var>. The second integrator is
+downstream: in this isolated model <var class="sym">δ</var> does not feed
+back into <var class="sym">Δω</var> (in Lesson 2 it does, through
+<var class="sym">P<sub>e</sub></var>). Figure 1.1 draws this
+signal-flow structure.</p>
+
+<div class="figure">
+<svg viewBox="0 0 640 260" role="img"
+     aria-label="Block diagram of the swing equation as two integrators with a damping feedback path">
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3"
+        orient="auto">
+<path d="M0,0 L6,3 L0,6 Z" fill="#cbd5e1"/>
+</marker>
+</defs>
+<style>
+.blk { fill:#0b1220; stroke:#334155; stroke-width:1.5; }
+.lbl { fill:#e2e8f0; font-size:13px; font-family:inherit; text-anchor:middle; }
+.slbl { fill:#94a3b8; font-size:11px; font-family:inherit; text-anchor:middle; }
+.wire { stroke:#cbd5e1; stroke-width:1.5; fill:none; marker-end:url(#arrow); }
+.acc { fill:#2dd4bf; }
+</style>
+<!-- summing junction -->
+<circle cx="90" cy="90" r="18" class="blk"/>
+<text x="90" y="95" class="lbl" font-size="16">&#931;</text>
+<line x1="20" y1="70" x2="72" y2="83" class="wire"/>
+<text x="45" y="60" class="lbl">P<tspan baseline-shift="sub" font-size="9">m</tspan></text>
+<line x1="20" y1="110" x2="72" y2="97" class="wire"/>
+<text x="45" y="130" class="lbl">&#8722;P<tspan baseline-shift="sub" font-size="9">e</tspan></text>
+<!-- to integrator 1 -->
+<line x1="108" y1="90" x2="180" y2="90" class="wire"/>
+<rect x="180" y="55" width="130" height="70" rx="6" class="blk"/>
+<text x="245" y="85" class="lbl acc">1</text>
+<text x="245" y="102" class="slbl">2H &#8747; dt</text>
+<line x1="180" y1="93" x2="309" y2="93" stroke="#334155" stroke-width="1"/>
+<!-- output dw -->
+<line x1="310" y1="90" x2="380" y2="90" class="wire"/>
+<text x="350" y="75" class="lbl">&#916;&#969;</text>
+<!-- branch down to feedback -->
+<line x1="380" y1="90" x2="380" y2="190" stroke="#cbd5e1" stroke-width="1.5"/>
+<line x1="380" y1="190" x2="330" y2="190" class="wire"/>
+<rect x="240" y="170" width="90" height="40" rx="6" class="blk"/>
+<text x="285" y="195" class="lbl">K<tspan baseline-shift="sub" font-size="9">D</tspan></text>
+<polyline points="240,190 90,190 90,110" class="wire"/>
+<text x="100" y="128" class="lbl">&#8722;</text>
+<text x="150" y="205" class="slbl">damping feedback</text>
+<!-- continue dw to second integrator -->
+<line x1="380" y1="90" x2="430" y2="90" class="wire"/>
+<rect x="430" y="55" width="130" height="70" rx="6" class="blk"/>
+<text x="495" y="85" class="lbl acc">&#969;<tspan baseline-shift="sub" font-size="9">0</tspan></text>
+<text x="495" y="102" class="slbl">&#8747; dt</text>
+<line x1="430" y1="93" x2="559" y2="93" stroke="#334155" stroke-width="1"/>
+<line x1="560" y1="90" x2="620" y2="90" class="wire"/>
+<text x="600" y="75" class="lbl">&#948;</text>
+<text x="320" y="30" class="slbl">Fig. 1.1 &#8212; imbalance in, &#916;&#969; and &#948; out, one feedback path</text>
+</svg>
+<p class="caption">Fig. 1.1. The swing equation drawn as signal flow: a
+power imbalance enters a summing junction, is integrated once (gain
+1/2<var class="sym">H</var>) to the per-unit speed deviation
+<var class="sym">Δω</var>, fed back through a damping gain
+<var class="sym">K<sub>D</sub></var>, and integrated a second time (gain
+<var class="sym">ω<sub>0</sub></var>) to the rotor angle
+<var class="sym">δ</var>. In this model <var class="sym">Δω</var> is the
+integral of the power imbalance minus the damping signal, scaled by
+1/2<var class="sym">H</var>; it has no other input.</p>
+</div>
+
+<h3>Aggregating the whole grid</h3>
+
+<p>Every synchronous machine on the grid obeys its own copy of the swing
+equation, all sharing the same <var class="sym">Δω</var> because — as
+argued above — they run at the same frequency. Summing the individual
+equations of <var class="sym">N</var> machines (index
+<var class="sym">i</var>), each with its own
+<var class="sym">H<sub>i</sub></var> and rating
+<var class="sym">S<sub>i</sub></var> (MVA), after multiplying each
+machine's equation by <var class="sym">S<sub>i</sub></var> to convert its
+per-unit powers to MW (with <var class="sym">K<sub>D</sub></var> = 0):</p>
+
+<div class="eq">
+&#931;<sub><var class="sym">i</var></sub> 2<var class="sym">H<sub>i</sub></var>
+<var class="sym">S<sub>i</sub></var>
+d(<var class="sym">Δω</var>)/d<var class="sym">t</var> &nbsp;=&nbsp;
+&#931;<sub><var class="sym">i</var></sub>
+(<var class="sym">P<sub>m,i</sub></var> −
+<var class="sym">P<sub>e,i</sub></var>) <var class="sym">S<sub>i</sub></var>
+</div>
+
+<p>This is one system-wide integrator with total stored energy</p>
+
+<div class="eq">
+<var class="sym">E<sub>kin,sys</sub></var> &nbsp;=&nbsp;
+&#931;<sub><var class="sym">i</var></sub>
+<var class="sym">H<sub>i</sub></var> <var class="sym">S<sub>i</sub></var>
+&nbsp;(MW·s)
+</div>
+
+<p>The sum runs over the machines still connected after the disturbance:
+the tripped station's rotor leaves the system, so the 200&nbsp;GVA·s of
+the opening problem is the stored energy <i>after</i> the trip.</p>
+
+<p>Convert the per-unit deviation to hertz with
+<var class="sym">Δf</var> = <var class="sym">f<sub>0</sub></var>
+<var class="sym">Δω</var> (written <code>df</code> in code). Specialize to
+a single step loss of generation <var class="sym">ΔP</var> (MW, written
+<code>DP</code> in code) with load unchanged and no governor response, so
+the right-hand side of the summed equation is
+&#8722;<var class="sym">ΔP</var> (the case of the opening problem). The
+swing equation reduces to:</p>
+
+<div class="eq">
+d(<var class="sym">Δf</var>)/d<var class="sym">t</var>
+&nbsp;=&nbsp; &#8722;<var class="sym">f<sub>0</sub></var>
+<var class="sym">ΔP</var> / (2
+<var class="sym">E<sub>kin,sys</sub></var>)
+</div>
+
+<p>The right-hand side is a constant, so this is the simplest possible
+integrator: a fixed slope. That constant slope is the
+<b>rate of change of frequency</b>, RoCoF:</p>
+
+<div class="eq">
+RoCoF<sub>0</sub> &nbsp;=&nbsp;
+<var class="sym">f<sub>0</sub></var> <var class="sym">ΔP</var> /
+(2 <var class="sym">E<sub>kin,sys</sub></var>)
+&nbsp;=&nbsp; 50 &times; 1000 / (2 &times; 200000)
+&nbsp;=&nbsp; 0.125&nbsp;Hz/s
+</div>
+
+<p><b>derived here</b>, with <var class="sym">f<sub>0</sub></var> in Hz,
+<var class="sym">ΔP</var> in MW, and
+<var class="sym">E<sub>kin,sys</sub></var> in MW·s (200&nbsp;GVA·s =
+200,000&nbsp;MW·s). This is the whole answer to the opening problem: the
+grid's frequency falls in direct proportion to the size of the power lost
+and in inverse proportion to how much kinetic energy is spinning at the
+moment it is lost. RoCoF<sub>0</sub> is defined here as a positive
+magnitude; the frequency falls, so d(<var class="sym">Δf</var>)/d<var class="sym">t</var>
+= &#8722;RoCoF<sub>0</sub>. The single assumption that makes the aggregation
+valid — treating every machine's <var class="sym">Δω</var> as the same
+number — is that all machines swing together as one coherent mass
+during the seconds that matter. Lesson 8 relaxes exactly that assumption
+and shows machines that do not swing together.</p>
+
+<h2>The code</h2>
+
+<p>The listing below integrates the constant-slope equation above with
+forward Euler and reports the first time step at which frequency crosses
+each threshold. Forward Euler updates the state by
+<var class="sym">Δf</var> ← <var class="sym">Δf</var> −
+RoCoF<sub>0</sub> · <var class="sym">h</var> at every step of size
+<var class="sym">h</var> = <code>H_STEP</code>. The code variable
+<code>rocof0</code> carries the sign, <code>rocof0</code> =
+&#8722;RoCoF<sub>0</sub>, so the code prints &#8722;0.125. Because the
+right-hand side here does not depend on <var class="sym">Δf</var> or
+<var class="sym">t</var> — it is a plain constant — forward Euler makes
+zero truncation error at every step: the numerical answer equals the
+closed form to floating-point precision. Lesson 3 uses this same solver
+on an equation whose right-hand side is <i>not</i> constant, and shows
+the same solver drifting from the true answer.</p>
+
+<pre><code>"""RoCoF integrator for the L1 opening problem (forward Euler)."""
+F0 = 50.0
+E_KIN = 200e3
+DP = 1000.0
+H_STEP = 0.01
+EPS = 1e-9
+
+rocof0 = -F0 * DP / (2.0 * E_KIN)
+df = 0.0
+n = 0
+t_92 = None
+t_88 = None
+while n &lt; 2000:
+    df += rocof0 * H_STEP
+    n += 1
+    t = n * H_STEP
+    if t_92 is None and df &lt;= -0.8 + EPS:
+        t_92 = t
+    if t_88 is None and df &lt;= -1.2 + EPS:
+        t_88 = t
+        break
+
+print("RoCoF0 = %.3f Hz/s" % rocof0)
+print("t(49.2 Hz) = %.2f s" % t_92)
+print("t(48.8 Hz) = %.2f s" % t_88)
+</code></pre>
+
+<p>Actual output of this listing, run as printed:</p>
+
+<pre><code>RoCoF0 = -0.125 Hz/s
+t(49.2 Hz) = 6.40 s
+t(48.8 Hz) = 9.60 s
+</code></pre>
+
+<p><b>computed by the listing</b>. The <code>EPS</code> guard exists
+because 640 additions of the floating-point value
+<code>-0.00125</code> land at <code>-0.7999999999999885</code>, about
+1.4 parts in 10<sup>14</sup> short of the exact <code>-0.8</code> — without
+the guard the loop overshoots by one 0.01&nbsp;s step and prints
+6.41&nbsp;s. The 48.8&nbsp;Hz threshold has the same problem: 960
+additions give <code>-1.19999999999998</code>, and without the guard the
+loop prints 9.61&nbsp;s. The physics is not in question here, only the arithmetic:
+the true crossing is exactly 6.40&nbsp;s, since RoCoF is a plain constant
+by assumption in this lesson.</p>
+
+<p>Figure 1.2 uses the same closed-form relation at three values of
+<var class="sym">E<sub>kin,sys</sub></var>, to show what changing the
+grid's stored energy does to the two crossing times.</p>
+
+<div class="figure">
+<svg viewBox="0 0 640 400" role="img"
+     aria-label="Frequency versus time for three values of system kinetic energy, with 49.2 hertz and 48.8 hertz threshold lines">
+<style>
+.ax { stroke:#334155; stroke-width:1; }
+.gl { stroke:#334155; stroke-width:1; stroke-dasharray:2,3; }
+.thr { stroke:#94a3b8; stroke-width:1; stroke-dasharray:5,4; }
+.axlbl { fill:#94a3b8; font-size:11px; font-family:inherit; }
+.axlbl.end { text-anchor:end; }
+.axlbl.mid { text-anchor:middle; }
+.l100 { stroke:#fb923c; stroke-width:2.5; fill:none; }
+.l200 { stroke:#2dd4bf; stroke-width:2.5; fill:none; }
+.l400 { stroke:#e2e8f0; stroke-width:2.5; fill:none; }
+.tlbl { font-size:10px; font-family:inherit; text-anchor:middle; }
+</style>
+<!-- axes -->
+<line x1="60" y1="340" x2="620" y2="340" class="ax"/>
+<line x1="60" y1="20" x2="60" y2="340" class="ax"/>
+<!-- x gridlines/labels: t=0,4,8,12,16,20 -->
+<text x="60" y="358" class="axlbl mid">0</text>
+<text x="172" y="358" class="axlbl mid">4</text>
+<text x="284" y="358" class="axlbl mid">8</text>
+<text x="396" y="358" class="axlbl mid">12</text>
+<text x="508" y="358" class="axlbl mid">16</text>
+<text x="620" y="358" class="axlbl mid">20</text>
+<text x="340" y="378" class="axlbl mid">time (s)</text>
+<!-- y labels: f = 50.0,49.6,49.2,48.8,48.4 -->
+<text x="52" y="42" class="axlbl end">50.0</text>
+<text x="52" y="118" class="axlbl end">49.6</text>
+<text x="52" y="193" class="axlbl end">49.2</text>
+<text x="52" y="269" class="axlbl end">48.8</text>
+<text x="52" y="344" class="axlbl end">48.4</text>
+<text x="20" y="180" class="axlbl mid" transform="rotate(-90 20 180)">Hz</text>
+<!-- threshold lines -->
+<line x1="60" y1="189.4" x2="620" y2="189.4" class="thr"/>
+<text x="66" y="185" class="axlbl">49.2 Hz</text>
+<line x1="60" y1="264.7" x2="620" y2="264.7" class="thr"/>
+<text x="66" y="260" class="axlbl">48.8 Hz</text>
+<!-- frequency lines, clipped at bottom axis -->
+<line x1="60" y1="38.8" x2="239.2" y2="340" class="l100"/>
+<line x1="60" y1="38.8" x2="418.4" y2="340" class="l200"/>
+<line x1="60" y1="38.8" x2="620" y2="274.1" class="l400"/>
+<!-- crossing markers on 49.2 line -->
+<circle cx="149.6" cy="189.4" r="3.5" class="dot" fill="#fb923c"/>
+<circle cx="239.2" cy="189.4" r="3.5" class="dot" fill="#2dd4bf"/>
+<circle cx="418.4" cy="189.4" r="3.5" class="dot" fill="#e2e8f0"/>
+<!-- crossing markers on 48.8 line -->
+<circle cx="194.4" cy="264.7" r="3.5" class="dot" fill="#fb923c"/>
+<circle cx="328.8" cy="264.7" r="3.5" class="dot" fill="#2dd4bf"/>
+<circle cx="597.6" cy="264.7" r="3.5" class="dot" fill="#e2e8f0"/>
+<text x="149.6" y="182" class="tlbl" fill="#fb923c">3.2</text>
+<text x="239.2" y="182" class="tlbl" fill="#2dd4bf">6.4</text>
+<text x="418.4" y="182" class="tlbl" fill="#e2e8f0">12.8</text>
+<text x="194.4" y="257" class="tlbl" fill="#fb923c">4.8</text>
+<text x="328.8" y="257" class="tlbl" fill="#2dd4bf">9.6</text>
+<text x="597.6" y="257" class="tlbl" fill="#e2e8f0">19.2</text>
+<!-- legend -->
+<rect x="430" y="30" width="16" height="3" fill="#fb923c"/>
+<text x="450" y="36" class="axlbl">100 GVA&#183;s</text>
+<rect x="430" y="46" width="16" height="3" fill="#2dd4bf"/>
+<text x="450" y="52" class="axlbl">200 GVA&#183;s</text>
+<rect x="430" y="62" width="16" height="3" fill="#e2e8f0"/>
+<text x="450" y="68" class="axlbl">400 GVA&#183;s</text>
+</svg>
+<p class="caption">Fig. 1.2. Frequency against time for the opening
+problem's 1000&nbsp;MW loss at three values of
+<var class="sym">E<sub>kin,sys</sub></var>: 100, 200, and 400
+GVA·s, each a straight line because RoCoF is constant while
+<var class="sym">K<sub>D</sub></var> = 0 and no control acts. Times to
+49.2&nbsp;Hz: 3.2, 6.4, 12.8&nbsp;s. Times to 48.8&nbsp;Hz: 4.8, 9.6,
+19.2&nbsp;s. Halving the stored energy exactly halves every crossing
+time; doubling it doubles them — RoCoF is inversely proportional to
+<var class="sym">E<sub>kin,sys</sub></var>, so time-to-threshold is
+directly proportional to it.</p>
+</div>
+
+<h2>What this model captures, and what it misses</h2>
+
+<div class="card limits">
+<ul>
+<li><b>No governor or primary frequency response.</b> Real generators
+change <var class="sym">P<sub>m</sub></var> within seconds of a
+frequency deviation; this lesson holds <var class="sym">P<sub>m</sub></var>
+fixed after the trip. Lesson 8 adds governor response and repeats this
+same event.</li>
+<li><b>No load damping <var class="sym">D<sub>load</sub></var>.</b>
+Real loads (motors, especially) draw less power as frequency falls,
+which acts like a damping term separate from <var class="sym">K<sub>D</sub></var>
+above; this lesson sets it to zero. Lesson 8's exercises restore it.</li>
+<li><b>One aggregated mass.</b> Treating the whole grid as a single
+<var class="sym">E<sub>kin,sys</sub></var> assumes every machine's
+<var class="sym">Δω</var> is identical at every instant. Real machines
+oscillate against each other before settling to a common frequency.
+Lesson 8 relaxes this into a multi-mass model.</li>
+<li><b>No network.</b> This lesson has no buses, lines, or power flow —
+only one lumped power balance. Lesson 2 introduces the network.</li>
+</ul>
+</div>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<p><b>1. (Derivational)</b> A 4-pole, 60&nbsp;Hz, 200&nbsp;MVA machine
+has a rotor with <var class="sym">J</var> = 5000&nbsp;kg·m². Compute
+<var class="sym">H</var>.</p>
+<details>
+<summary>Answer target</summary>
+<p><var class="sym">ω<sub>m</sub></var> = 2π·60 / 2 = 188.5&nbsp;rad/s
+(a 4-pole machine has 2 pole pairs, so mechanical speed = electrical
+speed / 2 pole pairs); <var class="sym">E<sub>kin</sub></var> = ½
+<var class="sym">J</var> <var class="sym">ω<sub>m</sub></var>² =
+88.8&nbsp;MJ; <var class="sym">H</var> =
+<var class="sym">E<sub>kin</sub></var> / <var class="sym">S<sub>base</sub></var>
+= 88.8&nbsp;MJ / 200&nbsp;MVA = 0.444&nbsp;s. The value
+<var class="sym">J</var> = 5000&nbsp;kg·m² is illustrative, not data for
+a real machine. Typical turbo-set values run 2&nbsp;s to 8&nbsp;s
+<span class="status cited">cited [S01 — verify]</span>, 4.5 to 18 times
+this result; a real set's <var class="sym">H</var> comes from the total
+<var class="sym">J</var> of the generator rotor and the turbine on the
+same shaft.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>2. (Computational)</b> Change <code>E_KIN</code> in the listing to
+<code>100e3</code> and to <code>400e3</code> and report the time to
+49.2&nbsp;Hz for each.</p>
+<details>
+<summary>Answer target</summary>
+<p>100e3 → 3.20&nbsp;s; 400e3 → 12.80&nbsp;s, matching Fig. 1.2.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>3. (Computational)</b> A rate-of-change-of-frequency relay set at
+1&nbsp;Hz/s <span class="status cited">cited [S16 — verify]</span> trips
+embedded generation. Find the <var class="sym">E<sub>kin,sys</sub></var>
+below which a 1000&nbsp;MW loss at 50&nbsp;Hz trips it.</p>
+<details>
+<summary>Answer target</summary>
+<p><var class="sym">E<sub>kin,sys</sub></var> =
+<var class="sym">f<sub>0</sub></var> <var class="sym">ΔP</var> /
+(2 &times; 1) = 50 &times; 1000 / 2 = 25,000&nbsp;MW·s =
+25&nbsp;GVA·s. Note on sources: two RoCoF figures circulate in the
+industry and must never be merged. The 1&nbsp;Hz/s figure used here is
+the one applied in Ireland and in Great Britain loss-of-mains
+protection policy <span class="status cited">cited [S16 —
+verify]</span> — it is not the ENTSO-E figure, which is a withstand
+capability of 2&nbsp;Hz/s measured over 500&nbsp;ms
+<span class="status cited">cited [S15 — verify]</span>, a different
+quantity for a different purpose.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>4. (Derivational)</b> Show that <var class="sym">H</var> has the
+unit second, and that <var class="sym">H</var> does not change when the
+machine is described on a different voltage base.</p>
+<details>
+<summary>Answer target</summary>
+<p>Units: <var class="sym">E<sub>kin</sub></var> has unit joule = W·s;
+<var class="sym">S<sub>base</sub></var> has unit W (or VA, dimensionally
+power); <var class="sym">H</var> = <var class="sym">E<sub>kin</sub></var> /
+<var class="sym">S<sub>base</sub></var> has unit W·s / W = s. Voltage
+base: neither <var class="sym">J</var> nor
+<var class="sym">ω<sub>m0</sub></var> in <var class="sym">E<sub>kin</sub></var>
+= ½ <var class="sym">J</var> <var class="sym">ω<sub>m0</sub></var>²
+depends on any chosen voltage base — they are mechanical quantities —
+and <var class="sym">S<sub>base</sub></var> is an apparent-power rating,
+also independent of voltage base by definition (it is the same MVA
+number whether you describe the machine's terminals in kV or in per
+unit of any <var class="sym">V<sub>base</sub></var>). So
+<var class="sym">H</var> is unchanged by a voltage-base change; it does
+change if you change <var class="sym">S<sub>base</sub></var> itself
+(for example, re-basing from the machine's own rating to a system
+base), since <var class="sym">H</var> is inversely proportional to
+<var class="sym">S<sub>base</sub></var>.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>5. (Conceptual)</b> Two machines on one grid run at 50.0&nbsp;Hz
+and 50.1&nbsp;Hz for one minute. Compute the angle between them after
+that minute and say why the grid cannot operate that way.</p>
+<details>
+<summary>Answer target</summary>
+<p>The angle accumulates at 2π times the frequency difference:
+2π &times; 0.1 &times; 60 = 37.7&nbsp;rad, which is 37.7 / 2π = 6.0
+full turns — six complete "slips" of one machine's rotor angle past
+the other's in one minute. The grid cannot operate this way because the
+power transferred between two machines connected through a reactance
+goes as sin(<var class="sym">δ</var>), so every time the angle
+<var class="sym">δ</var> sweeps through a multiple of π (180°) the power
+flow between them reverses sign — 12 reversals in the minute — and every time it passes through
+±90° the machine is at its steady-state stability limit; a
+persistent frequency difference of 0.1&nbsp;Hz makes the machines slip
+poles continuously, which is loss of synchronism, not a steady operating
+state.</p>
+</details>
+</div>
+
+</main>
+</body>
+</html>

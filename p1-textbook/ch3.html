@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Chapter 3 — Grid-forming control: what it restores</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1;
+  --muted:#94a3b8; --acc1:#fb923c; --acc2:#2dd4bf;
+  --bd1:#1e293b; --bd2:#334155; --eqbg:#16213a; --thbg:#20304a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px; line-height:1.65; -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:46rem; margin:0 auto; padding:24px 16px 96px}
+h1,h2,h3{line-height:1.25; font-weight:650}
+h1{font-size:1.85rem; margin:0 0 8px}
+h2{font-size:1.3rem; margin:44px 0 12px; color:var(--acc2);
+   border-top:1px solid var(--bd2); padding-top:22px}
+h3{font-size:1.06rem; margin:28px 0 8px; color:var(--text)}
+p{margin:0 0 14px; color:var(--text2)}
+strong{color:var(--text); font-weight:650}
+var{font-style:italic; color:var(--text)}
+sub,sup{font-size:0.72em}
+a{color:var(--acc2)}
+.lede{font-size:1.05rem; color:var(--text2)}
+.kicker{color:var(--muted); text-transform:uppercase; letter-spacing:.09em;
+  font-size:.74rem; margin:0 0 6px}
+.card{background:var(--card); border:1px solid var(--bd2);
+  border-radius:10px; padding:16px 16px 4px; margin:18px 0}
+.card > .kicker{margin-bottom:8px}
+.res{background:var(--card); border:1px solid var(--bd2);
+  border-left:4px solid var(--acc1); border-radius:8px;
+  padding:14px 16px 2px; margin:20px 0}
+.res.ex{border-left-color:var(--acc2)}
+.res.rem{border-left-color:var(--muted)}
+.res .head{font-weight:700; color:var(--text); margin:0 0 8px;
+  display:block; font-size:1rem}
+.res .rid{font-weight:400; color:var(--muted); font-size:.82rem;
+  letter-spacing:.04em; margin-left:6px}
+.status{display:inline-block; font-size:.74rem; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--bg); background:var(--acc1);
+  border-radius:4px; padding:1px 7px; margin-left:6px; vertical-align:2px;
+  font-weight:700}
+.status.cited{background:var(--muted)}
+.status.here{background:var(--acc2)}
+.eq{display:block; margin:16px 0; padding:10px 54px 10px 14px;
+  background:var(--eqbg); border:1px solid var(--bd2); border-radius:8px;
+  position:relative; color:var(--text); overflow-x:auto; line-height:1.9}
+.eq .n{position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:.85rem}
+.proof{border-left:2px solid var(--bd2); padding-left:14px; margin:14px 0}
+.proof .lbl{color:var(--acc1); font-weight:650; font-size:.85rem;
+  text-transform:uppercase; letter-spacing:.06em}
+.tw{overflow-x:auto; margin:18px 0; border:1px solid var(--bd2);
+  border-radius:8px; background:var(--card)}
+table{border-collapse:collapse; width:100%; min-width:32rem; font-size:.92rem}
+caption{caption-side:top; text-align:left; padding:10px 12px 8px;
+  color:var(--muted); font-size:.86rem}
+th,td{border-bottom:1px solid var(--bd2); padding:8px 11px;
+  text-align:left; vertical-align:top; color:var(--text2)}
+th{color:var(--text); font-weight:650; background:var(--thbg)}
+tr:last-child td{border-bottom:none}
+figure{margin:24px 0; background:var(--card); border:1px solid var(--bd2);
+  border-radius:10px; padding:14px 12px 4px}
+figure svg{display:block; width:100%; height:auto}
+figcaption{color:var(--muted); font-size:.87rem; margin-top:10px;
+  padding:0 2px 10px; line-height:1.55}
+figcaption b{color:var(--text2)}
+.exercise{background:var(--card); border:1px solid var(--bd2);
+  border-radius:8px; padding:14px 16px 4px; margin:16px 0}
+.exercise .head{font-weight:650; color:var(--acc1); display:block;
+  margin-bottom:6px; font-size:.95rem}
+details{margin:6px 0 14px; border-top:1px dashed var(--bd2); padding-top:10px}
+summary{cursor:pointer; color:var(--acc2); font-size:.9rem; font-weight:600}
+details p{margin-top:10px; font-size:.95rem}
+ul,ol{color:var(--text2); margin:0 0 14px; padding-left:22px}
+li{margin:0 0 7px}
+.cite{color:var(--muted); font-size:.88rem}
+code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+  font-size:.9em; color:var(--acc2); background:var(--eqbg);
+  border:1px solid var(--bd2); border-radius:4px; padding:0 4px}
+hr{border:none; border-top:1px solid var(--bd2); margin:36px 0}
+.small{font-size:.9rem}
+@media (max-width:420px){
+  body{font-size:16px} .wrap{padding:18px 16px 72px}
+  h1{font-size:1.5rem} .eq{padding-right:14px; padding-bottom:26px}
+  .eq .n{top:auto; bottom:6px; transform:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="kicker">Grid-forming inverters and power-system stability · Chapter 3</p>
+<h1>Grid-forming control: what it restores</h1>
+<p class="lede">Four control families, one swing equation, and two bounds that a
+rotor does not have.</p>
+
+<div class="card">
+<p class="kicker">Central result of this chapter</p>
+<p><strong>Theorem 3.7 (R32) and Corollary 3.8 (R33).</strong> Droop control with
+a power measurement filter, a virtual synchronous machine, matching control, and
+dispatchable virtual oscillator control all reduce, to first order about a
+symmetric operating point, to the same angle model: d<var>&theta;</var>/d<var>t</var>
+= <var>&omega;</var>, driven by one transfer function from power imbalance to
+frequency. Each family fixes a pair (<var>H</var><sub>eq</sub>,
+<var>K</var><sub>D,eq</sub>). Each therefore restores a synchronizing torque
+coefficient <var>K</var><sub>s</sub> = (<var>E</var> <var>V</var><sub>g</sub> /
+<var>X</var>) cos <var>&delta;</var><sub>0</sub> of the same form as the machine
+of Chapter 1. The inertia it supplies is bounded by the usable DC energy reserve
+<var>E</var><sub>res</sub> and by the current limit <var>I</var><sub>max</sub>.
+Neither bound has a counterpart in Chapter 1.</p>
+</div>
+
+<h2 id="s30">3.0 The problem this chapter answers</h2>
+
+<p>Chapter 2 ended with a negative result. A fleet of grid-following converters
+supplies no synchronizing torque coefficient and no inertia constant (R23). Its
+angle is a measurement, not a state. Its small-signal gain
+<var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos
+<var>&theta;</var><sub>0</sub> is set by the grid, and it falls to zero at the
+current existence bound (R18). Replace machines with that fleet and you remove
+both terms that Chapter 1 showed the stability of a power system rests on: the
+spring constant <var>K</var><sub>s</sub> and the mass 2<var>H</var>.</p>
+
+<p>This chapter states the repair under test. Grid-forming control makes the
+converter carry its own angle as an internal state. The claim made for it in
+grid codes is stronger than that: the claim is that a grid-forming converter
+supplies inertia <span class="cite">[S17, National Grid ESO, Grid Code
+modification GC0137, <em>Minimum Specification Required for Provision of GB Grid
+Forming Capability</em>, the inertia requirement &mdash; location not yet checked
+&mdash; verify]</span>. Four control families compete for the
+job, and their published descriptions look nothing alike. One is an algebraic
+droop line. One integrates a copy of the swing equation. One measures its own DC
+capacitor voltage. One is a nonlinear oscillator with a cited almost-global
+synchronization proof (Remark 3.3).</p>
+
+<p>Three questions follow, and this chapter answers all three.</p>
+<ol>
+<li><strong>Are the four families different?</strong> Near an operating point
+they are not. Theorem 3.7 puts all four into one model and reads off
+(<var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub>) for each.</li>
+<li><strong>How much inertia does a converter get for free?</strong> Droop
+control with a measurement filter already is a swing equation, with
+<var>H</var><sub>eq</sub> = 1 / (2 <var>m</var><sub>p</sub>
+<var>&omega;</var><sub>c</sub>). Example 3.1 computes three values of it.</li>
+<li><strong>Does an inertia number mean the energy exists?</strong> No.
+Example 3.2 computes the energy in a 1 MVA converter's DC link, 14.4 kJ, and the
+energy a 5-second inertial response asks of a 100 MVA unit, 16 MJ. The two
+numbers differ by a factor of 1111; scaled to one rating the factor is 11.11
+(Remark 3.2). Corollary 3.8 turns that gap into a bound.</li>
+</ol>
+
+<div class="card">
+<p class="kicker">Notation used in this chapter</p>
+<p class="small">Every symbol below is defined in the prose before its first use.
+The first list is taken from the book-wide notation table. The second list is
+<strong>local to this chapter</strong>: these symbols are not in the book-wide
+table and are declared here.</p>
+
+<p class="small"><strong>From the book-wide table.</strong>
+<var>&theta;</var> internal angle state (rad);
+<var>E</var> internal voltage magnitude commanded (pu);
+<var>&omega;</var> electrical angular frequency (rad/s);
+<var>&omega;</var><sub>0</sub> rated electrical angular frequency (rad/s);
+<var>f</var><sub>0</sub> rated frequency (Hz);
+<var>&delta;&omega;</var> per-unit speed deviation, (<var>&omega;</var> &minus;
+<var>&omega;</var><sub>0</sub>)/<var>&omega;</var><sub>0</sub>;
+<var>m</var><sub>p</sub> active-power droop gain (pu);
+<var>n</var><sub>q</sub> reactive-power droop gain (pu);
+<var>&omega;</var><sub>c</sub> power measurement filter cutoff (rad/s);
+<var>&omega;</var><sub>ref</sub>, <var>V</var><sub>ref</sub> frequency and voltage
+set points (pu);
+<var>P</var><sub>ref</sub>, <var>Q</var><sub>ref</sub> power set points (pu);
+<var>P</var>, <var>Q</var> active and reactive power at the point of connection
+(pu);
+<var>H</var> inertia constant of a machine (s);
+<var>H</var><sub>v</sub>, <var>K</var><sub>D,v</sub> chosen virtual inertia
+constant (s) and virtual damping (pu);
+<var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub> equivalent inertia
+constant (s) and equivalent damping (pu) of a control law;
+<var>K</var><sub>D</sub> swing damping coefficient (pu);
+<var>P</var><sub>m</sub>, <var>P</var><sub>e</sub> mechanical and electrical power
+(pu);
+<var>k</var><sub>&theta;</sub> matching gain (rad/(s&middot;V));
+<var>v</var><sub>dc</sub>, <var>v</var><sub>dc0</sub> DC-link voltage and its
+operating point (V);
+<var>C</var><sub>dc</sub> DC-link capacitance (F);
+<var>S</var><sub>base</sub> base apparent power (VA);
+<var>&eta;</var> dispatchable-virtual-oscillator gain (1/s);
+<var>&kappa;</var> its rotation angle (rad);
+<var>E</var><sub>res</sub> usable DC-side energy reserve (J);
+<var>E</var><sub>kin</sub> kinetic energy stored by a unit (J);
+<var>I</var><sub>max</sub> converter current limit (pu);
+<var>i</var><sub>d</sub>, <var>i</var><sub>q</sub> converter current in the dq
+frame (pu);
+<var>&alpha;</var><sub>c</sub> inner current-loop bandwidth (rad/s);
+<var>K</var><sub>s</sub> synchronizing torque coefficient (pu/rad);
+<var>&delta;</var><sub>0</sub> equilibrium angle (rad);
+<var>X</var> total reactance between the internal voltage and the grid source
+(pu);
+<var>V</var><sub>g</sub> grid Thevenin voltage magnitude (pu);
+<var>X</var><sub>g</sub> grid Thevenin reactance (pu);
+SCR short-circuit ratio.</p>
+
+<p class="small"><strong>Local notation, declared here.</strong>
+<var>s</var> &mdash; the Laplace variable (1/s).
+&Delta;(&middot;) &mdash; the small-signal deviation of a quantity from its
+operating point; &Delta;<var>P</var> is written for
+<var>P</var> &minus; <var>P</var><sub>ref</sub> and
+&Delta;<var>&omega;</var> for the deviation of <var>&delta;&omega;</var>.
+<var>P</var><sub>f</sub> &mdash; the output of the power measurement filter (pu).
+<var>i</var><sub>dc</sub>, <var>i</var><sub>dc0</sub> &mdash; DC-source current
+and its operating point (A).
+<var>k</var><sub>dc</sub> &mdash; droop gain of the DC source current on DC
+voltage (A/V).
+<var>k</var><sub>v</sub> &mdash; amplitude-regulation gain of the dispatchable
+virtual oscillator (dimensionless). The letter &alpha; is <em>not</em> used for
+it, because &alpha; is the stationary Clarke axis and
+<var>&alpha;</var><sub>c</sub> is the current-loop bandwidth.
+&Delta;<var>f</var> &mdash; a frequency excursion in hertz.
+<var>Z</var><sub>f</sub> &mdash; the output impedance a grid-forming converter
+presents behind its internal voltage (pu).
+<var>t</var> &mdash; time (s).
+<var>v</var>, <var>i</var> &mdash; the terminal voltage and current of the
+converter, written as complex phasors in equation (3.1) (pu).
+<var>i</var><sub>0</sub> &mdash; the per-unit current the converter carries at its
+dispatch point, before any inertial contribution (pu).
+<var>P</var><sub>0</sub> &mdash; the per-unit power drawn from the DC source at
+the operating point,
+<var>v</var><sub>dc0</sub><var>i</var><sub>dc0</sub>/<var>S</var><sub>base</sub> (pu).
+<var>Q</var><sub>f</sub> &mdash; the output of the reactive-power measurement
+filter (pu), the companion of <var>P</var><sub>f</sub> in equation (3.6).
+<var>&delta;</var> &mdash; for a converter, the angle by which the internal
+voltage <var>E</var> &ang; <var>&theta;</var> leads the grid source voltage
+(rad); it is <var>&theta;</var> minus the source angle. It takes the place of
+the rotor angle of Chapter 1, and <var>&delta;</var><sub>0</sub> is its
+equilibrium value.
+RoCoF &mdash; rate of change of frequency, |d<var>f</var>/d<var>t</var>|, in
+Hz/s, used in this chapter as a positive magnitude. The book-wide definition is
+in Chapter 4; this chapter needs only the symbol.
+headroom &mdash; the current a converter can add above its dispatch before it
+reaches its limit, <var>I</var><sub>max</sub> &minus; <var>i</var><sub>0</sub>
+(pu).
+Two book-wide symbols are reused with a stated substitution:
+<var>X</var> and <var>V</var><sub>g</sub> carry their book meanings, and
+<var>E</var> replaces Chapter 1's <var>E&prime;</var> in
+<var>K</var><sub>s</sub> = (<var>E</var> <var>V</var><sub>g</sub> /
+<var>X</var>) cos <var>&delta;</var><sub>0</sub>, because a converter has no
+transient reactance behind which an emf decays.</p>
+</div>
+
+<h2 id="s31">3.1 The terminal definition</h2>
+
+<p>A control law is a set of equations inside a box. Two vendors can write
+different equations and produce the same behaviour at the terminals of the box.
+The grid does not see the equations. It sees the terminals. So the definition of
+grid-forming control is a statement about terminals.</p>
+
+<div class="res def" id="def-3-1" data-rid="R24">
+<span class="head">Definition 3.1 &mdash; grid-forming control
+<span class="rid">R24</span><span class="status here">definition</span></span>
+<p>A converter is <strong>grid-forming</strong> when, over the
+fundamental-frequency timescale, it behaves at its point of connection as a
+voltage source of magnitude <var>E</var> and angle <var>&theta;</var> behind an
+output impedance <var>Z</var><sub>f</sub>, and when <var>&theta;</var> is an
+internal state of the controller, advanced by its own integrator:</p>
+<p class="eq"><var>v</var> = <var>E</var> &ang;<var>&theta;</var> &minus;
+<var>Z</var><sub>f</sub> <var>i</var>,&nbsp;&nbsp;&nbsp;
+d<var>&theta;</var>/d<var>t</var> = <var>&omega;</var><span class="n">(3.1)</span></p>
+<p>with <var>&omega;</var> produced by the controller from its own measurements of
+power, DC voltage, or its own internal states. The defining property is that no
+external angle measurement appears on the right-hand side of the
+<var>&theta;</var> equation.</p>
+</div>
+
+<p>Read equation (3.1) against the grid-following model of Chapter 2 (R17) term
+by term. Three differences do the work.</p>
+
+<ul>
+<li><strong>Which variable is commanded.</strong> The grid-following converter of
+R17 commands current <var>i</var><sub>d</sub>, <var>i</var><sub>q</sub> and lets
+the terminal voltage fall where the network puts it. Equation (3.1) commands
+voltage and lets the current fall where the network puts it. This is the whole
+difference, and every other difference follows from it.</li>
+<li><strong>Where the angle comes from.</strong> In R17 the angle is
+<var>&theta;</var><sub>pll</sub>, the output of a phase-locked loop driven by the
+measured <var>v</var><sub>q</sub>. Remove the grid voltage and
+<var>&theta;</var><sub>pll</sub> has no input. In (3.1) the angle is
+<var>&theta;</var>, a state. Remove the grid voltage and <var>&theta;</var> keeps
+advancing at <var>&omega;</var>.</li>
+<li><strong>What happens as grid strength falls.</strong> R18 showed that a
+grid-following converter's loop gain is
+<var>K</var><sub>pll</sub> = <var>V</var><sub>g</sub> cos
+<var>&theta;</var><sub>0</sub>, which goes to zero at the current existence
+bound. Equation (3.1) has no such gain. Its angle <var>&theta;</var> advances
+whether or not a grid voltage exists, so no state of the controller loses its
+input when <var>X</var><sub>g</sub> rises. What the voltage source does hold is
+its own terminal magnitude <var>E</var>. Across a reactance <var>X</var> to a
+source <var>V</var><sub>g</sub>, the power it can export is bounded by the
+network's own limit <var>E</var> <var>V</var><sub>g</sub> / <var>X</var>, which
+is SCR &times; <var>E</var> &times; <var>V</var><sub>g</sub> in per unit when
+<var>X</var> = <var>X</var><sub>g</sub>, subject to the current limit
+<var>I</var><sub>max</sub> that &sect;3.7 treats. The R18 model, with no
+voltage support, peaks at SCR &times; <var>V</var><sub>g</sub><sup>2</sup>/2.
+At SCR = 1.2, <var>E</var> = 1.1 pu and <var>V</var><sub>g</sub> = 1.0 pu that
+is 1.32 pu against the 0.600 pu of Example 2.1, a factor 2.2. The spring
+constant that goes with the voltage source has the machine's form
+(<var>E</var> <var>V</var><sub>g</sub> / <var>X</var>) cos
+<var>&delta;</var><sub>0</sub> (R06); &sect;3.7 proves it for a converter. It
+falls as <var>X</var> rises, as a machine's does. The limiting case &mdash; an
+islanded network with no external source at all &mdash; is the case a
+grid-forming converter is built for and a grid-following converter cannot
+serve, because the converter's voltage and frequency are its own states.</li>
+</ul>
+
+<div class="res rem">
+<span class="head">Remark 3.1 &mdash; what the definition does not say</span>
+<p>Definition 3.1 says nothing about the inner control structure. A converter can
+satisfy (3.1) with a cascaded voltage-and-current loop, with a current loop whose
+reference is computed from a virtual impedance, or with direct modulation and no
+inner loop at all. Any claim of the form "grid-forming means no current control"
+is a claim about one implementation, not about the class. The classifier in this
+book is Definition 3.1 itself, a statement about terminals. Power-synchronization
+control is one published design that advances its angle from its own power
+measurement, in the sense of (3.1)
+<span class="cite">[S07, Zhang, Harnefors and Nee 2010, <em>Power-Synchronization
+Control of Grid-Connected Voltage-Source Converters</em>, the
+power-synchronization loop &mdash; location not yet checked &mdash;
+verify]</span>.</p>
+<p>Definition 3.1 also says nothing about energy: a converter satisfies (3.1)
+whether its DC side is a 4-hour battery or a photovoltaic array at maximum power
+point with no headroom at all. Corollary 3.8 repays that omission with two
+bounds.</p>
+</div>
+
+<p>One consequence follows at once. Because <var>&theta;</var> is a state and
+<var>E</var> is commanded, the exported power obeys the same algebraic law as a
+classical machine (R05), which is why &sect;3.7 can recover
+<var>K</var><sub>s</sub>. The rest of the chapter decides what dynamics sit
+behind <var>&theta;</var>.</p>
+
+<figure id="fig-3-1">
+<svg viewBox="0 0 440 430" role="img" aria-label="Block diagrams of grid-following and grid-forming control above the shared circuit">
+<style>
+.bx{fill:var(--eqbg);stroke:#334155;stroke-width:1.4}
+.bt{fill:#e2e8f0;font-size:12px;font-family:sans-serif;text-anchor:middle}
+.lb{fill:#94a3b8;font-size:11px;font-family:sans-serif;text-anchor:middle}
+.ttl{fill:#fb923c;font-size:13px;font-family:sans-serif;font-weight:700}
+.ttl2{fill:#2dd4bf;font-size:13px;font-family:sans-serif;font-weight:700}
+.ln{stroke:#94a3b8;stroke-width:1.4;fill:none}
+.lnw{stroke:#cbd5e1;stroke-width:1.8;fill:none}
+</style>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+</defs>
+
+<text class="ttl" x="10" y="20">A  Grid-following (R17): the angle is an input</text>
+<rect class="bx" x="10" y="36" width="92" height="40" rx="5"/>
+<text class="bt" x="56" y="53">measure</text><text class="bt" x="56" y="68">grid v</text>
+<line class="ln" x1="102" y1="56" x2="126" y2="56" marker-end="url(#ar)"/>
+<text class="lb" x="114" y="46">v_q</text>
+<rect class="bx" x="130" y="36" width="76" height="40" rx="5"/>
+<text class="bt" x="168" y="61">PLL</text>
+<line class="ln" x1="206" y1="56" x2="230" y2="56" marker-end="url(#ar)"/>
+<text class="lb" x="218" y="46">&#952;<tspan font-size="9">pll</tspan></text>
+<rect class="bx" x="234" y="36" width="108" height="40" rx="5"/>
+<text class="bt" x="288" y="53">current loop</text><text class="bt" x="288" y="68">bandwidth &#945;<tspan font-size="9">c</tspan></text>
+<line class="ln" x1="342" y1="56" x2="392" y2="56" marker-end="url(#ar)"/>
+<text class="lb" x="412" y="60">i out</text>
+<text class="lb" x="176" y="94">angle measured, current commanded</text>
+
+<text class="ttl2" x="10" y="140">B  Grid-forming (Definition 3.1): the angle is a state</text>
+<rect class="bx" x="10" y="156" width="92" height="40" rx="5"/>
+<text class="bt" x="56" y="173">measure</text><text class="bt" x="56" y="188">own P, Q</text>
+<line class="ln" x1="102" y1="176" x2="126" y2="176" marker-end="url(#ar)"/>
+<text class="lb" x="114" y="166">P</text>
+<rect class="bx" x="130" y="156" width="76" height="40" rx="5"/>
+<text class="bt" x="168" y="173">angle law</text><text class="bt" x="168" y="189">&#8747; &#969; dt</text>
+<line class="ln" x1="206" y1="176" x2="230" y2="176" marker-end="url(#ar)"/>
+<text class="lb" x="218" y="166">&#952; state</text>
+<rect class="bx" x="234" y="156" width="108" height="40" rx="5"/>
+<text class="bt" x="288" y="173">voltage source</text><text class="bt" x="288" y="189">E &#8736; &#952;</text>
+<line class="ln" x1="342" y1="176" x2="392" y2="176" marker-end="url(#ar)"/>
+<text class="lb" x="412" y="180">v out</text>
+<path class="ln" d="M288 200 L288 214 L56 214 L56 202" marker-end="url(#ar)"/>
+<text class="lb" x="176" y="230">own power fed back; no external angle enters</text>
+
+<text class="ttl" x="10" y="270">C  The same circuit under both</text>
+<rect class="bx" x="14" y="300" width="84" height="54" rx="5"/>
+<text class="bt" x="56" y="322">converter</text><text class="bt" x="56" y="340">A or B</text>
+<line class="lnw" x1="98" y1="327" x2="140" y2="327"/>
+<rect class="bx" x="140" y="315" width="46" height="24" rx="4"/>
+<text class="bt" x="163" y="332">L<tspan font-size="9">f</tspan></text>
+<line class="lnw" x1="186" y1="327" x2="244" y2="327"/>
+<circle cx="244" cy="327" r="4" fill="#2dd4bf"/>
+<line class="lnw" x1="244" y1="327" x2="292" y2="327"/>
+<rect class="bx" x="292" y="315" width="46" height="24" rx="4"/>
+<text class="bt" x="315" y="332">X<tspan font-size="9">g</tspan></text>
+<line class="lnw" x1="338" y1="327" x2="382" y2="327"/>
+<circle cx="398" cy="327" r="16" fill="none" stroke="#cbd5e1" stroke-width="1.8"/>
+<path d="M390 327 q4 -7 8 0 q4 7 8 0" fill="none" stroke="#cbd5e1" stroke-width="1.6"/>
+<text class="lb" x="398" y="362">V<tspan font-size="9">g</tspan></text>
+<text class="lb" x="244" y="362">point of</text><text class="lb" x="244" y="375">connection</text>
+<text class="lb" x="220" y="402">The circuit cannot tell which box is inside. Only the</text>
+<text class="lb" x="220" y="418">choice of commanded variable differs.</text>
+</svg>
+<figcaption><b>Fig. 3.1</b> Grid-following control (panel A, model R17 of Chapter 2)
+and grid-forming control (panel B, Definition 3.1), drawn above the one circuit
+both drive (panel C). The figure illustrates Definition 3.1. Between panel A and
+panel B the arrows on the angle and on the current are reversed. In panel B an
+integrator inside the box produces the angle. The current is then whatever the
+circuit of panel C draws.</figcaption>
+</figure>
+
+<h2 id="s32">3.2 Droop control, and why it is a swing equation</h2>
+
+<p>The oldest grid-forming law is also the simplest. It is a pair of straight
+lines. Frequency falls as active power rises. Voltage falls as reactive power
+rises. Every real implementation needs a filter to measure power. This section
+writes that filter down. With it, the straight line <em>is</em> the swing
+equation of Chapter 1 with two renamed coefficients.</p>
+
+<h3>3.2.1 Two conventions, fixed before the law is written</h3>
+
+<p>Two conventions must be fixed first. Mixing them is the most common error in
+this material.</p>
+
+<p><strong>Frequency is per unit.</strong> Every frequency in the droop law below
+is a per-unit quantity, that is a frequency divided by
+<var>&omega;</var><sub>0</sub>. The set point <var>&omega;</var><sub>ref</sub> is
+per unit, so its nominal value is 1. The deviation
+<var>&delta;&omega;</var> = (<var>&omega;</var> &minus;
+<var>&omega;</var><sub>0</sub>) / <var>&omega;</var><sub>0</sub> is per unit. The
+angle is recovered in radians by</p>
+<p class="eq">d<var>&theta;</var>/d<var>t</var> = <var>&omega;</var><sub>0</sub>
+(1 + <var>&delta;&omega;</var>)<span class="n">(3.2)</span></p>
+<p>which is the definition of <var>&delta;&omega;</var> rearranged. Equation (3.2)
+carries the one factor of <var>&omega;</var><sub>0</sub> that the whole chapter
+needs. Every equation after (3.2) is in per unit.</p>
+
+<p><strong>The swing-equation convention.</strong> This book writes the swing
+equation of Chapter 1 (R04) as</p>
+<p class="eq">2<var>H</var> d(<var>&delta;&omega;</var>)/d<var>t</var> =
+<var>P</var><sub>m</sub> &minus; <var>P</var><sub>e</sub> &minus;
+<var>K</var><sub>D</sub> <var>&delta;&omega;</var><span class="n">(3.3)</span></p>
+<p>with <var>&delta;&omega;</var> in per unit, and with the damping term acting on
+that per-unit deviation. The alternative convention, in which the damping acts on
+a speed deviation measured in rad/s, is named in the book's notation decisions
+and is not used here. The two conventions differ by a factor
+<var>&omega;</var><sub>0</sub> in the damping coefficient, which is 314.159 at
+50 Hz. A coefficient match done against the wrong form produces a damping ratio
+wrong by that factor. Theorem 3.3 is proved against (3.3) as written.</p>
+
+<h3>3.2.2 The droop law</h3>
+
+<div class="res model" id="model-3-2" data-rid="R25">
+<span class="head">Model 3.2 &mdash; droop control with a measurement filter
+<span class="rid">R25</span><span class="status here">stated here</span></span>
+<p>The converter measures its own instantaneous active and reactive power at the
+point of connection, passes each through a first-order low-pass filter of cutoff
+<var>&omega;</var><sub>c</sub>, and sets its frequency and its internal voltage
+magnitude on two straight lines:</p>
+<p class="eq">d<var>P</var><sub>f</sub>/d<var>t</var> =
+<var>&omega;</var><sub>c</sub> (<var>P</var> &minus;
+<var>P</var><sub>f</sub>)<span class="n">(3.4)</span></p>
+<p class="eq">1 + <var>&delta;&omega;</var> = <var>&omega;</var><sub>ref</sub>
+&minus; <var>m</var><sub>p</sub> (<var>P</var><sub>f</sub> &minus;
+<var>P</var><sub>ref</sub>)<span class="n">(3.5)</span></p>
+<p class="eq"><var>E</var> = <var>V</var><sub>ref</sub> &minus;
+<var>n</var><sub>q</sub> (<var>Q</var><sub>f</sub> &minus;
+<var>Q</var><sub>ref</sub>)<span class="n">(3.6)</span></p>
+<p>The angle is advanced by (3.2). Here <var>m</var><sub>p</sub> is the
+<strong>active-power droop gain</strong>: the per-unit frequency change caused by
+a one-per-unit change in active power. <var>n</var><sub>q</sub> is the
+<strong>reactive-power droop gain</strong>, defined the same way on voltage.
+<var>P</var><sub>f</sub> and <var>Q</var><sub>f</sub> are the filtered powers.
+<var>&omega;</var><sub>c</sub> is the <strong>power measurement filter
+cutoff</strong> in rad/s.</p>
+<p><strong>Assumptions.</strong> (i) The filter is exactly first order, and both
+channels share the cutoff <var>&omega;</var><sub>c</sub>. (ii) The droop lines are
+linear over the operating range. (iii) The inner loops that realise
+<var>E</var> &ang; <var>&theta;</var> are fast enough to be treated as unity gain
+at the frequencies of interest. By R14 that means well inside
+<var>&alpha;</var><sub>c</sub>. (iv) The network is inductive, so active power
+couples to angle and reactive power couples to magnitude.</p>
+<p><strong>Omissions.</strong> The two channels are treated as decoupled. On a
+network with resistance they are not, and the cross-coupling reappears as a term
+of the order of the resistance-to-reactance ratio. The model also omits the
+current limiter. Section 3.7 repays that omission.</p>
+</div>
+
+<p>A note on what <var>m</var><sub>p</sub> = 0.05 pu means, because that number
+runs through &sect;3.2 and &sect;3.6. It is the figure conventionally called
+"5 % droop". A one-per-unit change in active power moves the frequency by
+0.05 pu. At <var>f</var><sub>0</sub> = 50 Hz that is 2.50 Hz. At
+<var>f</var><sub>0</sub> = 60 Hz the same gain gives 3.0 Hz. The 4 % to 5 % band
+is the conventional governor setting carried over from synchronous plant
+<span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+the governor droop discussion &mdash; location not yet checked &mdash;
+verify]</span>.</p>
+
+<h3>3.2.3 The equivalence</h3>
+
+<div class="res thm" id="thm-3-3" data-rid="R26">
+<span class="head">Theorem 3.3 &mdash; filtered droop is a swing equation
+<span class="rid">R26</span><span class="status here">proved here</span></span>
+<p>Under the assumptions of Model 3.2, and about an operating point at which
+<var>P</var><sub>f</sub> = <var>P</var> = <var>P</var><sub>ref</sub>, the
+small-signal dynamics of (3.2), (3.4) and (3.5) are identical to the swing
+equation (3.3) with</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 1 / (2 <var>m</var><sub>p</sub>
+<var>&omega;</var><sub>c</sub>),&nbsp;&nbsp;&nbsp;
+<var>K</var><sub>D,eq</sub> = 1 / <var>m</var><sub>p</sub><span class="n">(3.7)</span></p>
+<p>The match is exact, not approximate, when the filter is first order and the
+droop line is linear.</p>
+</div>
+
+<div class="proof">
+<p class="lbl">Proof</p>
+<p>Define the deviation of active power from its set point once, and use the same
+definition on both sides of the comparison:
+&Delta;<var>P</var> = <var>P</var> &minus; <var>P</var><sub>ref</sub>. Write
+&Delta;<var>&omega;</var> for the deviation of <var>&delta;&omega;</var> from its
+operating value.</p>
+<p><strong>Step 1: eliminate the filter.</strong> Equation (3.5) is algebraic.
+Take its deviation: &Delta;<var>&omega;</var> = &minus;<var>m</var><sub>p</sub>
+&Delta;<var>P</var><sub>f</sub>, so
+&Delta;<var>P</var><sub>f</sub> = &minus;&Delta;<var>&omega;</var> /
+<var>m</var><sub>p</sub>. Substitute that into the deviation of the filter
+equation (3.4), which in the Laplace variable <var>s</var> reads
+<var>s</var> &Delta;<var>P</var><sub>f</sub> = <var>&omega;</var><sub>c</sub>
+(&Delta;<var>P</var> &minus; &Delta;<var>P</var><sub>f</sub>):</p>
+<p class="eq">&minus;<var>s</var> &Delta;<var>&omega;</var> /
+<var>m</var><sub>p</sub> = <var>&omega;</var><sub>c</sub> &Delta;<var>P</var>
++ <var>&omega;</var><sub>c</sub> &Delta;<var>&omega;</var> /
+<var>m</var><sub>p</sub></p>
+<p>Multiply through by &minus;<var>m</var><sub>p</sub>:</p>
+<p class="eq"><var>s</var> &Delta;<var>&omega;</var> = &minus;
+<var>m</var><sub>p</sub> <var>&omega;</var><sub>c</sub> &Delta;<var>P</var>
+&minus; <var>&omega;</var><sub>c</sub> &Delta;<var>&omega;</var><span class="n">(3.8)</span></p>
+<p><strong>Step 2: write the swing equation in the same shape.</strong> Take the
+deviation of (3.3) at a constant mechanical input, so
+&Delta;<var>P</var><sub>m</sub> = 0 and
+&Delta;<var>P</var><sub>e</sub> = &Delta;<var>P</var>. Divide by 2<var>H</var>:</p>
+<p class="eq"><var>s</var> &Delta;<var>&omega;</var> = &minus; &Delta;<var>P</var>
+/ (2<var>H</var>) &minus; (<var>K</var><sub>D</sub> / (2<var>H</var>))
+&Delta;<var>&omega;</var><span class="n">(3.9)</span></p>
+<p><strong>Step 3: match coefficients.</strong> Equations (3.8) and (3.9) are the
+same first-order equation in &Delta;<var>&omega;</var>, driven by
+&Delta;<var>P</var>. Two independent coefficients must agree.</p>
+<ul>
+<li>On &Delta;<var>P</var>: <var>m</var><sub>p</sub>
+<var>&omega;</var><sub>c</sub> = 1 / (2<var>H</var><sub>eq</sub>), so
+<var>H</var><sub>eq</sub> = 1 / (2 <var>m</var><sub>p</sub>
+<var>&omega;</var><sub>c</sub>).</li>
+<li>On &Delta;<var>&omega;</var>: <var>&omega;</var><sub>c</sub> =
+<var>K</var><sub>D,eq</sub> / (2<var>H</var><sub>eq</sub>), so
+<var>K</var><sub>D,eq</sub> = 2 <var>H</var><sub>eq</sub>
+<var>&omega;</var><sub>c</sub> = 2 <var>&omega;</var><sub>c</sub> /
+(2 <var>m</var><sub>p</sub> <var>&omega;</var><sub>c</sub>) =
+1 / <var>m</var><sub>p</sub>.</li>
+</ul>
+<p>Both results are (3.7). The match used no approximation beyond the linearity
+already assumed in Model 3.2. Under those assumptions it is exact. &#9633;</p>
+</div>
+
+<p>Two consequences are worth stating plainly.</p>
+
+<p><strong>The inertia was already there.</strong> Nobody wrote an inertia term
+into (3.4) to (3.6). The filter supplied it. A first-order lag between the true
+power and the power the control law acts on is, in the frequency channel,
+indistinguishable from a mass. The equivalence was published as a two-page
+letter, not as a control design
+<span class="cite">[S09, D&rsquo;Arco and Suul 2014, <em>Equivalence of Virtual
+Synchronous Machines and Frequency-Droops for Converter-Based Microgrids</em>,
+the equivalence result &mdash; location not yet checked &mdash; verify]</span>.</p>
+
+<p><strong>The two coefficients are not independent.</strong> A droop controller
+has two free parameters, <var>m</var><sub>p</sub> and
+<var>&omega;</var><sub>c</sub>. They set <var>H</var><sub>eq</sub> and
+<var>K</var><sub>D,eq</sub> together. <var>K</var><sub>D,eq</sub> =
+1/<var>m</var><sub>p</sub> is fixed the moment the steady-state droop is fixed by
+the grid code. Only <var>&omega;</var><sub>c</sub> is then left, and it must carry
+<var>H</var><sub>eq</sub> on its own. The transfer function from power imbalance
+to frequency follows from (3.8):</p>
+<p class="eq">&Delta;<var>&omega;</var> / &Delta;<var>P</var> = &minus; 1 /
+(2<var>H</var><sub>eq</sub> <var>s</var> +
+<var>K</var><sub>D,eq</sub>)<span class="n">(3.10)</span></p>
+<p>Equation (3.10) is the single transfer function that &sect;3.6 shows all four
+families share.</p>
+
+<figure id="fig-3-2">
+<svg viewBox="0 0 440 320" role="img" aria-label="Droop block diagram redrawn as the swing equation block diagram">
+<style>
+.b2{fill:var(--eqbg);stroke:#334155;stroke-width:1.4}
+.t2{fill:#e2e8f0;font-size:12px;font-family:sans-serif;text-anchor:middle}
+.m2{fill:#94a3b8;font-size:11px;font-family:sans-serif;text-anchor:middle}
+.h2t{fill:#fb923c;font-size:13px;font-family:sans-serif;font-weight:700}
+.h2u{fill:#2dd4bf;font-size:13px;font-family:sans-serif;font-weight:700}
+.l2{stroke:#94a3b8;stroke-width:1.4;fill:none}
+</style>
+<defs>
+<marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+</defs>
+
+<text class="h2t" x="10" y="20">Step 1  Model 3.2 as drawn</text>
+<text class="m2" x="26" y="60">&#916;P</text>
+<line class="l2" x1="44" y1="56" x2="96" y2="56" marker-end="url(#ar2)"/>
+<rect class="b2" x="100" y="36" width="112" height="40" rx="5"/>
+<text class="t2" x="156" y="54">&#969;<tspan font-size="9">c</tspan> / (s + &#969;<tspan font-size="9">c</tspan>)</text>
+<text class="m2" x="156" y="70">filter, eq. (3.4)</text>
+<line class="l2" x1="212" y1="56" x2="252" y2="56" marker-end="url(#ar2)"/>
+<text class="m2" x="232" y="46">&#916;P<tspan font-size="9">f</tspan></text>
+<rect class="b2" x="256" y="36" width="88" height="40" rx="5"/>
+<text class="t2" x="300" y="54">&#8722; m<tspan font-size="9">p</tspan></text>
+<text class="m2" x="300" y="70">droop, eq. (3.5)</text>
+<line class="l2" x1="344" y1="56" x2="392" y2="56" marker-end="url(#ar2)"/>
+<text class="m2" x="410" y="60">&#916;&#969;</text>
+
+<text class="m2" x="220" y="104">eliminate &#916;P<tspan font-size="9">f</tspan>; equations (3.8) and (3.9)</text>
+<line class="l2" x1="220" y1="112" x2="220" y2="134" marker-end="url(#ar2)"/>
+
+<text class="h2u" x="10" y="164">Step 2  the same loop as equation (3.3)</text>
+<text class="m2" x="26" y="212">&#916;P</text>
+<line class="l2" x1="44" y1="208" x2="90" y2="208" marker-end="url(#ar2)"/>
+<circle cx="104" cy="208" r="14" fill="var(--eqbg)" stroke="#334155" stroke-width="1.4"/>
+<text class="t2" x="104" y="213">&#931;</text>
+<text class="m2" x="90" y="196">&#8722;</text>
+<text class="m2" x="118" y="240">&#8722;</text>
+<line class="l2" x1="118" y1="208" x2="168" y2="208" marker-end="url(#ar2)"/>
+<rect class="b2" x="172" y="188" width="112" height="40" rx="5"/>
+<text class="t2" x="228" y="206">1 / (2 H<tspan font-size="9">eq</tspan> s)</text>
+<text class="m2" x="228" y="222">the integrator</text>
+<line class="l2" x1="284" y1="208" x2="392" y2="208" marker-end="url(#ar2)"/>
+<text class="m2" x="410" y="212">&#916;&#969;</text>
+<circle cx="340" cy="208" r="3.5" fill="#2dd4bf"/>
+<path class="l2" d="M340 208 L340 268 L282 268"/>
+<rect class="b2" x="180" y="252" width="98" height="32" rx="5"/>
+<text class="t2" x="229" y="272">K<tspan font-size="9">D,eq</tspan></text>
+<path class="l2" d="M180 268 L104 268 L104 222" marker-end="url(#ar2)"/>
+
+<text class="t2" x="220" y="306" font-size="11" fill="#cbd5e1">H_eq = 1/(2 m_p &#969;_c) = 0.3183 s     K_D,eq = 1/m_p = 20 pu</text>
+</svg>
+<figcaption><b>Fig. 3.2</b> The proof of Theorem 3.3 (R26) drawn as a picture.
+Step 1 is Model 3.2 exactly as the droop law is written: measured power through a
+first-order filter, then a straight-line gain to frequency. Step 2 is the swing
+equation (3.3) in its standard block form: a power imbalance into an integrator
+of gain 1/(2<var>H</var><sub>eq</sub><var>s</var>), with a damping feedback
+<var>K</var><sub>D,eq</sub>. The two diagrams have the same transfer function.
+The numbers at the foot are the first case of Example 3.1.</figcaption>
+</figure>
+
+<div class="res ex" id="ex-3-1" data-rid="R27">
+<span class="head">Example 3.1 &mdash; droop is inertia you did not know you had
+<span class="rid">R27</span><span class="status here">computed here</span></span>
+<p><strong>Given.</strong> <var>m</var><sub>p</sub> = 0.05 pu. Three candidate
+filter cutoffs: <var>&omega;</var><sub>c</sub> = 2&pi;(5) rad/s,
+<var>&omega;</var><sub>c</sub> = 2&pi;(1) rad/s, and
+<var>&omega;</var><sub>c</sub> = 2 rad/s.</p>
+<p><strong>Damping first, because it does not depend on the filter.</strong>
+From (3.7),</p>
+<p class="eq"><var>K</var><sub>D,eq</sub> = 1 / <var>m</var><sub>p</sub> =
+1 / 0.05 = 20 pu</p>
+<p>This value holds for all three cases. Compare it with the machine of Chapter 1,
+which had <var>K</var><sub>D</sub> = 2 pu (Example 1.1). The droop converter's
+damping coefficient is ten times the machine's, 20 pu against 2 pu, and a line
+in the control law sets it rather than rotor losses. The damping ratio
+<var>&zeta;</var> = <var>K</var><sub>D</sub>/(4<var>H</var><var>&omega;</var><sub>n</sub>)
+of R07 also depends on <var>H</var><sub>eq</sub> and
+<var>&omega;</var><sub>n</sub>, so this is a statement about the coefficient,
+not about <var>&zeta;</var>.</p>
+<p><strong>Case 1: a 5 Hz filter.</strong>
+<var>&omega;</var><sub>c</sub> = 2&pi;(5) = 31.4159 rad/s. Then</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 1 / (2 &times; 0.05 &times; 31.4159)
+= 1 / 3.14159 = 0.3183 s</p>
+<p>The filter time constant is 1/<var>&omega;</var><sub>c</sub> = 0.0318 s.</p>
+<p><strong>Case 2: a 1 Hz filter.</strong>
+<var>&omega;</var><sub>c</sub> = 2&pi;(1) = 6.2832 rad/s. Then</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 1 / (2 &times; 0.05 &times; 6.2832)
+= 1 / 0.62832 = 1.5915 s</p>
+<p>with a filter time constant of 0.1592 s.</p>
+<p><strong>Case 3: a 2 rad/s filter.</strong>
+<var>&omega;</var><sub>c</sub> = 2 rad/s, which is
+2/(2&pi;) = 0.3183 Hz. Then</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 1 / (2 &times; 0.05 &times; 2)
+= 1 / 0.2 = 5.000 s</p>
+<p>with a filter time constant of 0.5000 s.</p>
+<p><strong>The design consequence, in one sentence.</strong> To match the
+<var>H</var> = 3.5 s of the machine in Example 1.1, invert (3.7):
+<var>&omega;</var><sub>c</sub> = 1 / (2 &times; 0.05 &times; 3.5) = 1/0.35 =
+2.8571 rad/s, that is 0.4547 Hz, a power measurement filter with a time constant
+of 0.3500 s.</p>
+<p><strong>What that slowness touches, and what it does not.</strong> It does not
+touch the current loop. The worked tuning of &sect;2.3 sets
+<var>&alpha;</var><sub>c</sub> = 2&pi;(500) = 3141.59 rad/s (R14), three
+decades above 2.8571 rad/s, so a slower power filter widens the timescale
+separation that assumption (iii) of Model 3.2 needs. The filter pole sits next
+to two other things. First, the swing mode that Theorem 3.3 creates. Take
+<var>K</var><sub>s</sub> = 1.491 pu/rad from Example 1.1 (R08) as the network's
+spring constant. The swing equation (3.3) with <var>H</var><sub>eq</sub> = 3.5 s
+then has, by R07, <var>&omega;</var><sub>n</sub> =
+&radic;(<var>K</var><sub>s</sub> <var>&omega;</var><sub>0</sub> /
+(2<var>H</var><sub>eq</sub>)) = &radic;(1.491 &times; 376.99 / 7) = 8.96 rad/s
+at 60 Hz, the same mode frequency as the machine, and
+<var>&zeta;</var> = <var>K</var><sub>D,eq</sub>/(4<var>H</var><sub>eq</sub><var>&omega;</var><sub>n</sub>)
+= 20/(4 &times; 3.5 &times; 8.96) = 0.159 against the machine's 0.016. The filter
+pole at <var>&omega;</var><sub>c</sub> = 2.8571 rad/s is the open-loop pole of
+the frequency channel (3.10), <var>K</var><sub>D,eq</sub>/(2<var>H</var><sub>eq</sub>)
+= 20/7 = 2.8571 rad/s; closing it through the network spring is what places the
+converter's swing mode in the machine's band. Section 3.7.2 shows that the
+converter does contribute this <var>K</var><sub>s</sub>. Second, protection
+timing. A breaker clears a fault in about 4 to 6 cycles, that is 0.067 s to
+0.100 s at 60 Hz (Example 1.2). A filter with a 0.35 s time constant has
+registered only 17 % to 25 % of a step change in power by then
+(1 &minus; e<sup>&minus;<var>t</var>/0.35 s</sup> at those two times), so the
+controller acts on a power change after the fault that caused it has cleared.</p>
+</div>
+
+<p>Read the three cases as one trend. The equivalent inertia is inversely
+proportional to the filter cutoff. A fast filter, chosen so that the controller
+tracks power quickly, gives almost no inertia: 0.3183 s at 5 Hz, which is 9.1 %
+of a 3.5 s machine (0.3183 / 3.5 = 0.0909; the machine's constant is 11.0 times
+the converter's). A slow filter gives a large inertia number, but it does so by
+refusing to notice a power change for half a second. The number
+<var>H</var><sub>eq</sub> and the responsiveness of the controller are the same
+quantity seen from two sides. This is the first of the chapter's three costs, and
+it is a control cost rather than a hardware cost.</p>
+
+<figure id="fig-3-3">
+<svg viewBox="0 0 660 344" role="img" aria-label="Equivalent inertia against filter cutoff on logarithmic axes for three droop gains">
+<style>
+.ax{stroke:#334155;stroke-width:1.2}
+.gr{stroke:#1e293b;stroke-width:1}
+.tk{fill:#94a3b8;font-size:15px;font-family:sans-serif;text-anchor:middle}
+.tky{fill:#94a3b8;font-size:15px;font-family:sans-serif;text-anchor:end}
+.axt{fill:#cbd5e1;font-size:16px;font-family:sans-serif;text-anchor:middle}
+.lg{font-size:15px;font-family:sans-serif}
+</style>
+<rect x="78" y="44" width="532" height="242" fill="var(--eqbg)" stroke="#334155" stroke-width="1.2"/>
+<line class="gr" x1="255.3" y1="44" x2="255.3" y2="286"/>
+<line class="gr" x1="432.7" y1="44" x2="432.7" y2="286"/>
+<line class="gr" x1="78" y1="225.5" x2="610" y2="225.5"/>
+<line class="gr" x1="78" y1="165" x2="610" y2="165"/>
+<line class="gr" x1="78" y1="104.5" x2="610" y2="104.5"/>
+
+<line x1="78" y1="132.1" x2="610" y2="132.1" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="7 5"/>
+<text x="600" y="126" class="lg" fill="#cbd5e1" text-anchor="end">H = 3.5 s, the machine of Example 1.1</text>
+
+<line x1="148.6" y1="44" x2="610" y2="201.4" stroke="#fb923c" stroke-width="2.4"/>
+<line x1="78" y1="44" x2="610" y2="225.5" stroke="#2dd4bf" stroke-width="2.8"/>
+<line x1="78" y1="62.2" x2="610" y2="243.7" stroke="#94a3b8" stroke-width="2.4"/>
+
+<circle cx="308.7" cy="122.7" r="5.5" fill="#2dd4bf" stroke="#0f172a" stroke-width="1.5"/>
+<circle cx="396.9" cy="152.8" r="5.5" fill="#2dd4bf" stroke="#0f172a" stroke-width="1.5"/>
+<circle cx="520.8" cy="195.1" r="5.5" fill="#2dd4bf" stroke="#0f172a" stroke-width="1.5"/>
+<text x="300" y="112" class="lg" fill="#2dd4bf" text-anchor="end">5.000 s</text>
+<text x="404" y="145" class="lg" fill="#2dd4bf" text-anchor="start">1.592 s</text>
+<text x="528" y="188" class="lg" fill="#2dd4bf" text-anchor="start">0.318 s</text>
+
+<text x="590" y="196" class="lg" fill="#fb923c" text-anchor="end">m_p = 0.02</text>
+<text x="590" y="221" class="lg" fill="#2dd4bf" text-anchor="end">m_p = 0.05</text>
+<text x="590" y="262" class="lg" fill="#94a3b8" text-anchor="end">m_p = 0.10</text>
+
+<text class="tk" x="78" y="306">0.1</text>
+<text class="tk" x="255.3" y="306">1</text>
+<text class="tk" x="432.7" y="306">10</text>
+<text class="tk" x="610" y="306">100</text>
+<text class="axt" x="344" y="332">filter cutoff &#969;_c  (rad/s, log scale)</text>
+<text class="tky" x="70" y="291">0.01</text>
+<text class="tky" x="70" y="230">0.1</text>
+<text class="tky" x="70" y="170">1</text>
+<text class="tky" x="70" y="109">10</text>
+<text class="tky" x="70" y="49">100</text>
+<text class="axt" x="20" y="165" transform="rotate(-90 20 165)">H_eq  (s, log)</text>
+</svg>
+<figcaption><b>Fig. 3.3</b> Equivalent inertia constant
+<var>H</var><sub>eq</sub> = 1/(2<var>m</var><sub>p</sub><var>&omega;</var><sub>c</sub>)
+against the filter cutoff <var>&omega;</var><sub>c</sub>, on logarithmic axes, for
+three droop gains. The figure illustrates Theorem 3.3 (R26) and plots the three
+computed points of Example 3.1 (teal markers on the
+<var>m</var><sub>p</sub> = 0.05 line): 5.000 s at 2 rad/s, 1.592 s at 6.2832
+rad/s, 0.318 s at 31.4159 rad/s. The dashed horizontal line is
+<var>H</var> = 3.5 s, the machine of Example 1.1. Reading where each line crosses
+it gives the filter cutoff that buys a machine's worth of inertia: 2.8571 rad/s
+at <var>m</var><sub>p</sub> = 0.05.</figcaption>
+</figure>
+
+<h2 id="s33">3.3 The virtual synchronous machine</h2>
+
+<p>Theorem 3.3 arrived at a swing equation by accident. The virtual synchronous
+machine arrives at one on purpose. The control law is the swing equation itself,
+integrated in the converter's processor, with the two coefficients chosen by the
+designer rather than delivered by a forging shop.</p>
+
+<div class="res model" id="model-3-4" data-rid="R28">
+<span class="head">Model 3.4 &mdash; the virtual synchronous machine
+<span class="rid">R28</span><span class="status here">stated here; its equivalent pair holds by construction</span></span>
+<p>Choose a <strong>virtual inertia constant</strong> <var>H</var><sub>v</sub> in
+seconds and a <strong>virtual damping coefficient</strong>
+<var>K</var><sub>D,v</sub> in per unit. Integrate</p>
+<p class="eq">2<var>H</var><sub>v</sub> d(<var>&delta;&omega;</var>)/d<var>t</var>
+= <var>P</var><sub>ref</sub> &minus; <var>P</var><sub>f</sub> &minus;
+<var>K</var><sub>D,v</sub> <var>&delta;&omega;</var><span class="n">(3.11)</span></p>
+<p>and advance the angle by (3.2). The voltage magnitude <var>E</var> is set by a
+reactive-power channel, usually the droop line (3.6) or an equivalent excitation
+model. Because (3.11) is (3.3) with the symbols renamed, the equivalent pair is
+read off with no algebra:</p>
+<p class="eq"><var>H</var><sub>eq</sub> = <var>H</var><sub>v</sub>,&nbsp;&nbsp;&nbsp;
+<var>K</var><sub>D,eq</sub> = <var>K</var><sub>D,v</sub><span class="n">(3.12)</span></p>
+<p><strong>Assumptions.</strong> The same four as Model 3.2. In addition,
+<var>P</var><sub>f</sub> is a measured power, so a filter of some cutoff
+<var>&omega;</var><sub>c</sub> is still present in every implementation. With
+that filter the loop is second order:
+(2<var>H</var><sub>v</sub><var>s</var> + <var>K</var><sub>D,v</sub>)(1 +
+<var>s</var>/<var>&omega;</var><sub>c</sub>) &Delta;<var>&omega;</var> =
+&minus;&Delta;<var>P</var>. At low frequency its inertia is
+<var>H</var><sub>v</sub> + <var>K</var><sub>D,v</sub>/(2<var>&omega;</var><sub>c</sub>),
+the chosen constant plus the filter's contribution from Theorem 3.3. Equation
+(3.11) and the pair (3.12) assume that the second term is small against the
+first, that is <var>&omega;</var><sub>c</sub> &gt;&gt;
+<var>K</var><sub>D,v</sub>/(2<var>H</var><sub>v</sub>). For
+<var>H</var><sub>v</sub> = 2 s, <var>K</var><sub>D,v</sub> = 5 pu and a filter at
+<var>&omega;</var><sub>c</sub> = 31.4159 rad/s, the second term is 0.080 s, that
+is 4.0 % of <var>H</var><sub>v</sub>.</p>
+<p><strong>Omissions.</strong> (3.11) omits every machine effect that is not the
+swing equation: flux decay, excitation dynamics, saliency, and damper windings.
+A virtual synchronous machine is a virtual <em>rotor</em>, not a virtual
+machine.</p>
+</div>
+
+<p><strong>What the free choice buys.</strong> <var>H</var><sub>v</sub> is a
+number a system operator can write into a contract and a manufacturer can
+guarantee. Great Britain's grid-forming specification uses this. It asks for a
+declared inertial capability and tests it against a defined disturbance
+<span class="cite">[S17, National Grid ESO, Grid Code modification GC0137,
+<em>Minimum Specification Required for Provision of GB Grid Forming
+Capability</em>, the inertia specification &mdash; location not yet checked
+&mdash; verify]</span>. With a machine, <var>H</var> is whatever the rotor
+happens to be. With (3.11), <var>H</var><sub>v</sub> is a procurement
+variable.</p>
+
+<p><strong>What the free choice costs.</strong> Three things, and the third is the
+one this chapter builds to.</p>
+<ol>
+<li><strong>Decoupled tuning becomes possible, and therefore necessary.</strong>
+A droop controller could not separate <var>H</var><sub>eq</sub> from
+<var>K</var><sub>D,eq</sub>. A virtual synchronous machine can, so the designer
+must now choose two numbers where the grid code fixes only one. Setting the
+derivative in (3.11) to zero gives
+&Delta;<var>&omega;</var> = &minus;&Delta;<var>P</var>/<var>K</var><sub>D,v</sub>,
+so the steady-state droop is <var>m</var><sub>p</sub> =
+1/<var>K</var><sub>D,v</sub>. The grid code fixes
+<var>K</var><sub>D,v</sub> through that relation and leaves
+<var>H</var><sub>v</sub> genuinely free.</li>
+<li><strong>A large <var>H</var><sub>v</sub> slows the controller.</strong> The
+loop pole sits at &minus;<var>K</var><sub>D,v</sub>/(2<var>H</var><sub>v</sub>).
+Raising <var>H</var><sub>v</sub> at fixed droop moves that pole toward the origin,
+which lengthens the settling time after every power step, not only after the rare
+disturbance the inertia was bought for.</li>
+<li><strong>The number and the energy are now separate decisions.</strong>
+Nothing in (3.11) checks that the DC side can deliver
+2<var>H</var><sub>v</sub><var>S</var><sub>base</sub>&Delta;<var>f</var>/<var>f</var><sub>0</sub>
+joules over a frequency excursion of &Delta;<var>f</var> hertz (&sect;3.7
+derives that energy), or that the current needed to deliver it fits under
+<var>I</var><sub>max</sub>. A rotor cannot over-promise: its stored energy and its
+inertia constant are the same physical fact. A virtual synchronous machine can
+over-promise, because <var>H</var><sub>v</sub> is a number in a register.
+Section 3.7 turns that gap into Corollary 3.8, and Example 3.2 measures it.</li>
+</ol>
+
+<h2 id="s34">3.4 Matching control</h2>
+
+<p>Droop control and the virtual synchronous machine both start from the machine
+equations and copy them. Matching control starts from the converter hardware and
+notices that one piece of it already <em>is</em> a rotor.</p>
+
+<p>The observation is this. A synchronous machine's rotor stores kinetic energy
+and its speed rises when input power exceeds output power. A converter's DC-link
+capacitor stores electrostatic energy and its voltage rises when input power
+exceeds output power. The two energy stores obey the same balance law. So if the
+controller ties its angular frequency to the DC-link voltage, the capacitor takes
+the rotor's structural role exactly, with no swing equation written anywhere in
+the code.</p>
+
+<div class="res model" id="model-3-5" data-rid="R29">
+<span class="head">Model 3.5 &mdash; matching control
+<span class="rid">R29</span><span class="status here">proved here under the stated gain choice</span></span>
+<p>Measure the DC-link voltage <var>v</var><sub>dc</sub>. Advance the angle at a
+rate proportional to it:</p>
+<p class="eq">d<var>&theta;</var>/d<var>t</var> = <var>k</var><sub>&theta;</sub>
+<var>v</var><sub>dc</sub><span class="n">(3.13)</span></p>
+<p>where <var>k</var><sub>&theta;</sub> is the <strong>matching gain</strong> in
+rad/(s&middot;V). The DC link obeys the energy balance</p>
+<p class="eq"><var>C</var><sub>dc</sub> <var>v</var><sub>dc</sub>
+d<var>v</var><sub>dc</sub>/d<var>t</var> = <var>v</var><sub>dc</sub>
+<var>i</var><sub>dc</sub> &minus; <var>P</var><span class="n">(3.14)</span></p>
+<p>in watts, where <var>i</var><sub>dc</sub> is the current the DC source pushes
+into the link. In (3.14) and (3.18) the symbols <var>P</var> and
+&Delta;<var>P</var> are in watts; step 3 of the derivation divides by
+<var>S</var><sub>base</sub> and returns them to per unit, their meaning
+everywhere else in the book. Choose the gain so that the nominal DC voltage
+produces the rated
+frequency:</p>
+<p class="eq"><var>k</var><sub>&theta;</sub> = <var>&omega;</var><sub>0</sub> /
+<var>v</var><sub>dc0</sub><span class="n">(3.15)</span></p>
+<p>Then the small-signal dynamics of (3.13) and (3.14) are the swing equation
+(3.3) with</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 0.5 <var>C</var><sub>dc</sub>
+<var>v</var><sub>dc0</sub><sup>2</sup> /
+<var>S</var><sub>base</sub><span class="n">(3.16)</span></p>
+<p>which is the stored capacitor energy divided by the base power &mdash; the
+definition of an inertia constant (R03), applied to a capacitor instead of a
+rotor.</p>
+<p><strong>Assumptions.</strong> (i) The gain choice (3.15). (ii) The inner loops
+realise <var>E</var> &ang; <var>&theta;</var> fast compared with the DC-link
+dynamics. (iii) Deviations of <var>v</var><sub>dc</sub> from
+<var>v</var><sub>dc0</sub> are small, so <var>v</var><sub>dc</sub> may be replaced
+by <var>v</var><sub>dc0</sub> in products. (iv) Converter losses are neglected, so
+the AC power equals the power drawn from the link.</p>
+<p><strong>Omissions.</strong> The model omits the dynamics of whatever sits
+behind the capacitor &mdash; battery, photovoltaic array, wind turbine, rectifier
+&mdash; and it is exactly that omitted element that has to supply the energy.
+The concept and its stability analysis are due to the matching-control literature
+<span class="cite">[S10, Arghir, Jouini and D&ouml;rfler 2018, <em>Grid-forming
+control for power converters based on matching of synchronous machines</em>,
+<em>Automatica</em> 95, the matching construction &mdash; location not yet checked
+&mdash; verify]</span>.</p>
+</div>
+
+<div class="proof">
+<p class="lbl">Derivation of (3.16)</p>
+<p><strong>Step 1: relate the DC voltage deviation to the per-unit speed
+deviation.</strong> Take deviations of (3.13):
+&Delta;(d<var>&theta;</var>/d<var>t</var>) = <var>k</var><sub>&theta;</sub>
+&Delta;<var>v</var><sub>dc</sub>. From (3.2) the left side is
+<var>&omega;</var><sub>0</sub> &Delta;<var>&omega;</var>. With the gain choice
+(3.15), <var>k</var><sub>&theta;</sub> =
+<var>&omega;</var><sub>0</sub>/<var>v</var><sub>dc0</sub>, so</p>
+<p class="eq">&Delta;<var>v</var><sub>dc</sub> = <var>v</var><sub>dc0</sub>
+&Delta;<var>&omega;</var><span class="n">(3.17)</span></p>
+<p>The DC voltage is the per-unit frequency, scaled. This one substitution is the
+mechanism of matching control: every later step reads a frequency deviation off
+a voltage measurement.</p>
+<p><strong>Step 2: take deviations of the energy balance.</strong> With
+assumption (iii), (3.14) linearises to
+<var>C</var><sub>dc</sub> <var>v</var><sub>dc0</sub>
+d(&Delta;<var>v</var><sub>dc</sub>)/d<var>t</var> =
+&Delta;(<var>v</var><sub>dc</sub><var>i</var><sub>dc</sub>) &minus;
+&Delta;<var>P</var>, in watts. Hold the DC source at a constant power for the
+moment, so the first term on the right is zero. Substitute (3.17):</p>
+<p class="eq"><var>C</var><sub>dc</sub> <var>v</var><sub>dc0</sub><sup>2</sup>
+d(&Delta;<var>&omega;</var>)/d<var>t</var> = &minus; &Delta;<var>P</var>
+&nbsp;&nbsp;[W]<span class="n">(3.18)</span></p>
+<p><strong>Step 3: go to per unit and match.</strong> Divide (3.18) by
+<var>S</var><sub>base</sub>, so &Delta;<var>P</var> is now in per unit:
+(<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>)
+d(&Delta;<var>&omega;</var>)/d<var>t</var> = &minus;&Delta;<var>P</var>. Compare
+with (3.3) at constant mechanical input and zero damping,
+2<var>H</var> d(&Delta;<var>&omega;</var>)/d<var>t</var> = &minus;&Delta;<var>P</var>.
+Matching the coefficient of the derivative gives
+2<var>H</var><sub>eq</sub> = <var>C</var><sub>dc</sub>
+<var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>, which is
+(3.16). &#9633;</p>
+<p class="small"><strong>Where the gain choice enters.</strong> Without (3.15) the
+general result is
+<var>H</var><sub>eq</sub> = <var>&omega;</var><sub>0</sub><var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub>
+/ (2<var>k</var><sub>&theta;</sub><var>S</var><sub>base</sub>). Substituting
+<var>k</var><sub>&theta;</sub> =
+<var>&omega;</var><sub>0</sub>/<var>v</var><sub>dc0</sub> collapses it to (3.16).
+A different gain scales the equivalent inertia, so (3.16) is a statement about
+matching control tuned as in (3.15), not about matching control in general.</p>
+</div>
+
+<p><strong>Where the damping comes from.</strong> Equation (3.18) has no damping
+term, because step 2 held the DC source at constant power. Let the source instead
+droop its current on the DC voltage. Equation (3.19) is a model of one way a
+controlled rectifier or a battery converter can be operated; it is not a
+statement about every source:</p>
+<p class="eq"><var>i</var><sub>dc</sub> = <var>i</var><sub>dc0</sub> &minus;
+<var>k</var><sub>dc</sub> (<var>v</var><sub>dc</sub> &minus;
+<var>v</var><sub>dc0</sub>)<span class="n">(3.19)</span></p>
+<p>with <var>k</var><sub>dc</sub> in A/V. Expand the DC input power to first
+order, keeping both terms:
+<var>v</var><sub>dc</sub><var>i</var><sub>dc</sub> =
+(<var>v</var><sub>dc0</sub> + &Delta;<var>v</var><sub>dc</sub>)
+(<var>i</var><sub>dc0</sub> &minus;
+<var>k</var><sub>dc</sub>&Delta;<var>v</var><sub>dc</sub>), so</p>
+<p class="eq">&Delta;(<var>v</var><sub>dc</sub><var>i</var><sub>dc</sub>) =
+(<var>i</var><sub>dc0</sub> &minus; <var>k</var><sub>dc</sub>
+<var>v</var><sub>dc0</sub>) &Delta;<var>v</var><sub>dc</sub><span class="n">(3.20)</span></p>
+<p>Substitute (3.17), divide by <var>S</var><sub>base</sub>, and match the
+result against the <var>K</var><sub>D</sub> <var>&delta;&omega;</var> term of
+(3.3). This gives</p>
+<p class="eq"><var>K</var><sub>D,eq</sub> = <var>k</var><sub>dc</sub>
+<var>v</var><sub>dc0</sub><sup>2</sup> / <var>S</var><sub>base</sub> &minus;
+<var>P</var><sub>0</sub><span class="n">(3.21)</span></p>
+<p>where <var>P</var><sub>0</sub> =
+<var>v</var><sub>dc0</sub><var>i</var><sub>dc0</sub>/<var>S</var><sub>base</sub>
+is the per-unit power drawn from the DC source at the operating point. The second
+term is not a correction to be dropped. Set <var>k</var><sub>dc</sub> = 0, that is
+a stiff current source, and (3.21) gives
+<var>K</var><sub>D,eq</sub> = &minus;<var>P</var><sub>0</sub>: a source that holds
+its current pushes <em>more</em> power in as the DC voltage rises, which is
+negative damping equal to the dispatch. Matching control's damping is therefore a
+property of the DC source, not of the AC controller, and a poorly chosen source
+characteristic makes it negative. That is a real difference from droop control,
+where <var>K</var><sub>D,eq</sub> = 1/<var>m</var><sub>p</sub> is set by a line in
+the AC control law. As a number: to reach
+<var>K</var><sub>D,eq</sub> = 20 pu at
+<var>v</var><sub>dc0</sub> = 1200 V, <var>S</var><sub>base</sub> = 1 MVA and a
+full-output dispatch <var>P</var><sub>0</sub> = 1 pu, the source needs
+<var>k</var><sub>dc</sub> = (20 + 1) &times; 10<sup>6</sup> /
+(1.44 &times; 10<sup>6</sup>) = 14.5833 A/V.</p>
+
+<div class="res ex" id="ex-3-2" data-rid="R30">
+<span class="head">Example 3.2 &mdash; the capacitor is not a rotor
+<span class="rid">R30</span><span class="status here">computed here</span></span>
+<p><strong>Given.</strong> <var>C</var><sub>dc</sub> = 20 mF = 0.02 F.
+<var>v</var><sub>dc0</sub> = 1200 V. <var>S</var><sub>base</sub> = 1 MVA =
+1 &times; 10<sup>6</sup> VA. Rated frequency
+<var>f</var><sub>0</sub> = 50 Hz, so
+<var>&omega;</var><sub>0</sub> = 2&pi;(50) = 314.1593 rad/s.</p>
+
+<p><strong>Part 1: the gain.</strong> From (3.15),</p>
+<p class="eq"><var>k</var><sub>&theta;</sub> = 314.1593 / 1200 = 0.261799
+rad/(s&middot;V)</p>
+
+<p><strong>Part 2: the stored energy.</strong>
+<var>v</var><sub>dc0</sub><sup>2</sup> = 1200<sup>2</sup> = 1.44 &times;
+10<sup>6</sup> V<sup>2</sup>. Then</p>
+<p class="eq">0.5 <var>C</var><sub>dc</sub> <var>v</var><sub>dc0</sub><sup>2</sup>
+= 0.5 &times; 0.02 &times; 1.44 &times; 10<sup>6</sup> = 14&thinsp;400 J =
+14.4 kJ</p>
+
+<p><strong>Part 3: the equivalent inertia constant.</strong> From (3.16),</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 14&thinsp;400 / (1 &times;
+10<sup>6</sup>) = 0.0144 s</p>
+
+<p><strong>Part 4: the comparison with a rotor.</strong> Take the machine of
+Example 1.1, <var>H</var> = 3.5 s. The ratio is</p>
+<p class="eq">3.5 / 0.0144 = 243.06, that is <strong>243 to 1</strong></p>
+<p>A value of <var>H</var> in the 2 s to 8 s band is conventional for a turbo-set
+<span class="cite">[S01, Kundur 1994, <em>Power System Stability and
+Control</em>, the typical-inertia discussion &mdash; location not yet checked
+&mdash; verify]</span>, so the factor is not an artefact of an unusual
+machine.</p>
+
+<p><strong>Part 5: the energy a real inertial response asks for.</strong> The
+energy released by an inertia <var>H</var><sub>v</sub> on a rating
+<var>S</var><sub>base</sub> over a frequency excursion &Delta;<var>f</var> is
+2<var>H</var><sub>v</sub><var>S</var><sub>base</sub>&Delta;<var>f</var>/<var>f</var><sub>0</sub>.
+Take <var>H</var><sub>v</sub> = 5 s, <var>S</var><sub>base</sub> = 100 MVA,
+&Delta;<var>f</var> = 0.8 Hz, <var>f</var><sub>0</sub> = 50 Hz. First the
+fractional excursion: 0.8/50 = 0.0160. Then</p>
+<p class="eq">2 &times; 5 &times; (100 &times; 10<sup>6</sup>) &times; 0.0160 =
+1.6 &times; 10<sup>7</sup> J = 16 MJ = 4.4444 kWh</p>
+
+<p><strong>Part 6: the gap.</strong></p>
+<p class="eq">16 &times; 10<sup>6</sup> / 14&thinsp;400 = 1111.11, that is
+<strong>1111 to 1</strong></p>
+<p><strong>Conclusion, stated plainly.</strong> Matching control gives the
+converter a rotor-like <em>structure</em>. It does not give it a rotor-like
+<em>energy store</em>. The energy must come from the DC source behind the
+capacitor, and nothing in (3.13) to (3.16) checks that it is there.</p>
+</div>
+
+<div class="res rem">
+<span class="head">Remark 3.2 &mdash; the two ratings in the 1111 figure</span>
+<p>The ratio 243 compares two units of the same rating: 3.5 MJ in a 1 MVA
+machine's rotor against 14.4 kJ in a 1 MVA converter's DC link. The ratio 1111
+does not. It compares the 16 MJ asked of a 100 MVA converter with the 14.4 kJ
+held by the 1 MVA converter of parts 1 to 3. Both numbers are correct arithmetic,
+and the second is the number the plan of this book specifies, but they answer
+different questions. The like-for-like figure is the third one: scaled to 1 MVA,
+the same inertial response asks for
+2 &times; 5 &times; 0.0160 = 0.16 MJ per MVA against 0.0144 MJ per MVA stored,
+a ratio of 11.11. Fig. 3.4 plots all three so that the reader can see which
+comparison each ratio makes.</p>
+</div>
+
+<figure id="fig-3-4">
+<svg viewBox="0 0 660 254" role="img" aria-label="Bar chart on a logarithmic axis of stored and demanded energy">
+<style>
+.bl{fill:#cbd5e1;font-size:13px;font-family:sans-serif}
+.bv{fill:#e2e8f0;font-size:14px;font-family:sans-serif}
+.bt2{fill:#94a3b8;font-size:14px;font-family:sans-serif;text-anchor:middle}
+</style>
+<line x1="186" y1="30" x2="186" y2="206" stroke="#334155" stroke-width="1.4"/>
+<line x1="290.5" y1="30" x2="290.5" y2="206" stroke="#1e293b" stroke-width="1"/>
+<line x1="395" y1="30" x2="395" y2="206" stroke="#1e293b" stroke-width="1"/>
+<line x1="499.5" y1="30" x2="499.5" y2="206" stroke="#1e293b" stroke-width="1"/>
+<line x1="604" y1="30" x2="604" y2="206" stroke="#1e293b" stroke-width="1"/>
+
+<rect x="186" y="36" width="334.8" height="20" fill="#2dd4bf"/>
+<text class="bl" x="8" y="45">Inertial response asked of a</text>
+<text class="bl" x="8" y="59">100 MVA unit, H_v = 5 s</text>
+<text class="bv" x="528" y="52">16 MJ</text>
+
+<rect x="186" y="82" width="265.9" height="20" fill="#fb923c"/>
+<text class="bl" x="8" y="91">Synchronous machine rotor,</text>
+<text class="bl" x="8" y="105">1 MVA at H = 3.5 s</text>
+<text class="bv" x="460" y="98">3.5 MJ</text>
+
+<rect x="186" y="128" width="125.8" height="20" fill="#2dd4bf" opacity="0.55"/>
+<text class="bl" x="8" y="137">The same response scaled</text>
+<text class="bl" x="8" y="151">to 1 MVA</text>
+<text class="bv" x="320" y="144">0.16 MJ</text>
+
+<rect x="186" y="174" width="16.5" height="20" fill="#94a3b8"/>
+<text class="bl" x="8" y="183">DC link, 1 MVA,</text>
+<text class="bl" x="8" y="197">20 mF at 1200 V</text>
+<text class="bv" x="212" y="190">0.0144 MJ</text>
+
+<line x1="186" y1="206" x2="604" y2="206" stroke="#334155" stroke-width="1.4"/>
+<text class="bt2" x="186" y="226">0.01</text>
+<text class="bt2" x="290.5" y="226">0.1</text>
+<text class="bt2" x="395" y="226">1</text>
+<text class="bt2" x="499.5" y="226">10</text>
+<text class="bt2" x="604" y="226">100</text>
+<text class="bt2" x="395" y="248">energy (MJ, logarithmic axis)</text>
+</svg>
+<figcaption><b>Fig. 3.4</b> Stored and demanded energy on a logarithmic axis, for
+Example 3.2 and Remark 3.2. The figure illustrates Model 3.5 (R29) and Example 3.2
+(R30). Each decade is one grid line, so a constant distance on the axis is a
+constant ratio. Machine rotor against DC link, both at 1 MVA: 3.5 MJ against
+0.0144 MJ, a ratio of <b>243</b>. Response asked of a 100 MVA unit against the
+1 MVA DC link: 16 MJ against 0.0144 MJ, a ratio of <b>1111</b>. Response scaled to
+1 MVA against the 1 MVA DC link: 0.16 MJ against 0.0144 MJ, a ratio of
+<b>11.11</b>.</figcaption>
+</figure>
+
+<h2 id="s35">3.5 Dispatchable virtual oscillator control</h2>
+
+<p>The three families so far all start from a machine. The fourth does not. It
+starts from a nonlinear oscillator whose synchronization can be proved, and then
+constrains the oscillator so that its steady state lands on a commanded
+dispatch point. The motivation is the proof. It is almost global, in the sense
+that Remark 3.3 states, where the other three families have only local
+results.</p>
+
+<div class="res model" id="model-3-6" data-rid="R31">
+<span class="head">Model 3.6 &mdash; dispatchable virtual oscillator control
+<span class="rid">R31</span><span class="status cited">model cited [S11, S12 &mdash; verify]; the small-signal reduction is derived here</span></span>
+<p>In polar coordinates the control law advances the angle and the magnitude
+together:</p>
+<p class="eq">d<var>&theta;</var>/d<var>t</var> = <var>&omega;</var><sub>0</sub>
++ (<var>&eta;</var>/<var>E</var><sup>2</sup>) [ sin<var>&kappa;</var>
+(<var>P</var><sub>ref</sub><var>E</var><sup>2</sup>/<var>V</var><sub>ref</sub><sup>2</sup>
+&minus; <var>P</var>) &minus; cos<var>&kappa;</var>
+(<var>Q</var><sub>ref</sub><var>E</var><sup>2</sup>/<var>V</var><sub>ref</sub><sup>2</sup>
+&minus; <var>Q</var>) ]<span class="n">(3.22)</span></p>
+<p class="eq">d<var>E</var>/d<var>t</var> =
+(<var>&eta;</var>/<var>E</var>) [ cos<var>&kappa;</var>
+(<var>P</var><sub>ref</sub><var>E</var><sup>2</sup>/<var>V</var><sub>ref</sub><sup>2</sup>
+&minus; <var>P</var>) + sin<var>&kappa;</var>
+(<var>Q</var><sub>ref</sub><var>E</var><sup>2</sup>/<var>V</var><sub>ref</sub><sup>2</sup>
+&minus; <var>Q</var>) ] + <var>&eta;</var> <var>k</var><sub>v</sub> <var>E</var>
+(<var>V</var><sub>ref</sub><sup>2</sup> &minus; <var>E</var><sup>2</sup>) /
+<var>V</var><sub>ref</sub><sup>2</sup><span class="n">(3.23)</span></p>
+<p>Here <var>&eta;</var> is the <strong>oscillator gain</strong> in 1/s,
+<var>&kappa;</var> is the <strong>rotation angle</strong> in rad, and
+<var>k</var><sub>v</sub> is the <strong>amplitude-regulation gain</strong>. The
+last term of (3.23) is the amplitude regulator: it pulls <var>E</var> toward
+<var>V</var><sub>ref</sub> and vanishes when <var>E</var> =
+<var>V</var><sub>ref</sub>. Angle and magnitude are one complex state, and
+<var>&kappa;</var> rotates the power error before it is split between them.</p>
+<p><strong>Convention warning.</strong> Equations (3.22) and (3.23) are written
+with <var>&kappa;</var> oriented so that <var>&kappa;</var> = &pi;/2 corresponds
+to a purely inductive network. Published forms differ in how <var>&kappa;</var>
+is defined and therefore in which trigonometric function multiplies which power
+error. The substance is unaffected; the labelling is not
+<span class="cite">[S11, Colombino, Gro&szlig;, Brouillon and D&ouml;rfler 2019,
+<em>Global Phase and Magnitude Synchronization of Coupled Oscillators with
+Application to the Control of Grid-Forming Power Inverters</em>, the polar form of
+the control law &mdash; location not yet checked &mdash; verify]</span>.</p>
+</div>
+
+<div class="res rem">
+<span class="head">Remark 3.3 &mdash; the synchronization result, and its
+hypotheses <span class="status cited">cited, not proved here</span></span>
+<p>The result that motivates this family is a statement about the whole network,
+not about one converter. <strong>Cited claim:</strong> a network of converters
+under (3.22) and (3.23) has a synchronous steady state that is almost globally
+asymptotically stable &mdash; every initial condition converges to it except a
+set of measure zero. <strong>Its hypotheses, which must be carried with
+it:</strong></p>
+<ul>
+<li>The network's line impedances share one impedance angle, and
+<var>&kappa;</var> is set to that angle. A network with mixed resistive and
+inductive branches does not satisfy this.</li>
+<li>The power set points are consistent, that is they admit a feasible
+synchronous steady state at the commanded magnitudes.</li>
+<li>An explicit gain condition relates <var>&eta;</var>,
+<var>k</var><sub>v</sub> and the network coupling strength. The result is not
+gain-free.</li>
+<li>The converters are modelled at their terminals as controlled voltage sources.
+Inner-loop dynamics, filters and current limits are outside the model.</li>
+</ul>
+<p>This is cited, not proved here
+<span class="cite">[S11, Colombino et&nbsp;al. 2019, <em>Global Phase and
+Magnitude Synchronization of Coupled Oscillators with Application to the Control
+of Grid-Forming Power Inverters</em>, the almost-global stability theorem &mdash;
+location not yet checked &mdash; verify]</span>. No result in this book depends
+on it. It is included for two reasons. It is the only almost-global claim among
+the four families. A reader who meets the claim elsewhere should meet its
+hypotheses at the same time.</p>
+</div>
+
+<h3>3.5.1 The small-signal reduction</h3>
+
+<p>Set <var>&kappa;</var> = &pi;/2, so sin<var>&kappa;</var> = 1 and
+cos<var>&kappa;</var> = 0, which is the inductive-network case this chapter works
+in throughout. Equation (3.22) becomes</p>
+<p class="eq">d<var>&theta;</var>/d<var>t</var> = <var>&omega;</var><sub>0</sub>
++ (<var>&eta;</var>/<var>E</var><sup>2</sup>)
+(<var>P</var><sub>ref</sub><var>E</var><sup>2</sup>/<var>V</var><sub>ref</sub><sup>2</sup>
+&minus; <var>P</var>)<span class="n">(3.24)</span></p>
+<p>At the operating point the amplitude regulator has done its work, so
+<var>E</var> = <var>V</var><sub>ref</sub>. Take deviations of (3.24) about that
+point. Two terms appear, because <var>E</var> stands in the denominator of the
+power error:</p>
+<p class="eq">&Delta;(d<var>&theta;</var>/d<var>t</var>) = &minus;
+(<var>&eta;</var>/<var>V</var><sub>ref</sub><sup>2</sup>) &Delta;<var>P</var>
++ (2<var>&eta;</var><var>P</var><sub>ref</sub>/<var>V</var><sub>ref</sub><sup>3</sup>)
+&Delta;<var>E</var></p>
+<p><strong>Assumption for the reduction.</strong> Hold the magnitude at its set
+point: &Delta;<var>E</var> = 0. This selects the power-to-frequency channel
+alone, and it is the same decoupling that assumption (iv) of Model 3.2 makes
+for droop control. It holds when the amplitude regulator in (3.23) is fast
+compared with the angle dynamics, or when the reactive-power error is zero.
+With &Delta;<var>E</var> = 0 the second term vanishes, and what remains is a
+droop line written in rad/s. Convert it to per unit by dividing by
+<var>&omega;</var><sub>0</sub>, which is what (3.2) requires:</p>
+<p class="eq">&Delta;<var>&omega;</var> = &minus; [<var>&eta;</var> /
+(<var>&omega;</var><sub>0</sub> <var>V</var><sub>ref</sub><sup>2</sup>)]
+&Delta;<var>P</var><span class="n">(3.25)</span></p>
+<p>Comparing (3.25) with the deviation of the droop law (3.5),
+&Delta;<var>&omega;</var> = &minus;<var>m</var><sub>p</sub>&Delta;<var>P</var>,
+identifies the gains:</p>
+<p class="eq"><var>m</var><sub>p</sub> = <var>&eta;</var> /
+(<var>&omega;</var><sub>0</sub> <var>V</var><sub>ref</sub><sup>2</sup>),
+&nbsp;&nbsp;&nbsp; <var>K</var><sub>D,eq</sub> = 1/<var>m</var><sub>p</sub> =
+<var>&omega;</var><sub>0</sub> <var>V</var><sub>ref</sub><sup>2</sup> /
+<var>&eta;</var><span class="n">(3.26)</span></p>
+
+<p>The factor <var>&omega;</var><sub>0</sub> in (3.26) is not decoration. It is
+the same factor the convention warning of &sect;3.2.1 exists to protect. To
+reproduce <var>m</var><sub>p</sub> = 0.05 pu at
+<var>V</var><sub>ref</sub> = 1 pu and <var>f</var><sub>0</sub> = 50 Hz, the gain
+must be <var>&eta;</var> = 0.05 &times; 314.1593 &times; 1 = 15.7080 1/s. At
+<var>f</var><sub>0</sub> = 60 Hz the same droop needs
+<var>&eta;</var> = 0.05 &times; 376.9911 = 18.8496 1/s. Reading
+<var>&eta;</var> = 0.05 from (3.26) and calling it a 5 % droop would be wrong by
+the factor 314.159.</p>
+
+<p><strong>The inertia.</strong> Equations (3.22) and (3.23) contain no power
+filter. The power <var>P</var> enters (3.24) instantaneously. By Theorem 3.3 read
+backwards, a droop law with no filter has <var>&omega;</var><sub>c</sub> &rarr;
+&infin; and therefore <var>H</var><sub>eq</sub> = 0. <strong>Pure dispatchable
+virtual oscillator control supplies damping and no inertia.</strong> Insert a
+first-order power measurement filter of cutoff <var>&omega;</var><sub>c</sub>
+&mdash; which any implementation on a real, noisy measurement needs &mdash; and
+Theorem 3.3 applies unchanged, giving</p>
+<p class="eq"><var>H</var><sub>eq</sub> = 1 / (2 <var>m</var><sub>p</sub>
+<var>&omega;</var><sub>c</sub>) = <var>&omega;</var><sub>0</sub>
+<var>V</var><sub>ref</sub><sup>2</sup> / (2 <var>&eta;</var>
+<var>&omega;</var><sub>c</sub>)<span class="n">(3.27)</span></p>
+<p>The distinction matters for the acceptance of the chapter: (3.22) and (3.23) are
+cited; (3.24) to (3.27) are proved here from them under &Delta;<var>E</var> = 0.</p>
+
+<h2 id="s36">3.6 One model, four families</h2>
+
+<p>Sections 3.2 to 3.5 derived four control laws that look nothing alike. Two are
+straight lines, one is an integrator fed by a capacitor voltage, one is a
+nonlinear oscillator. Each derivation ended at the same place: a first-order
+relation between a power deviation and a per-unit frequency deviation, with two
+coefficients. This section states that as one theorem and tabulates the
+coefficients.</p>
+
+<div class="res thm" id="thm-3-7" data-rid="R32">
+<span class="head">Theorem 3.7 &mdash; the unified small-signal model
+<span class="rid">R32</span><span class="status here">proved here from &sect;3.2 to &sect;3.5</span></span>
+<p>Call an operating point <strong>symmetric</strong> when the measured power
+equals its set point, the internal magnitude equals its set point, and the
+current is inside the limit. Let a grid-forming converter satisfy Definition 3.1
+under any one of Model 3.2, Model 3.4, Model 3.5, or Model 3.6, each with its
+own stated assumptions, including &Delta;<var>E</var> = 0 where the model states
+it. Then about a symmetric operating point the small-signal dynamics are</p>
+<p class="eq">d<var>&theta;</var>/d<var>t</var> = <var>&omega;</var><sub>0</sub>
+(1 + <var>&delta;&omega;</var>),&nbsp;&nbsp;&nbsp;
+&Delta;<var>&omega;</var>(<var>s</var>) = &minus; &Delta;<var>P</var>(<var>s</var>)
+/ (2<var>H</var><sub>eq</sub> <var>s</var> +
+<var>K</var><sub>D,eq</sub>)<span class="n">(3.28)</span></p>
+<p>with the pair (<var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub>) given by
+Table 3.1. The four families are therefore indistinguishable to first order
+about such a point: a measurement of the frequency response from power imbalance
+to frequency cannot identify which law is running, only what
+(<var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub>) it realises.</p>
+</div>
+
+<div class="proof">
+<p class="lbl">Proof</p>
+<p>The angle equation is (3.2) in every case, because every family satisfies
+Definition 3.1 and (3.2) is the per-unit form of (3.1). It remains to show that
+each family's frequency channel is (3.28).</p>
+<ul>
+<li><strong>Droop (Model 3.2).</strong> Equation (3.8), rearranged, is
+(2<var>H</var><sub>eq</sub><var>s</var> +
+<var>K</var><sub>D,eq</sub>)&Delta;<var>&omega;</var> = &minus;&Delta;<var>P</var>
+with the pair (3.7). That is (3.28). Proved in Theorem 3.3.</li>
+<li><strong>Virtual synchronous machine (Model 3.4).</strong> Equation (3.11) is
+(3.3) with renamed symbols, so its Laplace form is (3.28) with the pair (3.12).
+The match holds by construction, not by derivation.</li>
+<li><strong>Matching control (Model 3.5).</strong> Equations (3.18), (3.19),
+(3.20) and (3.21), combined, give
+(<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>)<var>s</var>&Delta;<var>&omega;</var>
++ (<var>k</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>
+&minus; <var>P</var><sub>0</sub>)&Delta;<var>&omega;</var>
+= &minus;&Delta;<var>P</var>. That is (3.28) with the pair (3.16) and (3.21).</li>
+<li><strong>Dispatchable virtual oscillator control (Model 3.6).</strong>
+Equation (3.25) is (3.28) with <var>H</var><sub>eq</sub> = 0 and
+<var>K</var><sub>D,eq</sub> from (3.26). With a first-order power filter it is
+(3.28) with <var>H</var><sub>eq</sub> from (3.27).</li>
+</ul>
+<p>All four are (3.28). &#9633;</p>
+</div>
+
+<div class="tw">
+<table>
+<caption><strong>Table 3.1</strong> &mdash; the equivalent pair for each family.
+Every entry is derived in this chapter at the equation number shown. No entry is
+carried from a source without derivation. The right-hand column is what the
+family does <em>away</em> from the operating point, where Theorem 3.7 stops
+applying.</caption>
+<thead>
+<tr><th>Family</th><th><var>H</var><sub>eq</sub> (s)</th>
+<th><var>K</var><sub>D,eq</sub> (pu)</th><th>Derived at</th>
+<th>Away from the operating point</th></tr>
+</thead>
+<tbody>
+<tr>
+<td>Droop with a first-order power filter</td>
+<td>1 / (2 <var>m</var><sub>p</sub> <var>&omega;</var><sub>c</sub>)</td>
+<td>1 / <var>m</var><sub>p</sub></td>
+<td>(3.7), Theorem 3.3</td>
+<td>The two coefficients cannot be set independently: fixing the grid-code droop
+fixes <var>K</var><sub>D,eq</sub>, and only
+<var>&omega;</var><sub>c</sub> is left to carry <var>H</var><sub>eq</sub>.</td>
+</tr>
+<tr>
+<td>Virtual synchronous machine</td>
+<td><var>H</var><sub>v</sub></td>
+<td><var>K</var><sub>D,v</sub></td>
+<td>(3.12), by construction</td>
+<td>The two coefficients are independent. Nothing in the law checks that the
+DC side can deliver the energy the chosen <var>H</var><sub>v</sub> promises.</td>
+</tr>
+<tr>
+<td>Matching control, gain <var>k</var><sub>&theta;</sub> =
+<var>&omega;</var><sub>0</sub>/<var>v</var><sub>dc0</sub></td>
+<td>0.5 <var>C</var><sub>dc</sub> <var>v</var><sub>dc0</sub><sup>2</sup> /
+<var>S</var><sub>base</sub></td>
+<td><var>k</var><sub>dc</sub> <var>v</var><sub>dc0</sub><sup>2</sup> /
+<var>S</var><sub>base</sub> &minus; <var>P</var><sub>0</sub></td>
+<td>(3.16) and (3.21)</td>
+<td>The inertia is physical and therefore small (Example 3.2: 0.0144 s). The
+damping lives in the DC source, not in the AC control law, and turns negative
+when <var>k</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>
+&lt; <var>P</var><sub>0</sub>. The DC voltage cannot be over-promised, because it
+is measured.</td>
+</tr>
+<tr>
+<td>Dispatchable virtual oscillator control,
+<var>&kappa;</var> = &pi;/2, &Delta;<var>E</var> = 0; model cited [S11 &mdash;
+verify], reduction derived here</td>
+<td>0 with no filter; <var>&omega;</var><sub>0</sub>
+<var>V</var><sub>ref</sub><sup>2</sup> / (2 <var>&eta;</var>
+<var>&omega;</var><sub>c</sub>) with one</td>
+<td><var>&omega;</var><sub>0</sub> <var>V</var><sub>ref</sub><sup>2</sup> /
+<var>&eta;</var></td>
+<td>(3.26) and (3.27)</td>
+<td>The amplitude channel (3.23) is coupled to the angle channel and is
+nonlinear. This is the family with a cited almost-global synchronization result
+(Remark 3.3), which the other three do not have.</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p>Two readings of Table 3.1 are worth stating, because they point in opposite
+directions.</p>
+
+<p><strong>The optimistic reading.</strong> A system operator specifying
+grid-forming plant does not need to specify a control family. Specify
+<var>H</var><sub>eq</sub> and <var>K</var><sub>D,eq</sub>, or the frequency
+response (3.28) that they define, and any of the four families can meet it.</p>
+
+<p><strong>The pessimistic reading.</strong> Theorem 3.7 holds only about a
+symmetric operating point with the current inside the limit. Every interesting
+disturbance moves the converter away from that point. The right-hand column of
+Table 3.1 is where the families genuinely differ, and it is not covered by the
+theorem. A side-by-side study of the four families under large disturbances is
+the subject of the comparison literature
+<span class="cite">[S12, Tayyebi, Gro&szlig;, Anta, Kupzog and D&ouml;rfler 2020,
+<em>Frequency Stability of Synchronous Machines and Grid-Forming Power
+Converters</em>, the side-by-side comparison &mdash; location not yet checked
+&mdash; verify]</span>. This book does not settle it.</p>
+
+<figure id="fig-3-5">
+<svg viewBox="0 0 660 342" role="img" aria-label="Magnitude of the frequency response from power imbalance to frequency for the four families">
+<style>
+.ftk{fill:#94a3b8;font-size:15px;font-family:sans-serif;text-anchor:middle}
+.ftky{fill:#94a3b8;font-size:15px;font-family:sans-serif;text-anchor:end}
+.faxt{fill:#cbd5e1;font-size:16px;font-family:sans-serif;text-anchor:middle}
+.flg{font-size:15px;font-family:sans-serif}
+</style>
+<rect x="78" y="44" width="532" height="236" fill="var(--eqbg)" stroke="#334155" stroke-width="1.2"/>
+<line x1="211" y1="44" x2="211" y2="280" stroke="#1e293b" stroke-width="1"/>
+<line x1="344" y1="44" x2="344" y2="280" stroke="#1e293b" stroke-width="1"/>
+<line x1="477" y1="44" x2="477" y2="280" stroke="#1e293b" stroke-width="1"/>
+<line x1="78" y1="201.3" x2="610" y2="201.3" stroke="#1e293b" stroke-width="1"/>
+<line x1="78" y1="122.7" x2="610" y2="122.7" stroke="#1e293b" stroke-width="1"/>
+
+<line x1="78" y1="146.3" x2="610" y2="146.3" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 5"/>
+
+<polyline fill="none" stroke="#2dd4bf" stroke-width="3" points="78.0,146.3 91.3,146.3 104.6,146.3 117.9,146.3 131.2,146.3 144.5,146.3 157.8,146.3 171.1,146.3 184.4,146.4 197.7,146.4 211.0,146.4 224.3,146.4 237.6,146.4 250.9,146.4 264.2,146.4 277.5,146.4 290.8,146.5 304.1,146.5 317.4,146.6 330.7,146.8 344.0,147.0 357.3,147.4 370.6,148.0 383.9,148.9 397.2,150.2 410.5,152.1 423.8,154.7 437.1,158.2 450.4,162.6 463.7,167.9 477.0,173.8 490.3,180.4 503.6,187.4 516.9,194.7 530.2,202.2 543.5,209.8 556.8,217.5 570.1,225.3 583.4,233.1 596.7,240.9 610.0,248.7"/>
+
+<polyline fill="none" stroke="#fb923c" stroke-width="2.4" points="78.0,99.0 91.3,99.0 104.6,99.0 117.9,99.0 131.2,99.0 144.5,99.0 157.8,99.0 171.1,99.0 184.4,99.0 197.7,99.1 211.0,99.1 224.3,99.2 237.6,99.3 250.9,99.4 264.2,99.7 277.5,100.0 290.8,100.6 304.1,101.5 317.4,102.9 330.7,104.8 344.0,107.4 357.3,110.9 370.6,115.4 383.9,120.6 397.2,126.6 410.5,133.2 423.8,140.2 437.1,147.5 450.4,155.0 463.7,162.6 477.0,170.3 490.3,178.1 503.6,185.9 516.9,193.7 530.2,201.5 543.5,209.4 556.8,217.2 570.1,225.1 583.4,233.0 596.7,240.8 610.0,248.7"/>
+
+<circle cx="437" cy="158.2" r="5" fill="#2dd4bf" stroke="#0f172a" stroke-width="1.5"/>
+<circle cx="356.9" cy="110.9" r="5" fill="#fb923c" stroke="#0f172a" stroke-width="1.5"/>
+
+<text x="600" y="92" class="flg" fill="#fb923c" text-anchor="end">VSM: H_v = 2 s, K_D,v = 5 pu</text>
+<text x="600" y="128" class="flg" fill="#2dd4bf" text-anchor="end">droop and matching: H_eq = 2 s, K_D,eq = 20 pu</text>
+<text x="240" y="166" class="flg" fill="#94a3b8" text-anchor="start">dVOC, no filter: H_eq = 0, flat at m_p = 0.05</text>
+
+<text class="ftk" x="78" y="300">0.01</text>
+<text class="ftk" x="211" y="300">0.1</text>
+<text class="ftk" x="344" y="300">1</text>
+<text class="ftk" x="477" y="300">10</text>
+<text class="ftk" x="610" y="300">100</text>
+<text class="faxt" x="344" y="326">frequency (rad/s, log scale)</text>
+<text class="ftky" x="70" y="285">0.001</text>
+<text class="ftky" x="70" y="206">0.01</text>
+<text class="ftky" x="70" y="128">0.1</text>
+<text class="ftky" x="70" y="49">1</text>
+<text class="faxt" x="20" y="162" transform="rotate(-90 20 162)">|&#916;&#969; / &#916;P|  (pu/pu, log)</text>
+</svg>
+<figcaption><b>Fig. 3.5</b> Magnitude of the response (3.28) from power imbalance
+to per-unit frequency, on logarithmic axes. The figure illustrates Theorem 3.7
+(R32) and Table 3.1. All curves are computed from
+|&Delta;<var>&omega;</var>/&Delta;<var>P</var>| = 1 /
+&radic;((2<var>H</var><sub>eq</sub><var>&omega;</var>)<sup>2</sup> +
+<var>K</var><sub>D,eq</sub><sup>2</sup>). <b>Teal:</b> droop with
+<var>m</var><sub>p</sub> = 0.05 pu and <var>&omega;</var><sub>c</sub> = 5 rad/s,
+which gives <var>H</var><sub>eq</sub> = 2 s and <var>K</var><sub>D,eq</sub> = 20 pu.
+Matching control tuned to the same pair draws the identical curve, so one teal
+line serves both; that coincidence is Theorem 3.7 seen as a picture. The
+matching tuning is a thought experiment: by (3.16) it needs
+<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>
+= 4 s, that is 2.78 F at 1200 V on 1 MVA, 139 times the 20 mF of Example 3.2.
+<b>Orange:</b>
+a virtual synchronous machine at the same <var>H</var><sub>v</sub> = 2 s but a
+freely chosen <var>K</var><sub>D,v</sub> = 5 pu; it separates from the teal curve
+below its corner. At 10 rad/s the orange curve is still 1.11 times the teal
+one; at 30 rad/s the ratio is 1.013, and above that the inertia term
+2<var>H</var><sub>eq</sub><var>&omega;</var> dominates both. <b>Dashed grey:</b> dispatchable virtual oscillator control with
+no power filter, <var>H</var><sub>eq</sub> = 0, flat at
+<var>m</var><sub>p</sub> = 0.05 pu/pu at every frequency; it never rolls off, because it has no mass. Markers sit at each corner frequency,
+<var>K</var><sub>D,eq</sub>/(2<var>H</var><sub>eq</sub>). The amplitude-channel
+difference named in Table 3.1 is <em>not</em> in this plot, which is a
+power-to-frequency response only; it is stated in the text of &sect;3.6.</figcaption>
+</figure>
+
+<h2 id="s37">3.7 What is restored and what is not</h2>
+
+<p>The chapter opened with a loss. Chapter 1 showed that the stability of one
+machine against a stiff grid rests on two coefficients: a spring constant
+<var>K</var><sub>s</sub> and a mass 2<var>H</var> (R06, R07). Chapter 2 showed
+that a grid-following fleet supplies neither (R23). This section states, with the
+arithmetic shown, which of the two grid-forming control restores, and what price
+is attached to the other.</p>
+
+<h3>3.7.1 The synchronizing coefficient is restored in full</h3>
+
+<div class="res cor" id="cor-3-8" data-rid="R33">
+<span class="head">Corollary 3.8 &mdash; what grid-forming control restores, and the
+two bounds <span class="rid">R33</span><span class="status here">proved here from Definition 3.1 and Theorem 3.7</span></span>
+<p>Let a converter satisfy Definition 3.1 and any family of Table 3.1. Let its
+output impedance be a pure reactance, <var>Z</var><sub>f</sub> =
+j<var>X</var><sub>f</sub>, and let <var>X</var> = <var>X</var><sub>f</sub> +
+<var>X</var><sub>g</sub> be the total reactance to a source of magnitude
+<var>V</var><sub>g</sub>. Let the magnitude <var>E</var> be held at its set
+point, which is the decoupling assumption (iv) of Model 3.2 and the
+&Delta;<var>E</var> = 0 of &sect;3.5.1. Let <var>&delta;</var> be the angle by
+which <var>E</var> &ang; <var>&theta;</var> leads the source, with equilibrium
+value <var>&delta;</var><sub>0</sub>. Then:</p>
+<p><strong>(a) Synchronizing coefficient.</strong> The converter contributes</p>
+<p class="eq"><var>K</var><sub>s</sub> = d<var>P</var>/d<var>&delta;</var> =
+(<var>E</var> <var>V</var><sub>g</sub> / <var>X</var>) cos
+<var>&delta;</var><sub>0</sub><span class="n">(3.29)</span></p>
+<p>which has the same form as the machine's coefficient (R06), with the commanded
+internal voltage <var>E</var> in the place of the emf behind transient
+reactance. It is positive exactly when
+|<var>&delta;</var><sub>0</sub>| &lt; 90&deg;.</p>
+<p><strong>(b) Inertia, bounded by energy.</strong> Write
+<var>E</var><sub>res</sub> for the <strong>usable energy reserve</strong> of the
+converter: the energy, in joules, that the source behind the DC link can deliver
+at the instant of the disturbance, after state of charge, temperature and every
+other commitment are taken off. Write &Delta;<var>f</var> for the magnitude of
+the frequency excursion, in hertz. The inertial response over that excursion
+requires</p>
+<p class="eq"><var>E</var><sub>res</sub> &ge; 2 <var>H</var><sub>eq</sub>
+<var>S</var><sub>base</sub> &Delta;<var>f</var> /
+<var>f</var><sub>0</sub><span class="n">(3.30)</span></p>
+<p><strong>(c) Inertia, bounded by current.</strong> Write RoCoF for the
+magnitude of the rate of change of frequency, |d<var>f</var>/d<var>t</var>|, in
+Hz/s. At that rate the inertial power is
+2<var>H</var><sub>eq</sub> RoCoF / <var>f</var><sub>0</sub> in per unit. Assume
+a terminal voltage of 1 pu, and assume that the dispatch current
+<var>i</var><sub>0</sub> and the inertial current are both active currents, in
+phase with the terminal voltage, so that they add as scalars. Then the inertial
+power is also the extra current, and the <strong>headroom</strong>
+<var>I</var><sub>max</sub> &minus; <var>i</var><sub>0</sub> must hold it:</p>
+<p class="eq">2 <var>H</var><sub>eq</sub> RoCoF / <var>f</var><sub>0</sub> &le;
+<var>I</var><sub>max</sub> &minus; <var>i</var><sub>0</sub><span class="n">(3.31)</span></p>
+<p>If part of <var>i</var><sub>0</sub> is reactive, the two currents add as
+vectors, the true headroom is larger than this difference, and (3.31) is
+conservative.</p>
+<p>Neither (3.30) nor (3.31) has a counterpart in Chapter 1.</p>
+</div>
+
+<div class="proof">
+<p class="lbl">Proof</p>
+<p><strong>(a)</strong> By Definition 3.1 the converter presents
+<var>E</var> &ang; <var>&theta;</var> behind an impedance, and by Theorem 3.7 the
+angle <var>&theta;</var> is a state moved by (3.28). The power transferred across
+a reactance between two voltage magnitudes is
+<var>P</var> = (<var>E</var><var>V</var><sub>g</sub>/<var>X</var>) sin
+<var>&delta;</var>, exactly as for the classical machine model (R05), because the
+network relation does not know what produced <var>E</var> &ang;
+<var>&theta;</var>. Differentiating with respect to <var>&delta;</var> at
+<var>&delta;</var><sub>0</sub> gives (3.29). The sign statement follows from the
+sign of the cosine.</p>
+<p><strong>(b)</strong> Integrate the inertial term of (3.3) over the excursion.
+Power 2<var>H</var><sub>eq</sub> d(<var>&delta;&omega;</var>)/d<var>t</var> in per
+unit, times <var>S</var><sub>base</sub>, integrated from
+<var>&delta;&omega;</var> = 0 to
+|<var>&delta;&omega;</var>| = &Delta;<var>f</var>/<var>f</var><sub>0</sub>
+&mdash; a falling frequency has <var>&delta;&omega;</var> negative, and the
+energy is the magnitude &mdash; gives
+2<var>H</var><sub>eq</sub><var>S</var><sub>base</sub>&Delta;<var>f</var>/<var>f</var><sub>0</sub>
+joules. The DC side must supply that energy, because the capacitor of Model 3.5
+holds only
+0.5<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup> and Example 3.2
+measured how small that is. Hence (3.30).</p>
+<p><strong>(c)</strong> Differentiate the same term. The instantaneous inertial
+power is 2<var>H</var><sub>eq</sub> d(<var>&delta;&omega;</var>)/d<var>t</var> =
+2<var>H</var><sub>eq</sub>RoCoF/<var>f</var><sub>0</sub> in per unit, since
+d(<var>&delta;&omega;</var>)/d<var>t</var> = RoCoF/<var>f</var><sub>0</sub>.
+Per-unit power at unit voltage equals per-unit current, and the converter's total
+current cannot exceed <var>I</var><sub>max</sub>. Hence (3.31). &#9633;</p>
+</div>
+
+<h3>3.7.2 The restored coefficient, in numbers</h3>
+
+<p>Take the network of Example 1.1 so that the comparison is digit for digit, and
+put a grid-forming converter in the machine's place:
+<var>E</var> = 1.1 pu, <var>V</var><sub>g</sub> = 1.0 pu,
+<var>X</var> = 0.65 pu, exporting <var>P</var> = 0.8 pu. The equilibrium angle
+comes from the power relation:
+<var>&delta;</var><sub>0</sub> = arcsin(0.8 &times; 0.65 / 1.1) =
+arcsin(0.4727) = 0.4924 rad = 28.21&deg;. Then
+<var>E</var><var>V</var><sub>g</sub>/<var>X</var> = 1.1/0.65 = 1.6923 pu and
+cos <var>&delta;</var><sub>0</sub> = 0.8812, so</p>
+<p class="eq"><var>K</var><sub>s</sub> = 1.6923 &times; 0.8812 = 1.491
+pu/rad</p>
+<p>which is the 1.49 pu/rad of Example 1.1 (R08). The converter and the machine
+contribute the same spring constant, because (3.29) does not contain a single
+term that refers to a rotor. That is the chapter's positive result, and it is
+complete: on this count grid-forming control restores exactly what was lost.</p>
+
+<h3>3.7.3 The two bounds, in numbers</h3>
+
+<p><strong>The energy bound (3.30).</strong> Example 3.2 already computed the
+right-hand side for one case: a 100 MVA converter declaring
+<var>H</var><sub>eq</sub> = 5 s over &Delta;<var>f</var> = 0.8 Hz at
+<var>f</var><sub>0</sub> = 50 Hz must deliver
+2 &times; 5 &times; 100 &times; 10<sup>6</sup> &times; 0.016 = 16 MJ, which is
+4.4444 kWh. Whether that binds depends on what sits behind the DC link. A battery
+rated 100 MW with a 1-hour store holds 100 MWh = 360 GJ, which is 22 500 times
+the 16 MJ. A photovoltaic array running at its maximum power point holds none at
+all, and must be curtailed
+below that point first. The DC link itself, at 14.4 kJ per MVA scaled from
+Example 3.2, holds 0.0144 MJ per MVA against the 0.16 MJ per MVA that (3.30)
+asks for &mdash; a shortfall of 11.11 to 1. The capacitor cannot be the source.</p>
+
+<p><strong>The current bound (3.31).</strong> In the sizing case of Chapter 4
+(R39) this bound binds and the energy bound does not. Its arithmetic is short.
+Take a converter with
+<var>I</var><sub>max</sub> = 1.2 pu dispatched at
+<var>i</var><sub>0</sub> = 1.0 pu, so the headroom is 0.2 pu. At
+<var>H</var><sub>eq</sub> = 5 s and <var>f</var><sub>0</sub> = 50 Hz the largest
+rate of change of frequency it can serve inside that headroom is</p>
+<p class="eq">RoCoF = (<var>I</var><sub>max</sub> &minus; <var>i</var><sub>0</sub>)
+<var>f</var><sub>0</sub> / (2<var>H</var><sub>eq</sub>) = 0.2 &times; 50 /
+(2 &times; 5) = 1.000 Hz/s</p>
+<p>and at that rate the inertial power is
+2 &times; 5 &times; 1.000/50 = 0.200 pu, which consumes the headroom exactly and
+leaves nothing for a voltage-support current at the same instant. Doubling the
+rate to 2 Hz/s doubles the demand to
+2 &times; 5 &times; 2/50 = 0.400 pu, which is twice the available headroom. The
+converter cannot deliver it. It must either saturate at
+<var>I</var><sub>max</sub> &mdash; at which point Theorem 3.7 no longer applies,
+because the operating point is no longer symmetric and the current is no longer
+inside the limit &mdash; or reduce its effective
+<var>H</var><sub>eq</sub> and deliver less inertia than it declared.</p>
+
+<div class="res rem">
+<span class="head">Remark 3.4 &mdash; two rate-of-change-of-frequency figures that
+must not be merged</span>
+<p>The two rates used above, 1 Hz/s and 2 Hz/s, are not two readings of one
+requirement. They come from different documents and they mean different things.
+Printing them together as one number is a known error in this material, and this
+book prints them separately, each with its own source.</p>
+<ul>
+<li><strong>2 Hz/s measured over 500 ms</strong> is reported as the European
+withstand-capability guidance figure
+<span class="cite">[S15, ENTSO-E 2018, <em>Rate of Change of Frequency (RoCoF)
+Withstand Capability &mdash; Guidance document for national implementation</em>,
+the withstand requirement &mdash; location not yet checked &mdash;
+verify]</span>. It is a statement about what plant must survive.</li>
+<li><strong>1 Hz/s</strong> is the figure used in Ireland's DS3 programme
+<span class="cite">[S16, EirGrid and SONI, DS3 programme documentation, the
+rate-of-change-of-frequency figure &mdash; document and year not yet checked
+&mdash; verify]</span>. It is a system-operation and protection setting. The
+book's source list holds no document for the Great Britain loss-of-mains
+setting, so this chapter makes no claim about it.</li>
+</ul>
+<p>The arithmetic above uses each only as an input to (3.31), not as a claim about what
+any grid code requires.</p>
+</div>
+
+<h3>3.7.4 What this chapter does not cover</h3>
+
+<p>Four limits are worth naming at the point where the chapter stops, so that no
+result above is read past its hypotheses.</p>
+
+<ul>
+<li><strong>Large disturbances.</strong> Theorem 3.7 is a small-signal result
+about a symmetric operating point with the current inside the limit. It says
+nothing about behaviour after a fault, during current saturation, or during
+islanding. The right-hand column of Table 3.1 lists where the families are known
+to differ there
+<span class="cite">[S12, Tayyebi et&nbsp;al. 2020, <em>Frequency Stability of
+Synchronous Machines and Grid-Forming Power Converters</em>, the large-signal
+comparison &mdash; location not yet checked &mdash; verify]</span>.</li>
+<li><strong>Current limiting.</strong> Model 3.2 omitted the current limiter, and
+Corollary 3.8(c) states only when the limiter is reached, not what happens after.
+A converter that saturates at <var>I</var><sub>max</sub> stops being a voltage
+source, so Definition 3.1 stops applying to it. Whether it remains stable while
+saturated is an open question, and Chapter 4 names it as the first of the open
+problems (R40).</li>
+<li><strong>The amplitude channel.</strong> Every result here is in the
+power-to-frequency channel. The voltage channel, (3.6) and (3.23), was written
+down and then left alone. On a resistive network the two channels couple, and the
+decoupling assumption (iv) of Model 3.2 fails.</li>
+<li><strong>Anything faster than the fundamental.</strong> The inner loops of R14
+were assumed fast and then treated as unity gain. Switching harmonics, filter
+resonance, and converter-driven oscillations above the fundamental are outside
+every model in this chapter.</li>
+</ul>
+
+<h3>3.7.5 What the reader can now do</h3>
+<p>Before this chapter the reader could compute a machine's swing mode (R07) and
+show that a grid-following fleet supplies neither <var>K</var><sub>s</sub> nor
+<var>H</var> (R23). After it the reader can do three things.</p>
+<ol>
+<li>Take any of the four published control laws, linearise it about a symmetric
+operating point, and read off its (<var>H</var><sub>eq</sub>,
+<var>K</var><sub>D,eq</sub>) from Table 3.1, or derive the pair by the
+coefficient matching of Theorem 3.3 (R26, R32).</li>
+<li>Compute the synchronizing coefficient that a grid-forming converter restores
+on a given network with (3.29), and check it digit for digit against the machine
+it replaces (R33, &sect;3.7.2).</li>
+<li>Test a declared inertia number against the energy bound (3.30) and the
+current bound (3.31), with the arithmetic of &sect;3.7.3 and Exercise 3.6, so
+that "5 seconds of inertia" becomes a set of checkable numbers (R33).</li>
+</ol>
+<p>Chapter 4 applies the third of these to a fleet.</p>
+
+<hr>
+
+<h2 id="ex">Exercises</h2>
+
+<div class="exercise">
+<span class="head">Exercise 3.1 (conceptual)</span>
+<p>State why a converter can satisfy Definition 3.1 and still be unable to supply
+an inertial response.</p>
+<details><summary>Answer target</summary>
+<p>Definition 3.1 constrains the <em>control structure</em>: it requires that
+<var>&theta;</var> be an internal state and that the terminal behaviour be that of
+a voltage source behind an impedance. It says nothing about the energy store
+behind the DC link or about the semiconductor rating. Corollary 3.8 supplies the
+two missing constraints: the energy bound (3.30),
+<var>E</var><sub>res</sub> &ge;
+2<var>H</var><sub>eq</sub><var>S</var><sub>base</sub>&Delta;<var>f</var>/<var>f</var><sub>0</sub>,
+and the current bound (3.31),
+2<var>H</var><sub>eq</sub>RoCoF/<var>f</var><sub>0</sub> &le;
+<var>I</var><sub>max</sub> &minus; <var>i</var><sub>0</sub>. A converter on a
+photovoltaic array at its maximum power point satisfies Definition 3.1 and fails
+(3.30), because <var>E</var><sub>res</sub> is zero until the array is
+curtailed.</p>
+</details>
+</div>
+
+<div class="exercise">
+<span class="head">Exercise 3.2 (derivational)</span>
+<p>Derive <var>H</var><sub>eq</sub> = 1/(2<var>m</var><sub>p</sub><var>&omega;</var><sub>c</sub>)
+from the filtered droop law by matching coefficients against the swing equation
+(3.3), and state the assumption that makes the match exact.</p>
+<details><summary>Answer target</summary>
+<p>Define &Delta;<var>P</var> = <var>P</var> &minus; <var>P</var><sub>ref</sub>
+once and use it on both sides. The filtered droop law gives (3.8),
+<var>s</var>&Delta;<var>&omega;</var> = &minus;<var>&omega;</var><sub>c</sub>&Delta;<var>&omega;</var>
+&minus; <var>m</var><sub>p</sub><var>&omega;</var><sub>c</sub>&Delta;<var>P</var>.
+The swing equation (3.3) at constant <var>P</var><sub>m</sub> gives (3.9),
+<var>s</var>&Delta;<var>&omega;</var> = &minus;&Delta;<var>P</var>/(2<var>H</var>)
+&minus; (<var>K</var><sub>D</sub>/(2<var>H</var>))&Delta;<var>&omega;</var>.
+Matching coefficients:
+<var>m</var><sub>p</sub><var>&omega;</var><sub>c</sub> = 1/(2<var>H</var>) and
+<var>&omega;</var><sub>c</sub> = <var>K</var><sub>D</sub>/(2<var>H</var>), which
+give <var>H</var><sub>eq</sub> =
+1/(2<var>m</var><sub>p</sub><var>&omega;</var><sub>c</sub>) and
+<var>K</var><sub>D,eq</sub> = 1/<var>m</var><sub>p</sub>. The match is exact when
+the filter is exactly first order and the droop law is linear. Both sides must be
+written in the per-unit convention of &sect;3.2.1; matching against the rad/s
+damping convention changes <var>K</var><sub>D,eq</sub> by the factor
+<var>&omega;</var><sub>0</sub> = 314.159 at 50 Hz.</p>
+</details>
+</div>
+
+<div class="exercise">
+<span class="head">Exercise 3.3 (derivational)</span>
+<p>Show that a virtual synchronous machine with <var>H</var><sub>v</sub> and
+<var>K</var><sub>D,v</sub> has the same steady-state droop as a droop controller
+with <var>m</var><sub>p</sub> = 1/<var>K</var><sub>D,v</sub>.</p>
+<details><summary>Answer target</summary>
+<p>Set the derivative to zero in both laws. In (3.11):
+0 = &minus;&Delta;<var>P</var> &minus;
+<var>K</var><sub>D,v</sub>&Delta;<var>&omega;</var>, so
+&Delta;<var>&omega;</var> =
+&minus;&Delta;<var>P</var>/<var>K</var><sub>D,v</sub>. In (3.5) at steady state
+the filter has settled, so &Delta;<var>P</var><sub>f</sub> = &Delta;<var>P</var>
+and &Delta;<var>&omega;</var> =
+&minus;<var>m</var><sub>p</sub>&Delta;<var>P</var>. The two agree exactly when
+<var>m</var><sub>p</sub> = 1/<var>K</var><sub>D,v</sub>. Numerically,
+<var>K</var><sub>D,v</sub> = 20 pu corresponds to
+<var>m</var><sub>p</sub> = 0.0500 pu, the 5 % droop of Example 3.1. Note what the
+result does <em>not</em> say: the steady states agree, the transients do not,
+because <var>H</var><sub>v</sub> is still free.</p>
+</details>
+</div>
+
+<div class="exercise">
+<span class="head">Exercise 3.4 (computational)</span>
+<p>For the converter of Example 3.2, compute the DC-link capacitance that would
+give <var>H</var><sub>eq</sub> = 3.5 s at
+<var>v</var><sub>dc0</sub> = 1200 V and
+<var>S</var><sub>base</sub> = 1 MVA. Then state its physical size in words.</p>
+<details><summary>Answer target</summary>
+<p>Invert (3.16):
+<var>C</var><sub>dc</sub> = 2<var>H</var><sub>eq</sub><var>S</var><sub>base</sub>/<var>v</var><sub>dc0</sub><sup>2</sup>
+= 2 &times; 3.5 &times; 10<sup>6</sup> / (1.44 &times; 10<sup>6</sup>) =
+7 &times; 10<sup>6</sup> / (1.44 &times; 10<sup>6</sup>) = 4.8611 F. That is
+4.8611/0.02 = 243.06, so 243 times the 20 mF of the example, which is the same
+factor 243 that Example 3.2 found between a rotor and a DC link &mdash; as it
+must be, since both ratios are 3.5/0.0144. In words: capacitor banks of several
+farads at 1200 V exist, but they are built for energy storage duty, not as the
+DC link of a 1 MVA converter, and nothing in a converter's cost or volume budget
+carries one. The DC link is sized by voltage ripple and by switching, not by
+inertia.</p>
+</details>
+</div>
+
+<div class="exercise">
+<span class="head">Exercise 3.5 (computational)</span>
+<p>Simulate the four families of &sect;3.6 under a 0.1 pu step in power, with
+parameters tuned to a common <var>H</var><sub>eq</sub> = 2 s. Use these tunings:
+droop with <var>m</var><sub>p</sub> = 0.05 pu and <var>&omega;</var><sub>c</sub> =
+5 rad/s; a virtual synchronous machine with <var>H</var><sub>v</sub> = 2 s;
+matching control with
+<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub>
+= 4 s, that is 2.78 F at 1200 V on 1 MVA, a thought experiment by Exercise 3.4;
+and dispatchable virtual oscillator control with <var>&eta;</var> from (3.26) at
+<var>m</var><sub>p</sub> = 0.05 pu and a power filter at
+<var>&omega;</var><sub>c</sub> = 5 rad/s, which (3.27) makes 2 s. Report the peak
+frequency deviation and the settling time of each, and state the numerical
+tolerance of the run.</p>
+<details><summary>Answer target</summary>
+<p>Predict before you run. The initial slope is set by
+<var>H</var><sub>eq</sub> alone: from (3.3),
+d(&Delta;<var>&omega;</var>)/d<var>t</var> at <var>t</var> = 0 is
+&minus;&Delta;<var>P</var>/(2<var>H</var><sub>eq</sub>) = &minus;0.1/4 =
+&minus;0.0250 pu/s, which is &minus;1.2500 Hz/s at
+<var>f</var><sub>0</sub> = 50 Hz. All four families must reproduce that same
+initial slope to within the integrator tolerance of the run; state the tolerance
+you used, and state it as an absolute tolerance on
+&Delta;<var>&omega;</var>, not as a percentage. The steady states and settling times differ, because
+<var>K</var><sub>D,eq</sub> differs. At <var>K</var><sub>D,eq</sub> = 20 pu the
+time constant 2<var>H</var><sub>eq</sub>/<var>K</var><sub>D,eq</sub> is 0.200 s.
+Four time constants is 0.80 s. The steady-state deviation is
+&minus;0.1/20 = &minus;0.0050 pu = &minus;0.250 Hz. At
+<var>K</var><sub>D,eq</sub> = 5 pu the same three numbers are 0.800 s, 3.20 s
+and &minus;0.0200 pu = &minus;1.000 Hz. Because (3.28) is first order, the response
+is monotonic: the peak deviation is the steady-state deviation, and any overshoot
+your simulation shows comes from dynamics outside (3.28) &mdash; the amplitude
+channel, the inner loops, or the network &mdash; not from the angle dynamics.
+Attribute any difference you find to that channel, and say which.</p>
+</details>
+</div>
+
+<div class="exercise">
+<span class="head">Exercise 3.6 (conceptual)</span>
+<p>A vendor states that its product has "5 seconds of inertia". List the three
+further numbers you need before that claim means anything.</p>
+<details><summary>Answer target</summary>
+<ol>
+<li><strong>The rating it is referenced to.</strong> <var>H</var><sub>eq</sub> is
+energy divided by <var>S</var><sub>base</sub>, so 5 s means nothing until
+<var>S</var><sub>base</sub> is stated. At
+&Delta;<var>f</var> = 0.8 Hz and <var>f</var><sub>0</sub> = 50 Hz, (3.30) asks
+for 8.00 MJ on 50 MVA, 16.00 MJ on 100 MVA, and 32.00 MJ on 200 MVA &mdash; 2.222,
+4.444 and 8.889 kWh.</li>
+<li><strong>The usable energy reserve <var>E</var><sub>res</sub>.</strong> Not the
+nameplate store, but the part that is available at the moment of the disturbance,
+after state of charge, temperature and any other commitment are taken off.</li>
+<li><strong>The current limit <var>I</var><sub>max</sub> and the headroom held
+below it.</strong> By (3.31) a declared 5 s at
+<var>I</var><sub>max</sub> = 1.2 pu and dispatch 1.0 pu supports only
+1.000 Hz/s, and the inertial power at 1 Hz/s is 0.200 pu, which is 10.0 MW on a
+50 MVA unit, 20.0 MW on 100 MVA and 40.0 MW on 200 MVA. A unit dispatched at its
+full rating has no headroom and delivers none of it.</li>
+</ol>
+<p>A fourth number is worth asking for although the question asks for three: the
+rate of change of frequency the 5 s figure was tested against, because (3.31)
+makes the claim rate-dependent and Remark 3.4 shows that two different rates are
+in circulation.</p>
+</details>
+</div>
+
+<hr>
+
+<h2 id="ledger">Result ledger</h2>
+
+<div class="tw">
+<table>
+<caption>Chapter-local results, their global identifiers, and their epistemic
+status.</caption>
+<thead><tr><th>Local</th><th>Global</th><th>Statement</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Definition 3.1</td><td>R24</td><td>Grid-forming control, defined by
+terminal behaviour</td><td>definition, &sect;3.1</td></tr>
+<tr><td>Model 3.2</td><td>R25</td><td>Droop control with a first-order power
+filter</td><td>stated, &sect;3.2.2</td></tr>
+<tr><td>Theorem 3.3</td><td>R26</td><td>Filtered droop is the swing equation,
+with (3.7)</td><td>proved here, &sect;3.2.3</td></tr>
+<tr><td>Example 3.1</td><td>R27</td><td><var>H</var><sub>eq</sub> = 0.3183 s,
+1.5915 s, 5.000 s at <var>m</var><sub>p</sub> = 0.05 pu</td>
+<td>computed here, &sect;3.2.3</td></tr>
+<tr><td>Model 3.4</td><td>R28</td><td>Virtual synchronous machine,
+(<var>H</var><sub>v</sub>, <var>K</var><sub>D,v</sub>)</td>
+<td>stated; equivalence by construction, &sect;3.3</td></tr>
+<tr><td>Model 3.5</td><td>R29</td><td>Matching control,
+<var>H</var><sub>eq</sub> = 0.5<var>C</var><sub>dc</sub><var>v</var><sub>dc0</sub><sup>2</sup>/<var>S</var><sub>base</sub></td>
+<td>proved here under (3.15); damping (3.21), &sect;3.4</td></tr>
+<tr><td>Example 3.2</td><td>R30</td><td>14.4 kJ, <var>H</var><sub>eq</sub> =
+0.0144 s, ratios 243 and 1111</td><td>computed here, &sect;3.4</td></tr>
+<tr><td>Model 3.6</td><td>R31</td><td>Dispatchable virtual oscillator control and
+its synchronization property</td>
+<td>model cited [S11, S12 &mdash; verify]; reduction proved here, &sect;3.5</td></tr>
+<tr><td>Remark 3.3</td><td>R31</td><td>Almost-global synchronization, with its
+four hypotheses</td><td>cited, not proved here, &sect;3.5</td></tr>
+<tr><td>Theorem 3.7</td><td>R32</td><td>All four families reduce to (3.28);
+Table 3.1</td><td>proved here, &sect;3.6</td></tr>
+<tr><td>Corollary 3.8</td><td>R33</td><td><var>K</var><sub>s</sub> restored;
+bounds (3.30) and (3.31)</td><td>proved here, &sect;3.7</td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="small"><strong>Prerequisites used from earlier chapters, cited by
+result number only.</strong> R04, the swing equation and its per-unit convention.
+R05, the classical power-angle relation. R06, the synchronizing torque
+coefficient. R03, the definition of an inertia constant. R08, Example 1.1 and its
+numbers. R14, the inner current loop and its bandwidth. R17, the grid-following
+current-source model. R18, the existence bound and <var>K</var><sub>pll</sub>.
+R23, the corollary that a grid-following fleet supplies neither
+<var>K</var><sub>s</sub> nor <var>H</var>. No proof from those results is
+restated here.</p>
+
+<h2 id="refs">Sources cited in this chapter</h2>
+
+<p class="small">Every entry carries <strong>verify</strong> until a human reads
+the source page. The draft stage of this book could not open these documents, so
+no location field below has been checked against the page it names.</p>
+
+<ul class="small">
+<li><strong>S01</strong> Kundur, P. (1994). <em>Power System Stability and
+Control</em>. McGraw-Hill. Used for: governor droop convention; typical inertia
+constant band. &mdash; location not yet checked &mdash; verify</li>
+<li><strong>S07</strong> Zhang, L., Harnefors, L. and Nee, H.-P. (2010).
+"Power-Synchronization Control of Grid-Connected Voltage-Source Converters."
+<em>IEEE Trans. Power Systems</em> 25(2), 809&ndash;820. Used for: the terminal
+view of grid-forming control in Remark 3.1. &mdash; location not yet checked
+&mdash; verify</li>
+<li><strong>S09</strong> D&rsquo;Arco, S. and Suul, J. A. (2014). "Equivalence of
+Virtual Synchronous Machines and Frequency-Droops for Converter-Based
+Microgrids." <em>IEEE Trans. Smart Grid</em> 5(1), 394&ndash;395. Used for: the
+droop-to-swing-equation equivalence of Theorem 3.3. &mdash; location not yet
+checked &mdash; verify</li>
+<li><strong>S10</strong> Arghir, C., Jouini, T. and D&ouml;rfler, F. (2018).
+"Grid-forming control for power converters based on matching of synchronous
+machines." <em>Automatica</em> 95, 273&ndash;282. Used for: matching control,
+Model 3.5. &mdash; location not yet checked &mdash; verify</li>
+<li><strong>S11</strong> Colombino, M., Gro&szlig;, D., Brouillon, J.-S. and
+D&ouml;rfler, F. (2019). "Global Phase and Magnitude Synchronization of Coupled
+Oscillators with Application to the Control of Grid-Forming Power Inverters."
+<em>IEEE Trans. Automatic Control</em> 64(11), 4496&ndash;4511. Used for: Model
+3.6 and the almost-global synchronization claim of Remark 3.3. &mdash; location
+not yet checked &mdash; verify</li>
+<li><strong>S12</strong> Tayyebi, A., Gro&szlig;, D., Anta, A., Kupzog, F. and
+D&ouml;rfler, F. (2020). "Frequency Stability of Synchronous Machines and
+Grid-Forming Power Converters." <em>IEEE J. Emerging and Selected Topics in Power
+Electronics</em> 8(2), 1004&ndash;1018. Used for: the side-by-side comparison of
+the four families. &mdash; location not yet checked &mdash; verify</li>
+<li><strong>S15</strong> ENTSO-E (2018). <em>Rate of Change of Frequency (RoCoF)
+Withstand Capability &mdash; Guidance document for national implementation</em>.
+Used for: the 2 Hz/s over 500 ms withstand figure in Remark 3.4. &mdash; location
+not yet checked &mdash; verify</li>
+<li><strong>S16</strong> EirGrid and SONI, DS3 programme documentation. Used for:
+the 1 Hz/s figure in Remark 3.4. &mdash; document, year and location not yet
+checked &mdash; verify</li>
+<li><strong>S17</strong> National Grid ESO, Grid Code modification GC0137,
+<em>Minimum Specification Required for Provision of GB Grid Forming
+Capability</em>. Used for: the contractible-inertia point in &sect;3.3. &mdash;
+location not yet checked &mdash; verify</li>
+</ul>
+
+<p class="small"><strong>Where Chapter 4 continues.</strong> Corollary 3.8 bounds
+one converter. Chapter 4 aggregates a fleet. It defines the system stored energy
+and the centre of inertia (R34), derives the initial rate of change of frequency
+(R35) and the frequency nadir (R36), and works a sizing case (R39). That case is
+a design fleet that Chapter 4 defines, not a published one. It works the three
+constraints of Corollary 3.8 separately, so that the binding one is identified
+and not assumed.</p>
+
+</div>
+</body>
+</html>

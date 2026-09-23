@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>One Machine on a Stiff Grid</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --text2: #cbd5e1;
+  --muted: #94a3b8;
+  --accent1: #fb923c;
+  --accent2: #2dd4bf;
+  --border1: #334155;
+  --border2: #1e293b;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text2);
+}
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.6;
+  font-size: 17px;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+h1, h2, h3 {
+  color: var(--text);
+  font-family: -apple-system, Segoe UI, Arial, sans-serif;
+  line-height: 1.3;
+}
+h1 { font-size: 1.7rem; margin-bottom: 0.2em; }
+h2 {
+  font-size: 1.25rem;
+  margin-top: 2.2em;
+  border-bottom: 1px solid var(--border1);
+  padding-bottom: 0.3em;
+}
+h3 { font-size: 1.05rem; color: var(--accent2); margin-top: 1.6em; }
+.subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.6em; }
+p { margin: 0.9em 0; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border1);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin: 1.2em 0;
+}
+.problem {
+  background: var(--card);
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 1em 0 1.6em;
+}
+.eq {
+  display: block;
+  font-family: "Cambria Math", Cambria, Georgia, serif;
+  font-style: italic;
+  color: var(--text);
+  background: #131f35;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin: 0.9em 0;
+  overflow-x: auto;
+  font-size: 1.02rem;
+}
+.eq i { font-style: italic; }
+.sym { font-style: italic; color: var(--accent2); }
+code, pre, .mono {
+  font-family: Consolas, "SF Mono", Menlo, monospace;
+}
+pre {
+  background: #0b1424;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text2);
+}
+pre.output { border-color: var(--accent2); color: var(--text); }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92rem;
+  margin: 1em 0;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  border: 1px solid var(--border1);
+  padding: 6px 10px;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text); background: #16223a; }
+.cite { color: var(--muted); font-size: 0.85rem; }
+.warn {
+  background: #241a13;
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1.2em 0;
+}
+.warn strong { color: var(--accent1); }
+figure { margin: 1.4em 0; text-align: center; }
+figcaption {
+  color: var(--muted);
+  font-size: 0.86rem;
+  margin-top: 6px;
+  text-align: left;
+}
+svg { max-width: 100%; height: auto; background: #0b1424; border-radius: 8px; }
+details {
+  background: #101d33;
+  border: 1px solid var(--border1);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0.7em 0 1.2em;
+}
+summary {
+  cursor: pointer;
+  color: var(--accent2);
+  font-weight: bold;
+}
+ol, ul { padding-left: 1.4em; }
+li { margin: 0.4em 0; }
+hr { border: none; border-top: 1px solid var(--border1); margin: 2em 0; }
+a { color: var(--accent2); }
+.small { font-size: 0.85rem; color: var(--muted); }
+@media (max-width: 400px) {
+  body { padding: 16px 12px 48px; font-size: 15.5px; }
+  h1 { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<h1>One machine on a stiff grid: linearise, then read the eigenvalues</h1>
+<p class="subtitle">Lesson 2 &middot; classical single-machine-infinite-bus
+(SMIB) model &middot; H = 3.5 s, K<sub>D</sub> = 2 pu (Example 1.1)</p>
+
+<div class="problem">
+<strong>Opening problem.</strong> A 60&nbsp;Hz generator gets a small bump
+in mechanical power. It settles into an oscillation at about 1.4&nbsp;Hz,
+and that oscillation takes tens of seconds to die out. Why that particular
+frequency, and why so slow to decay? This lesson answers both questions
+with two numbers computed from Example 1.1 of the P1 book: the natural
+frequency &omega;<sub>n</sub> = 8.96&nbsp;rad/s = 1.43&nbsp;Hz and the
+damping ratio &zeta; = 0.0159.
+</div>
+
+<h2>1. The model</h2>
+<p>
+Treat the generator as a constant-magnitude internal voltage
+<span class="sym">E&prime;</span> behind a fixed reactance
+<span class="sym">X</span>, connected through that reactance to an
+infinite bus of fixed voltage <span class="sym">V<sub>inf</sub></span>
+and fixed frequency. &ldquo;Infinite bus&rdquo; means the rest of the
+grid is so much larger than this one machine that nothing the machine
+does moves the bus voltage or frequency &mdash; a standard idealisation,
+not a claim about the size of any real grid. The angle between
+<span class="sym">E&prime;</span> and <span class="sym">V<sub>inf</sub></span>
+is the rotor angle <span class="sym">&delta;</span>, in electrical
+radians. Standard circuit analysis of this two-source, one-reactance
+network gives the real power the machine delivers:
+</p>
+<div class="eq">P<sub>e</sub> = (E&prime; V<sub>inf</sub> / X) &middot; sin(&delta;) = P<sub>max</sub> sin(&delta;)</div>
+<p>
+with <span class="sym">P<sub>max</sub></span> = <span class="sym">E&prime;
+V<sub>inf</sub> / X</span> pu. This is the power-angle relation: a pure
+sine because the network here is a single lossless reactance. Every
+number below traces back to this one equation.
+</p>
+
+<h3>Symbols, all defined once</h3>
+<table>
+<tr><th>Symbol</th><th>Meaning</th><th>Value (Example 1.1)</th></tr>
+<tr><td>H</td><td>inertia constant, s</td><td>3.5</td></tr>
+<tr><td>K<sub>D</sub></td><td>damping coefficient, pu torque per pu speed</td><td>2</td></tr>
+<tr><td>E&prime;</td><td>internal voltage magnitude, pu</td><td>1.1</td></tr>
+<tr><td>V<sub>inf</sub></td><td>infinite-bus voltage magnitude, pu</td><td>1.0</td></tr>
+<tr><td>X</td><td>total reactance, pu (0.45 for X&prime;<sub>d</sub> plus transformer, + 0.40/2 for two parallel 0.40&nbsp;pu lines)</td><td>0.65</td></tr>
+<tr><td>P<sub>m</sub></td><td>mechanical power input, pu</td><td>0.8</td></tr>
+<tr><td>&omega;<sub>0</sub></td><td>synchronous speed, rad/s (2&pi;&times;60)</td><td>376.99</td></tr>
+<tr><td>&delta;</td><td>rotor angle, rad (state)</td><td>found below</td></tr>
+<tr><td>&Delta;&omega;</td><td>speed deviation from &omega;<sub>0</sub>, pu (state)</td><td>found below</td></tr>
+</table>
+<p class="small">Convention used throughout: the
+swing equation is written 2H d(&Delta;&omega;)/dt = P<sub>m</sub> &minus;
+P<sub>e</sub> &minus; K<sub>D</sub>&Delta;&omega;, and d&delta;/dt =
+&omega;<sub>0</sub>&Delta;&omega;. Damping is always written
+K<sub>D</sub>, never D, to avoid confusion with any other D in a larger
+model.</p>
+
+<p>
+This is the classical generator model: a constant flux behind fixed
+reactance, no excitation control, no saliency. Example 1.1 gives
+E&prime; = 1.1&nbsp;pu directly, so this lesson needs no dq reference
+frame and no Park transformation.
+</p>
+
+<h2>2. Equilibrium: numerical and closed-form</h2>
+<p>
+The state is x = (&delta;, &Delta;&omega;). The ODEs are:
+</p>
+<div class="eq">d&delta;/dt = &omega;<sub>0</sub> &Delta;&omega;</div>
+<div class="eq">2H d(&Delta;&omega;)/dt = P<sub>m</sub> &minus; P<sub>max</sub> sin(&delta;) &minus; K<sub>D</sub>&Delta;&omega;</div>
+<p>
+At equilibrium both derivatives are zero. The first equation,
+d&delta;/dt = &omega;<sub>0</sub>&Delta;&omega; = 0, forces
+&Delta;&omega; = 0: the rotor turns at exactly synchronous speed.
+Substituting &Delta;&omega; = 0 into the second equation leaves the
+torque balance:
+</p>
+<div class="eq">P<sub>m</sub> = P<sub>max</sub> sin(&delta;<sub>0</sub>)  &rArr;  &delta;<sub>0</sub> = arcsin(P<sub>m</sub> / P<sub>max</sub>)</div>
+<p>
+That closed form is exact for this model; no iteration is needed because
+the network is a single sine nonlinearity. With the Example 1.1 numbers:
+P<sub>max</sub> = 1.1 &times; 1.0 / 0.65 = <strong>1.6923&nbsp;pu</strong>,
+P<sub>m</sub>/P<sub>max</sub> = 0.4727, and
+</p>
+<div class="eq">&delta;<sub>0</sub> = arcsin(0.4727) = 0.4924 rad = 28.2115&deg;</div>
+<p class="cite">
+Note on the two versions of this number: the P1 book plan prints
+&delta;<sub>0</sub> = 0.4926&nbsp;rad, cos(&delta;<sub>0</sub>) = 0.8814
+and K<sub>s</sub> = 1.4915. Those values do not reproduce: the exact
+ratio 0.8/1.6923 gives &delta;<sub>0</sub> = 0.4924&nbsp;rad,
+cos(&delta;<sub>0</sub>) = 0.8812 and K<sub>s</sub> = 1.4913, and even
+the rounded ratio 0.4727 gives 0.4925&nbsp;rad, not 0.4926. This lesson
+uses the computed values from the Python script in Section&nbsp;5, to
+four digits, and uses the three-digit values 1.49&nbsp;pu/rad,
+8.96&nbsp;rad/s and 0.0159 only where it quotes the P1 book.
+</p>
+
+<h2>3. Linearising by hand: the synchronizing torque coefficient</h2>
+<p>
+The only nonlinear term in the swing equations is sin(&delta;). Near
+&delta;<sub>0</sub>, write &delta; = &delta;<sub>0</sub> + &Delta;&delta;
+for small &Delta;&delta;, and use the first-order Taylor expansion
+sin(&delta;<sub>0</sub> + &Delta;&delta;) &asymp; sin(&delta;<sub>0</sub>)
++ cos(&delta;<sub>0</sub>)&middot;&Delta;&delta;. Substituting into the
+swing equation and cancelling the equilibrium terms (P<sub>m</sub> &minus;
+P<sub>max</sub>sin(&delta;<sub>0</sub>) = 0) leaves a linear equation in
+the deviations:
+</p>
+<div class="eq">d(&Delta;&delta;)/dt = &omega;<sub>0</sub>&Delta;&omega;,&nbsp;&nbsp; 2H d(&Delta;&omega;)/dt = &minus;K<sub>s</sub>&Delta;&delta; &minus; K<sub>D</sub>&Delta;&omega;,&nbsp;&nbsp; K<sub>s</sub> = P<sub>max</sub> cos(&delta;<sub>0</sub>)</div>
+<p>(&Delta;&omega; needs no second &Delta;: its equilibrium value is
+already 0, so it is its own deviation.)</p>
+<p>
+K<sub>s</sub> is the <em>synchronizing torque coefficient</em>: the
+slope of the power-angle curve at the operating point, in pu torque per
+radian. It plays the role of a spring constant &mdash; a positive
+K<sub>s</sub> pulls the rotor angle back toward &delta;<sub>0</sub> when
+disturbed, exactly like a mechanical spring pulling a mass back to
+rest. K<sub>D</sub> plays the role of a dashpot: it opposes the speed
+deviation &Delta;&omega;, which is the rate of change of &delta;, and so
+dissipates the oscillation&rsquo;s energy over time. Numerically,
+K<sub>s</sub> = 1.6923 &times; cos(28.2115&deg;) = 1.6923 &times; 0.8812
+= <strong>1.4913&nbsp;pu/rad</strong>.
+</p>
+<p>
+In state-space form, with x = (&Delta;&delta;, &Delta;&omega;), the
+linearised system is <span class="sym">dx/dt = Ax</span> with the
+Jacobian
+</p>
+<div class="eq">A = [ [0, &omega;<sub>0</sub>], [&minus;K<sub>s</sub>/(2H), &minus;K<sub>D</sub>/(2H)] ]</div>
+<p>
+Section&nbsp;5 checks this hand-derived A against a finite-difference
+Jacobian computed straight from the nonlinear f(x) with no algebra at
+all, as a way to catch a sign or factor-of-two error before trusting the
+eigenvalues.
+</p>
+
+<h2>4. Eigenvalues, &omega;<sub>n</sub>, and &zeta;</h2>
+<p>
+The characteristic polynomial of A is found from det(A &minus; sI) = 0:
+</p>
+<div class="eq">s&sup2; + (K<sub>D</sub>/2H)s + K<sub>s</sub>&omega;<sub>0</sub>/(2H) = 0</div>
+<p>
+Matching this to the standard second-order form
+s&sup2; + 2&zeta;&omega;<sub>n</sub>s + &omega;<sub>n</sub>&sup2; = 0 gives:
+</p>
+<div class="eq">&omega;<sub>n</sub> = &radic;(K<sub>s</sub>&omega;<sub>0</sub> / 2H)&nbsp;&nbsp;&nbsp;&nbsp;&zeta; = K<sub>D</sub> / (4H&omega;<sub>n</sub>)</div>
+<p>
+This is why the oscillation sits near 1.4&nbsp;Hz and not, say, 10&nbsp;Hz
+or 0.1&nbsp;Hz: &omega;<sub>n</sub> depends on the ratio of electrical
+stiffness (K<sub>s</sub>&omega;<sub>0</sub>) to mechanical inertia (2H).
+For a typical H of 2&ndash;8&nbsp;s and K<sub>s</sub> of
+1&ndash;2&nbsp;pu/rad, the formula gives 0.77&nbsp;Hz (K<sub>s</sub> = 1,
+H = 8) to 2.19&nbsp;Hz (K<sub>s</sub> = 2, H = 2). That range almost
+coincides with the 0.7&ndash;2&nbsp;Hz band that power engineers call
+the local electromechanical mode [S01, Kundur 1994, <em>Power System
+Stability and Control</em>: typical H, &sect;3.9, Table 3.2; local-mode
+band, &sect;12.1 &mdash; verify both]. And it is slow to decay because
+&zeta; is small: with K<sub>D</sub> = 2&nbsp;pu of damping torque against
+a stiffness-to-inertia ratio that gives
+&omega;<sub>n</sub> &asymp; 9&nbsp;rad/s, &zeta; comes out under 2%,
+far short of the 0.5&ndash;0.7 that would make the oscillation die out
+in a couple of cycles.
+</p>
+<p>
+Full numbers from Example 1.1 (probe values, four digits):
+&omega;<sub>n</sub> = 8.9618&nbsp;rad/s = 1.4263&nbsp;Hz,
+&zeta; = 0.01594, and the eigenvalue pair is
+s = &minus;0.1429 &plusmn; j8.9607&nbsp;s<sup>&minus;1</sup>. The real
+part, &minus;0.1429&nbsp;s<sup>&minus;1</sup>, is exactly
+&minus;&zeta;&omega;<sub>n</sub> = &minus;K<sub>D</sub>/(4H); it sets the
+decay-envelope time constant at 1/0.1429 &asymp; 7&nbsp;s. The amplitude
+falls to e<sup>&minus;4</sup> &asymp; 2% of its start value only after
+4 time constants, about 28&nbsp;s, which is why the disturbance takes
+tens of seconds, not seconds, to die away. The
+imaginary part, 8.9607&nbsp;rad/s, is the damped natural frequency
+&omega;<sub>n</sub>&radic;(1&minus;&zeta;&sup2;), only 0.001&nbsp;rad/s
+below the undamped &omega;<sub>n</sub> because &zeta; is so small.
+</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img"
+ aria-label="Power-angle curve with the two equilibria and the tangent slope at the stable point">
+<rect x="0" y="0" width="560" height="300" fill="#0b1424"/>
+<line x1="40" y1="10" x2="40" y2="270" stroke="#334155"/>
+<line x1="40" y1="140" x2="520" y2="140" stroke="#334155" stroke-dasharray="2,3"/>
+<polyline points="40.00,140.00 45.33,135.83 50.67,131.67 56.00,127.51 61.33,123.37 66.67,119.26 72.00,115.16 77.33,111.10 82.67,107.07 88.00,103.09 93.33,99.14 98.67,95.25 104.00,91.41 109.33,87.63 114.67,83.92 120.00,80.27 125.33,76.70 130.67,73.20 136.00,69.78 141.33,66.45 146.67,63.21 152.00,60.07 157.33,57.02 162.67,54.07 168.00,51.23 173.33,48.49 178.67,45.87 184.00,43.36 189.33,40.97 194.67,38.69 200.00,36.55 205.33,34.53 210.67,32.63 216.00,30.87 221.33,29.24 226.67,27.75 232.00,26.39 237.33,25.17 242.67,24.09 248.00,23.15 253.33,22.36 258.67,21.71 264.00,21.20 269.33,20.83 274.67,20.62 280.00,20.54 285.33,20.62 290.67,20.83 296.00,21.20 301.33,21.71 306.67,22.36 312.00,23.15 317.33,24.09 322.67,25.17 328.00,26.39 333.33,27.75 338.67,29.24 344.00,30.87 349.33,32.63 354.67,34.53 360.00,36.55 365.33,38.69 370.67,40.97 376.00,43.36 381.33,45.87 386.67,48.49 392.00,51.23 397.33,54.07 402.67,57.02 408.00,60.07 413.33,63.21 418.67,66.45 424.00,69.78 429.33,73.20 434.67,76.70 440.00,80.27 445.33,83.92 450.67,87.63 456.00,91.41 461.33,95.25 466.67,99.14 472.00,103.09 477.33,107.07 482.67,111.10 488.00,115.16 493.33,119.26 498.67,123.37 504.00,127.51 509.33,131.67 514.67,135.83 520.00,140.00"
+ fill="none" stroke="#2dd4bf" stroke-width="2.2"/>
+<polyline points="75.23,111.09 155.23,55.97" stroke="#fb923c" stroke-width="1.6" stroke-dasharray="4,3"/>
+<circle cx="115.23" cy="83.53" r="5" fill="#fb923c"/>
+<circle cx="444.77" cy="83.53" r="5" fill="none" stroke="#fb923c" stroke-width="2"/>
+<text x="120" y="76" fill="#fb923c" font-size="12" font-family="sans-serif">stable, 28.2&deg;</text>
+<text x="380" y="76" fill="#fb923c" font-size="12" font-family="sans-serif">unstable, 151.8&deg;</text>
+<line x1="40" y1="83.53" x2="520" y2="83.53" stroke="#94a3b8" stroke-dasharray="5,4"/>
+<text x="200" y="98" fill="#94a3b8" font-size="11" font-family="sans-serif">P_m = 0.8 pu</text>
+<text x="44" y="152" fill="#94a3b8" font-size="11" font-family="sans-serif">P = 0</text>
+<text x="470" y="285" fill="#cbd5e1" font-size="12" font-family="sans-serif">&delta; (deg)</text>
+<text x="8" y="24" fill="#cbd5e1" font-size="12" font-family="sans-serif">P_e</text>
+<text x="40" y="285" fill="#94a3b8" font-size="11" font-family="sans-serif">0</text>
+<text x="500" y="285" fill="#94a3b8" font-size="11" font-family="sans-serif">180</text>
+</svg>
+<figcaption><strong>Fig. 2.1.</strong> The power-angle curve
+P<sub>e</sub> = 1.6923&nbsp;sin(&delta;) (teal) against the horizontal
+line P<sub>m</sub> = 0.8&nbsp;pu (grey dashed; the dotted line is
+P = 0). The two intersections are the
+two equilibria: 28.2&deg; (filled marker) where the curve still has
+positive slope K<sub>s</sub> &gt; 0 (orange tangent), and 151.8&deg;
+(hollow marker) on the falling part of the curve where the slope, and so
+K<sub>s</sub>, is negative. A positive slope acts as a restoring spring;
+a negative slope pushes the angle further away, which is why only the
+left crossing is small-signal stable.</figcaption>
+</figure>
+
+<h2>5. Code: derive it, then check it</h2>
+<p>
+The listing below is a condensed excerpt (75 non-blank lines, no print
+statements) of <code>lesson2_smib.py</code>, standard library only. It
+does four things: (a) defines the
+nonlinear state derivative f(x); (b) builds a finite-difference Jacobian
+with step 1e-6 to compare with the hand-derived analytic A (the full
+script prints both); (c)
+gets the eigenvalues from the quadratic formula with <code>cmath.sqrt</code>
+so complex results are not a special case; and (d) runs a fixed-step RK4
+integration at h&nbsp;=&nbsp;0.001&nbsp;s for 10&nbsp;s after stepping
+P<sub>m</sub> from 0.8 to 0.85&nbsp;pu, then measures the oscillation
+frequency from zero crossings of &delta; &minus; &delta;<sub>new</sub>.
+Every number quoted anywhere in this lesson that is not simple arithmetic
+comes from an actual run of this script, not from a hand estimate.
+</p>
+<pre><code>&quot;&quot;&quot;SMIB classical model: equilibrium, linearisation, eigenvalues, RK4.
+
+Swing convention: 2H d(dw)/dt = P_m - P_e - K_D dw
+                   d(delta)/dt = omega_0 dw
+Stdlib only. Run: python lesson2_smib.py
+&quot;&quot;&quot;
+import cmath
+import math
+
+H = 3.5
+K_D = 2.0
+E_P = 1.1
+V_INF = 1.0
+X = 0.65
+OMEGA_0 = 2.0 * math.pi * 60.0
+P_MAX = E_P * V_INF / X
+
+
+def f(x, p_m):
+    &quot;&quot;&quot;State derivative. x = (delta, dw).&quot;&quot;&quot;
+    delta, dw = x
+    ddelta = OMEGA_0 * dw
+    ddw = (p_m - P_MAX * math.sin(delta) - K_D * dw) / (2.0 * H)
+    return (ddelta, ddw)
+
+
+def analytic_jacobian(delta0):
+    k_s = P_MAX * math.cos(delta0)
+    return ((0.0, OMEGA_0),
+            (-k_s / (2.0 * H), -K_D / (2.0 * H)))
+
+
+def fd_jacobian(x0, p_m, step=1e-6):
+    n = len(x0)
+    jac = [[0.0] * n for _ in range(n)]
+    f0 = f(x0, p_m)
+    for j in range(n):
+        xp = list(x0)
+        xp[j] += step
+        fp = f(tuple(xp), p_m)
+        for i in range(n):
+            jac[i][j] = (fp[i] - f0[i]) / step
+    return jac
+
+
+def eigenvalues_2x2(a):
+    tr = a[0][0] + a[1][1]
+    det = a[0][0] * a[1][1] - a[0][1] * a[1][0]
+    disc = cmath.sqrt(tr * tr - 4.0 * det)
+    return ((tr + disc) / 2.0, (tr - disc) / 2.0)
+
+
+def rk4_step(x, p_m, h):
+    k1 = f(x, p_m)
+    x2 = (x[0] + 0.5 * h * k1[0], x[1] + 0.5 * h * k1[1])
+    k2 = f(x2, p_m)
+    x3 = (x[0] + 0.5 * h * k2[0], x[1] + 0.5 * h * k2[1])
+    k3 = f(x3, p_m)
+    x4 = (x[0] + h * k3[0], x[1] + h * k3[1])
+    k4 = f(x4, p_m)
+    dd = (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6.0
+    dw = (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6.0
+    return (x[0] + h * dd, x[1] + h * dw)
+
+# --- equilibrium, Jacobian check, eigenvalues (base P_m = 0.8) ---
+p_m0 = 0.8
+delta0 = math.asin(p_m0 / P_MAX)
+k_s = P_MAX * math.cos(delta0)
+omega_n = math.sqrt(k_s * OMEGA_0 / (2.0 * H))
+zeta = K_D / (4.0 * H * omega_n)
+a_analytic = analytic_jacobian(delta0)
+a_fd = fd_jacobian((delta0, 0.0), p_m0)
+eig1, eig2 = eigenvalues_2x2(a_analytic)
+
+# --- step P_m: 0.8 -&gt; 0.85, RK4 h=0.001 s, 10 s, zero-crossing freq ---
+p_m_new = 0.85
+delta_new = math.asin(p_m_new / P_MAX)
+h, n_steps = 0.001, 10000
+x, t, prev_g, crossings = (delta0, 0.0), 0.0, delta0 - delta_new, []
+for _ in range(n_steps):
+    x = rk4_step(x, p_m_new, h)
+    t += h
+    g = x[0] - delta_new
+    if prev_g &lt; 0.0 &lt;= g or prev_g &gt; 0.0 &gt;= g:
+        crossings.append(t - h * g / (g - prev_g))
+    prev_g = g
+periods = [crossings[i + 2] - crossings[i]
+           for i in range(len(crossings) - 2)]
+freq_zc = 1.0 / (sum(periods) / len(periods))
+</code></pre>
+<p class="small">Full script, including the K<sub>D</sub> sweep and the
+H and finite-difference-step exercises, is
+<code>lesson2_smib.py</code> in this folder; every number below is its
+real printed output.</p>
+
+<p><strong>Actual output of the full script</strong> (verbatim, from
+<code>python lesson2_smib.py</code>):</p>
+<pre class="output"><code>=== Base equilibrium (P_m = 0.8 pu) ===
+P_max   = 1.6923 pu
+delta_0 = 0.4924 rad = 28.2115 deg
+K_s     = 1.4913 pu/rad
+omega_n = 8.9618 rad/s = 1.4263 Hz
+zeta    = 0.01594
+
+=== Jacobian check at base equilibrium ===
+Analytic A = ((0.0, 376.99111843077515), (-0.2130394868756507, -0.2857142857142857))
+Finite-diff A = ((0.0, 376.99111843077515), (-0.21303942973219644, -0.2857142857142857))
+  |A[0][0] diff| = 0.000e+00
+  |A[0][1] diff| = 0.000e+00
+  |A[1][0] diff| = 5.714e-08
+  |A[1][1] diff| = 0.000e+00
+
+Eigenvalues (base) = -0.1429 +8.9607j, -0.1429 -8.9607j
+
+=== Step P_m: 0.8 -&gt; 0.85 pu, RK4 h=0.001 s, 10 s ===
+New equilibrium delta_new = 0.5262 rad = 30.1505 deg
+New K_s = 1.4634 pu/rad, omega_n = 8.8775 rad/s = 1.4129 Hz, zeta = 0.01609
+Zero crossings found: 28
+Zero-crossing oscillation frequency = 1.4127 Hz
+Linearised frequency at new point   = 1.4129 Hz
+
+=== Eigenvalue sweep over K_D (Fig. 2.3 data) ===
+  K_D=  0.0: 0.0000 +8.9618j, 0.0000 -8.9618j  |eig|=8.9618
+  K_D=  2.0: -0.1429 +8.9607j, -0.1429 -8.9607j  |eig|=8.9618
+  K_D= 10.0: -0.7143 +8.9333j, -0.7143 -8.9333j  |eig|=8.9618
+  K_D= 30.0: -2.1429 +8.7018j, -2.1429 -8.7018j  |eig|=8.9618
+
+=== H sweep (Exercise 3) ===
+  H=2.0 s: omega_n=11.86 rad/s, zeta=0.0211
+  H=3.5 s: omega_n=8.96 rad/s, zeta=0.0159
+  H=6.0 s: omega_n=6.84 rad/s, zeta=0.0122
+  H=8.0 s: omega_n=5.93 rad/s, zeta=0.0105
+
+=== Finite-difference step-size sweep (Exercise 4) ===
+  step=1e-02: A[1][0]=-0.2124645124, |error|=5.750e-04
+  step=1e-03: A[1][0]=-0.2129823085, |error|=5.718e-05
+  step=1e-04: A[1][0]=-0.2130337722, |error|=5.715e-06
+  step=1e-05: A[1][0]=-0.2130389154, |error|=5.714e-07
+  step=1e-06: A[1][0]=-0.2130394297, |error|=5.714e-08
+  step=1e-07: A[1][0]=-0.2130394813, |error|=5.582e-09
+  step=1e-08: A[1][0]=-0.2130394861, |error|=8.234e-10
+  step=1e-09: A[1][0]=-0.2130395067, |error|=1.980e-08
+  step=1e-10: A[1][0]=-0.2130395860, |error|=9.910e-08
+  step=1e-11: A[1][0]=-0.2130391102, |error|=3.767e-07
+  step=1e-12: A[1][0]=-0.2130359381, |error|=3.549e-06
+Smallest error at step = 1e-08 (error = 8.234e-10)
+</code></pre>
+
+<div class="warn">
+<strong>Trap to state explicitly.</strong> The step goes from
+P<sub>m</sub> = 0.8 to 0.85&nbsp;pu, but the simulated oscillation runs
+at <strong>1.4127&nbsp;Hz</strong> (from zero crossings) or
+<strong>1.4129&nbsp;Hz</strong> (from the linearised formula at the new
+point), not the 1.4263&nbsp;Hz derived at the start of this lesson. The
+reason is not a bug: the machine now oscillates <em>about the new
+equilibrium</em>, &delta;<sub>new</sub> = 30.1505&deg;, where
+K<sub>s</sub> = 1.4634&nbsp;pu/rad (down from 1.4913, because the
+power-angle curve is flatter further from &delta; = 0) and so
+&omega;<sub>n</sub> = 8.8775&nbsp;rad/s = 1.4129&nbsp;Hz. Linearising at
+the <em>new</em> operating point matches the simulation
+(1.4129&nbsp;Hz against the 1.4127&nbsp;Hz zero-crossing estimate, a
+difference of 0.0002&nbsp;Hz, about 0.01%). Most of that small
+difference has a known cause: zero crossings measure the <em>damped</em>
+frequency &omega;<sub>n</sub>&radic;(1&minus;&zeta;&sup2;), which at the
+new point is 8.8775 &times; &radic;(1 &minus; 0.01609&sup2;) / 2&pi; =
+1.41272&nbsp;Hz, while 1.4129&nbsp;Hz is the undamped
+&omega;<sub>n</sub>. The two numbers, 1.4263&nbsp;Hz and
+1.4127&ndash;1.4129&nbsp;Hz, are <em>both correct</em>: they are the
+small-signal frequency at two different operating points.
+</div>
+
+<figure>
+<svg viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg" role="img"
+ aria-label="delta of t after the power step, with the decay envelope">
+<rect x="0" y="0" width="560" height="260" fill="#0b1424"/>
+<line x1="40" y1="10" x2="40" y2="230" stroke="#334155"/>
+<line x1="40" y1="230" x2="520" y2="230" stroke="#334155"/>
+<line x1="40" y1="126.61" x2="520" y2="126.61" stroke="#94a3b8" stroke-dasharray="2,3"/>
+<polyline points="40.00,82.99 48.00,83.61 56.00,84.22 64.00,84.82 72.00,85.41 80.00,86.00 88.00,86.57 96.00,87.14 104.00,87.70 112.00,88.25 120.00,88.80 128.00,89.33 136.00,89.86 144.00,90.38 152.00,90.90 160.00,91.40 168.00,91.90 176.00,92.40 184.00,92.88 192.00,93.36 200.00,93.83 208.00,94.30 216.00,94.76 224.00,95.21 232.00,95.65 240.00,96.09 248.00,96.53 256.00,96.95 264.00,97.37 272.00,97.79 280.00,98.20 288.00,98.60 296.00,99.00 304.00,99.39 312.00,99.78 320.00,100.16 328.00,100.53 336.00,100.90 344.00,101.27 352.00,101.63 360.00,101.98 368.00,102.33 376.00,102.68 384.00,103.01 392.00,103.35 400.00,103.68 408.00,104.01 416.00,104.33 424.00,104.64 432.00,104.95 440.00,105.26 448.00,105.56 456.00,105.86 464.00,106.16 472.00,106.45 480.00,106.73 488.00,107.02 496.00,107.29 504.00,107.57 512.00,107.84 520.00,108.10"
+ fill="none" stroke="#334155" stroke-width="1.4" stroke-dasharray="3,2"/>
+<polyline points="40.00,170.24 48.00,169.62 56.00,169.01 64.00,168.41 72.00,167.82 80.00,167.23 88.00,166.66 96.00,166.09 104.00,165.53 112.00,164.98 120.00,164.43 128.00,163.90 136.00,163.37 144.00,162.85 152.00,162.33 160.00,161.82 168.00,161.32 176.00,160.83 184.00,160.35 192.00,159.87 200.00,159.40 208.00,158.93 216.00,158.47 224.00,158.02 232.00,157.58 240.00,157.14 248.00,156.70 256.00,156.28 264.00,155.86 272.00,155.44 280.00,155.03 288.00,154.63 296.00,154.23 304.00,153.84 312.00,153.45 320.00,153.07 328.00,152.70 336.00,152.33 344.00,151.96 352.00,151.60 360.00,151.25 368.00,150.90 376.00,150.55 384.00,150.21 392.00,149.88 400.00,149.55 408.00,149.22 416.00,148.90 424.00,148.59 432.00,148.27 440.00,147.97 448.00,147.66 456.00,147.37 464.00,147.07 472.00,146.78 480.00,146.49 488.00,146.21 496.00,145.93 504.00,145.66 512.00,145.39 520.00,145.12"
+ fill="none" stroke="#334155" stroke-width="1.4" stroke-dasharray="3,2"/>
+<polyline points="40.00,170.24 41.60,169.55 43.20,167.50 44.80,164.18 46.40,159.68 48.00,154.17 49.60,147.81 51.20,140.83 52.80,133.44 54.40,125.87 56.00,118.38 57.60,111.18 59.20,104.50 60.80,98.56 62.40,93.52 64.00,89.54 65.60,86.74 67.20,85.19 68.80,84.93 70.40,85.97 72.00,88.27 73.60,91.75 75.20,96.29 76.80,101.75 78.40,107.95 80.00,114.70 81.60,121.79 83.20,128.98 84.80,136.06 86.40,142.80 88.00,149.00 89.60,154.45 91.20,159.00 92.80,162.50 94.40,164.84 96.00,165.96 97.60,165.83 99.20,164.46 100.80,161.90 102.40,158.24 104.00,153.61 105.60,148.15 107.20,142.04 108.80,135.48 110.40,128.68 112.00,121.86 113.60,115.22 115.20,108.97 116.80,103.32 118.40,98.42 120.00,94.42 121.60,91.46 123.20,89.60 124.80,88.90 126.40,89.38 128.00,91.02 129.60,93.75 131.20,97.49 132.80,102.11 134.40,107.48 136.00,113.40 137.60,119.71 139.20,126.20 140.80,132.67 142.40,138.90 144.00,144.72 145.60,149.93 147.20,154.38 148.80,157.93 150.40,160.46 152.00,161.92 153.60,162.25 155.20,161.45 156.80,159.56 158.40,156.64 160.00,152.78 161.60,148.13 163.20,142.82 164.80,137.03 166.40,130.95 168.00,124.76 169.60,118.67 171.20,112.87 172.80,107.52 174.40,102.80 176.00,98.86 177.60,95.79 179.20,93.71 180.80,92.66 182.40,92.68 184.00,93.74 185.60,95.83 187.20,98.86 188.80,102.74 190.40,107.34 192.00,112.52 193.60,118.11 195.20,123.93 196.80,129.81 198.40,135.55 200.00,140.97 201.60,145.92 203.20,150.22 204.80,153.76 206.40,156.43 208.00,158.13 209.60,158.83 211.20,158.51 212.80,157.19 214.40,154.91 216.00,151.75 217.60,147.81 219.20,143.23 220.80,138.15 222.40,132.74 224.00,127.17 225.60,121.61 227.20,116.24 228.80,111.22 230.40,106.72 232.00,102.86 233.60,99.76 235.20,97.52 236.80,96.20 238.40,95.83 240.00,96.42 241.60,97.95 243.20,100.36 244.80,103.58 246.40,107.50 248.00,111.99 249.60,116.91 251.20,122.11 252.80,127.42 254.40,132.68 256.00,137.71 257.60,142.37 259.20,146.50 260.80,149.99 262.40,152.72 264.00,154.61 265.60,155.60 267.20,155.68 268.80,154.84 270.40,153.11 272.00,150.55 273.60,147.26 275.20,143.34 276.80,138.91 278.40,134.12 280.00,129.12 281.60,124.07 283.20,119.13 284.80,114.45 286.40,110.18 288.00,106.45 289.60,103.37 291.20,101.03 292.80,99.50 294.40,98.82 296.00,99.02 297.60,100.07 299.20,101.94 300.80,104.57 302.40,107.88 304.00,111.75 305.60,116.06 307.20,120.68 308.80,125.46 310.40,130.25 312.00,134.89 313.60,139.25 315.20,143.19 316.80,146.58 318.40,149.33 320.00,151.34 321.60,152.56 323.20,152.96 324.80,152.52 326.40,151.27 328.00,149.25 329.60,146.53 331.20,143.20 332.80,139.36 334.40,135.14 336.00,130.68 337.60,126.12 339.20,121.60 340.80,117.26 342.40,113.24 344.00,109.66 345.60,106.63 347.20,104.24 348.80,102.57 350.40,101.65 352.00,101.51 353.60,102.16 355.20,103.57 356.80,105.69 358.40,108.44 360.00,111.76 361.60,115.51 363.20,119.59 364.80,123.87 366.40,128.21 368.00,132.48 369.60,136.53 371.20,140.25 372.80,143.53 374.40,146.25 376.00,148.33 377.60,149.72 379.20,150.38 380.80,150.28 382.40,149.44 384.00,147.88 385.60,145.66 387.20,142.86 388.80,139.56 390.40,135.87 392.00,131.91 393.60,127.81 395.20,123.69 396.80,119.69 398.40,115.93 400.00,112.52 401.60,109.58 403.20,107.18 404.80,105.40 406.40,104.30 408.00,103.89 409.60,104.20 411.20,105.21 412.80,106.88 414.40,109.15 416.00,111.96 417.60,115.21 419.20,118.79 420.80,122.61 422.40,126.52 424.00,130.42 425.60,134.17 427.20,137.67 428.80,140.79 430.40,143.46 432.00,145.58 433.60,147.09 435.20,147.95 436.80,148.12 438.40,147.63 440.00,146.47 441.60,144.69 443.20,142.36 444.80,139.54 446.40,136.33 448.00,132.84 449.60,129.17 451.20,125.44 452.80,121.77 454.40,118.27 456.00,115.05 457.60,112.21 459.20,109.84 460.80,108.01 462.40,106.77 464.00,106.15 465.60,106.18 467.20,106.84 468.80,108.12 470.40,109.96 472.00,112.32 473.60,115.11 475.20,118.25 476.80,121.62 478.40,125.14 480.00,128.68 481.60,132.14 483.20,135.40 484.80,138.37 486.40,140.95 488.00,143.07 489.60,144.65 491.20,145.66 492.80,146.07 494.40,145.86 496.00,145.04 497.60,143.65 499.20,141.73 500.80,139.35 502.40,136.58 504.00,133.51 505.60,130.24 507.20,126.88 508.80,123.53 510.40,120.30 512.00,117.28 513.60,114.57 515.20,112.25 516.80,110.39 518.40,109.05 520.00,108.27"
+ fill="none" stroke="#2dd4bf" stroke-width="1.8"/>
+<text x="8" y="20" fill="#cbd5e1" font-size="12" font-family="sans-serif">&delta; (deg)</text>
+<text x="470" y="250" fill="#cbd5e1" font-size="12" font-family="sans-serif">t (s)</text>
+<text x="40" y="250" fill="#94a3b8" font-size="11" font-family="sans-serif">0</text>
+<text x="505" y="250" fill="#94a3b8" font-size="11" font-family="sans-serif">6</text>
+<text x="524" y="130" fill="#94a3b8" font-size="10" font-family="sans-serif">&delta;_new</text>
+<text x="4" y="130" fill="#94a3b8" font-size="10" font-family="sans-serif">30.15</text>
+<text x="4" y="174" fill="#94a3b8" font-size="10" font-family="sans-serif">28.21</text>
+</svg>
+<figcaption><strong>Fig. 2.2.</strong> &delta;(t) (teal) from the RK4
+listing over the first 6&nbsp;s after the P<sub>m</sub> = 0.8&rarr;0.85
+step, oscillating about &delta;<sub>new</sub> = 30.15&deg; (dotted
+horizontal); the trace starts at &delta;<sub>0</sub> = 28.21&deg;
+(vertical scale 22.5&nbsp;px per degree). The grey dashed envelope is &delta;<sub>new</sub> &plusmn;
+|&delta;<sub>0</sub> &minus; &delta;<sub>new</sub>|&middot;
+exp(&minus;0.1429&nbsp;t) &mdash; the decay rate 0.1429&nbsp;s<sup>&minus;1</sup>
+is exactly the real part of the eigenvalue pair, read straight off the
+linearised model with no separate curve-fit.</figcaption>
+</figure>
+
+<h2>6. Model limits</h2>
+<p>
+This is the classical model: it has no flux decay (E&prime; is held
+constant, so any excitation-system dynamics are invisible), no automatic
+voltage regulator or excitation control loop, no saliency (the reactance
+is the same on the d-axis and the q-axis, so there is no
+reluctance-torque term), and no stator resistance, so every watt of P<sub>m</sub> in
+excess of P<sub>e</sub> goes into either accelerating the rotor or into
+the damping term &mdash; none is lost to I&sup2;R in the stator windings
+[S01, Kundur 1994, &sect;3.9 &mdash; verify]. The infinite bus is an
+idealisation on the other side of the reactance: fixed voltage magnitude
+and fixed frequency regardless of what this one machine does. None of
+these five omissions changes the shape of the answer this lesson gives
+&mdash; a spring-and-dashpot second-order system &mdash; but each one
+would add terms to K<sub>s</sub> and K<sub>D</sub> in a fuller model.
+The classical model is the smallest model that still has a swing mode.
+Remove H and the system is first order, so it cannot oscillate. Set
+E&prime; to zero and there is no synchronizing power (K<sub>s</sub> = 0).
+Let X go to zero and K<sub>s</sub> becomes infinite, so the angle cannot
+move. The sine nonlinearity is not needed for the swing mode: a linear
+spring P<sub>e</sub> = K<sub>s</sub>&Delta;&delta; gives the same
+small-signal oscillation; the sine matters only for large swings and for
+the second, unstable equilibrium.
+</p>
+
+<figure>
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img"
+ aria-label="Eigenvalue locus in the complex plane as K_D increases">
+<rect x="0" y="0" width="560" height="300" fill="#0b1424"/>
+<line x1="40" y1="150" x2="560" y2="150" stroke="#334155"/>
+<line x1="300" y1="20" x2="300" y2="280" stroke="#334155"/>
+<path d="M 300,42.46 A 358.472 107.5416 0 0 0 300,257.54"
+ fill="none" stroke="#334155" stroke-width="1.2" stroke-dasharray="4,3"/>
+<circle cx="300.00" cy="42.46" r="5" fill="#2dd4bf"/>
+<circle cx="300.00" cy="257.54" r="5" fill="#2dd4bf"/>
+<circle cx="294.28" cy="42.47" r="5" fill="#fb923c"/>
+<circle cx="294.28" cy="257.53" r="5" fill="#fb923c"/>
+<circle cx="271.43" cy="42.80" r="5" fill="#e2e8f0"/>
+<circle cx="271.43" cy="257.20" r="5" fill="#e2e8f0"/>
+<circle cx="214.28" cy="45.58" r="5" fill="#94a3b8"/>
+<circle cx="214.28" cy="254.42" r="5" fill="#94a3b8"/>
+<text x="304" y="46" fill="#2dd4bf" font-size="11" font-family="sans-serif">K_D=0</text>
+<text x="248" y="34" fill="#94a3b8" font-size="11" font-family="sans-serif">K_D=30</text>
+<text x="536" y="166" fill="#cbd5e1" font-size="12" font-family="sans-serif">Re</text>
+<text x="304" y="18" fill="#cbd5e1" font-size="12" font-family="sans-serif">Im</text>
+</svg>
+<figcaption><strong>Fig. 2.3.</strong> Eigenvalue pairs in the complex
+plane for K<sub>D</sub> = 0, 2, 10, 30&nbsp;pu (teal, orange, white,
+grey), computed at the base equilibrium. All four pairs sit on the
+dashed circle of radius |eigenvalue| = &omega;<sub>n</sub> =
+8.9618&nbsp;rad/s (verified in the run output above: |eig| = 8.9618 for
+every K<sub>D</sub>), moving left along that circle as damping
+increases &mdash; K<sub>D</sub> changes how fast the oscillation decays,
+not how fast it would oscillate if undamped. The plot uses
+40&nbsp;px per s<sup>&minus;1</sup> on the real axis and 12&nbsp;px per
+rad/s on the imaginary axis, so the real axis is stretched about 3.3
+times and the circle appears as an ellipse.</figcaption>
+</figure>
+
+<h2>7. Exercises</h2>
+
+<h3>1. Conceptual</h3>
+<p>A machine sits at &delta;<sub>0</sub> = 95&deg;. Is it small-signal
+stable?</p>
+<details><summary>Answer target</summary>
+<p>No. K<sub>s</sub> = P<sub>max</sub>cos(95&deg;) =
+1.6923&times;(&minus;0.0872) = &minus;0.1475&nbsp;pu/rad, which is
+negative. With K<sub>s</sub> &lt; 0 the constant term of the
+characteristic polynomial, K<sub>s</sub>&omega;<sub>0</sub>/2H, is
+negative, so the product of the two roots is negative: one eigenvalue is
+real and positive, the other real and negative. A single positive real
+eigenvalue means the linearised system diverges monotonically, with no
+oscillation at all &mdash; the classic loss-of-synchronism instability
+on the falling half of the power-angle curve.</p>
+</details>
+
+<h3>2. Derivational</h3>
+<p>Show that writing the damping term as K<sub>D</sub>&prime;(&omega;
+&minus; &omega;<sub>0</sub>) with &omega; in rad/s, while still keeping
+2H&nbsp;d(&Delta;&omega;)/dt on the left with &Delta;&omega; in pu,
+multiplies the computed &zeta; by &omega;<sub>0</sub>.</p>
+<details><summary>Answer target</summary>
+<p>&omega; &minus; &omega;<sub>0</sub> in rad/s equals
+&omega;<sub>0</sub>&middot;&Delta;&omega; in pu (since &Delta;&omega; is
+defined as the per-unit speed deviation). Substituting
+K<sub>D</sub>&prime;&middot;&omega;<sub>0</sub>&Delta;&omega; for what
+was K<sub>D</sub>&Delta;&omega; is equivalent to silently replacing
+K<sub>D</sub> with K<sub>D</sub>&prime;&omega;<sub>0</sub> everywhere it
+appears, including in &zeta; = K<sub>D</sub>/(4H&omega;<sub>n</sub>). So
+&zeta; becomes 376.99&nbsp;&times;&nbsp;0.01594 =
+<strong>6.01</strong>, which is badly overdamped and wrong &mdash; a
+unit-mixing error, not a physical result. This is exactly why the house
+convention in this lesson fixes K<sub>D</sub> as a pu-to-pu coefficient
+and never lets an omega in rad/s multiply it a second time.</p>
+</details>
+
+<h3>3. Computational</h3>
+<p>Repeat the eigenvalue computation for H = 2, 3.5, 6, 8&nbsp;s.</p>
+<details><summary>Answer target</summary>
+<p>&omega;<sub>n</sub> = 11.86, 8.96, 6.84, 5.93&nbsp;rad/s and
+&zeta; = 0.0211, 0.0159, 0.0122, 0.0105 for H = 2, 3.5, 6,
+8&nbsp;s respectively (script output, Section&nbsp;5).
+Both quantities scale as H<sup>&minus;0.5</sup>: &omega;<sub>n</sub>
+&prop; H<sup>&minus;0.5</sup> directly from its defining formula, and
+&zeta; = K<sub>D</sub>/(4H&omega;<sub>n</sub>) &prop;
+H<sup>&minus;1</sup>&middot;H<sup>0.5</sup> = H<sup>&minus;0.5</sup> since
+K<sub>D</sub> is held fixed. A heavier rotor (larger H) both oscillates
+more slowly and damps out more slowly, for the same electrical
+stiffness and the same damping torque.</p>
+</details>
+
+<h3>4. Computational</h3>
+<p>Replace the analytic Jacobian by the finite-difference one for step
+sizes 1e-2 down to 1e-12, and report where the error is smallest.</p>
+<details><summary>Answer target</summary>
+<p>The run in this lesson&rsquo;s script reports the smallest error at
+step&nbsp;=&nbsp;1e-08, with |A[1][0]<sub>analytic</sub> &minus;
+A[1][0]<sub>fd</sub>| = 8.234e-10. The error falls monotonically from
+5.750e-04 at step&nbsp;=&nbsp;1e-02 down to that minimum, then rises
+again at step&nbsp;=&nbsp;1e-09 (1.980e-08), 1e-10 (9.910e-08), 1e-11
+(3.767e-07), and 1e-12 (3.549e-06). Two error terms explain the
+shape. The truncation error of a forward difference is
+(step/2)&middot;&part;&sup2;f/&part;&delta;&sup2; =
+(step/2)&middot;P<sub>m</sub>/(2H) = 0.0571&middot;step, which predicts
+5.71e-04 at step&nbsp;=&nbsp;1e-02 (observed 5.750e-04) and falls
+tenfold per decade, as observed. The round-off error comes from the
+terms of size about 0.8 inside f, each rounded to about
+&epsilon; = 2.2e-16 relative (IEEE double); after division by 2H and by
+the step it is about &epsilon;&middot;0.8/(2H)/step &asymp;
+2.5e-17/step, that is 2.5e-09 at step&nbsp;=&nbsp;1e-08 (observed
+8.2e-10, the same order). The sum 0.0571&middot;step +
+2.5e-17/step is smallest at step = &radic;(2.5e-17/0.0571) &asymp;
+2e-08, which matches the observed best step of 1e-08.</p>
+</details>
+
+<h3>5. Conceptual</h3>
+<p>Say in one sentence why &zeta; = 0.016 motivates power system
+stabilisers.</p>
+<details><summary>Answer target</summary>
+<p>A damping ratio of 0.016 means the swing amplitude falls by only
+9.5% per cycle (ratio exp(&minus;2&pi;&zeta;/&radic;(1&minus;&zeta;&sup2;))
+= 0.905), so a plant trip or a load step rings for tens of seconds; a
+power system stabiliser adds a supplementary signal to the excitation
+system that raises the effective damping torque (raises K<sub>D</sub>)
+and, ideally, leaves the synchronizing torque K<sub>s</sub> unchanged,
+so the oscillation dies out faster while &omega;<sub>n</sub> stays the
+same (the damped frequency drops only slightly: 8.9607&nbsp;rad/s at
+K<sub>D</sub> = 2 against 8.7018&nbsp;rad/s at K<sub>D</sub> = 30, run
+output) [S01, Kundur 1994, &sect;12.5 &mdash; verify].</p>
+</details>
+
+<hr>
+<p class="small">Sources: S01 &mdash; Kundur, P. (1994).
+<em>Power System Stability and Control</em>. McGraw-Hill; swing
+equation and typical H range, &sect;3.9, Table 3.2; local-mode frequency
+band, &sect;12.1; power system stabilisers, &sect;12.5 &mdash; verify all.
+Example 1.1 data come from <code>../p1-textbook/book-plan.md</code>
+&sect;4 (Chapter&nbsp;1 specification). All worked numbers are computed by
+<code>lesson2_smib.py</code>; a condensed excerpt of it and its full
+printed output are reproduced above.</p>
+
+</body>
+</html>

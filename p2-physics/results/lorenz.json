@@ -1,0 +1,37 @@
+{
+  "target": "Largest Lyapunov exponent of the Lorenz system (sigma=10, rho=28, beta=8/3)",
+  "method": "Benettin renormalization on the tangent flow, RK4 integration, 1024 independent trajectories, dt=0.01 main run, dt=0.005 dt-halving check, transient T=100, measured T=1500 (750 for the dt-halving run)",
+  "measured": 0.905763,
+  "published": 0.9056,
+  "tolerance": 0.000467,
+  "abs_diff": 0.000163,
+  "error_estimate": 0.000122,
+  "pass": true,
+  "deterministic": true,
+  "runtime_s": 138.5,
+  "exit_code": 0,
+  "python_version": "3.13.5",
+  "numpy_version": "2.2.6",
+  "scipy_version": "1.16.0",
+  "seed": 20260922,
+  "runs": [
+    {
+      "exit_code": 0,
+      "runtime_s": 138.5
+    },
+    {
+      "exit_code": 0,
+      "runtime_s": 184.5
+    }
+  ],
+  "notes": "Verify2 (second pass, after fix stage): two full runs of scripts/lorenz.py, both exit 0, no stderr. Both printed bit-identical numeric lines: MEASURED=0.905763, PUBLISHED=0.905600, ERROR_ESTIMATE=0.000122, TOLERANCE=0.000467, ABS_DIFF=0.000163, RESULT=PASS. Only RUNTIME_S differed (138.5s vs 184.5s, both well under the 240s timeout), so the script is deterministic under the fixed seed. Recomputed abs_diff = |0.905763-0.9056| = 0.000163, matching the printed ABS_DIFF exactly and within TOLERANCE=0.000467. Fix-stage output is visible: the script now prints \"Richardson dt-error of the coarse run, 2-sigma upper bound: 0.000040\" (referee change 1, replacing the old noise/15 Richardson estimate) and \"tolerance without the 1e-4 floor: 0.000407  -> PASS\" (referee change 2), matching referee.md section 2 exactly. No change against previous verify pass: measured, tolerance, abs_diff, error_estimate are unchanged from the prior results/lorenz.json (previous measured=0.905763, tolerance=0.000467, abs_diff=0.000163, error_estimate=0.000122), because the bias allowance is max(Richardson 2-sigma bound 4.0e-5, asserted floor 1.0e-4) = 1.0e-4 either way -- the floor still dominates and the fix (changes 1-2) only makes that fact visible in the printout rather than changing any number. Referee also asked for a docstring wording change (change 3, about the Viswanath 0.90566 vs 0.905630 ambiguity) which is script-only text and does not affect this JSON. None of the three lorenz referee changes edits results/lorenz.json (unlike ising change 5, kepler change 5, fpu change 4), so referee_json_changes_applied = none listed. Both in-script self-checks passed in both runs: analytic-vs-finite-difference tangent field max error 3.71e-08 (bound 1e-5), linear-flow-exponent machinery check recovered eigenvalue 2 to within 2.62e-09 (bound 1e-8).",
+  "verified_at": "2026-09-22 verify2",
+  "fix_applied": true,
+  "previous": {
+    "measured": 0.905763,
+    "published": 0.9056,
+    "tolerance": 0.000467,
+    "abs_diff": 0.000163,
+    "error_estimate": 0.000122
+  }
+}

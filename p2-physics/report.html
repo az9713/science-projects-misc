@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>P2 Physics Reproduction Report</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --text2: #cbd5e1;
+    --muted: #94a3b8;
+    --accent1: #fb923c;
+    --accent2: #2dd4bf;
+    --border1: #1e293b;
+    --border2: #334155;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    margin: 0;
+    padding: 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .date { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 1.2rem;
+    color: var(--accent2);
+    margin-top: 0;
+    border-bottom: 1px solid var(--border2);
+    padding-bottom: 8px;
+  }
+  p { color: var(--text2); }
+  .headline {
+    color: var(--accent1);
+    font-weight: 600;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 900px;
+    font-size: 0.85rem;
+  }
+  th, td {
+    border: 1px solid var(--border2);
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #16213a;
+    color: var(--text);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  td.num, th.num {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    white-space: nowrap;
+  }
+  tr:nth-child(even) td { background: #1a2740; }
+  .pass-yes { color: var(--accent2); font-weight: 600; }
+  .pass-no { color: var(--accent1); font-weight: 600; }
+  .tag-M { color: var(--accent2); font-weight: 600; }
+  .tag-A { color: var(--accent1); font-weight: 600; }
+  ul.caveats { padding-left: 20px; }
+  ul.caveats li { margin-bottom: 10px; color: var(--text2); }
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background: #0b1322;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--accent2);
+    font-size: 0.85em;
+  }
+  .footer-list {
+    color: var(--text2);
+    font-size: 0.9rem;
+  }
+  .footer-list div { margin-bottom: 4px; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>P2 Physics: Eight Numerical Reproductions</h1>
+  <div class="date">Date: 2026-09-22</div>
+
+  <div class="card">
+    <p>
+      This report reproduces eight published physics results in Python and checks each one against its
+      published value. The pipeline ran five stages in order: draft (write and run each script), verify
+      (run each script twice and confirm identical output), referee (check the method, the error estimate,
+      and the tolerance for each of the eight scripts), fix (apply the referee's numbered changes), and
+      verify2 (re-run the fixed scripts twice and confirm identical output again).
+    </p>
+    <p class="headline">
+      Result: 8 of 8 targets pass. Two passes depend on a measured bias term: three_body before the fix,
+      and fpu (unaffected by the fix). After the fix, three_body passes on 3x error alone.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Main results (post-fix)</h2>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th>Method</th>
+          <th>Published value and source</th>
+          <th class="num">Measured</th>
+          <th class="num">abs_diff</th>
+          <th>Error estimate (kind)</th>
+          <th class="num">3x error</th>
+          <th>Bias term</th>
+          <th class="num">Tolerance</th>
+          <th class="num">abs_diff / 3x error</th>
+          <th class="num">abs_diff / tolerance</th>
+          <th>Pass on 3x error alone</th>
+          <th class="num">Runtime</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ising</td>
+          <td>Binder-cumulant crossing between L=16 and L=32, cubic fit</td>
+          <td>2.269185, Onsager (exact, 2/ln(1+sqrt2))</td>
+          <td class="num">2.2675</td>
+          <td class="num">0.0017</td>
+          <td>0.0025 (statistical sigma)</td>
+          <td class="num">0.0075</td>
+          <td><span class="tag-A">A</span> 0.0019, finite-size bound, 20.2%</td>
+          <td class="num">0.0094</td>
+          <td class="num">0.227</td>
+          <td class="num">0.181</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">157.0 s</td>
+        </tr>
+        <tr>
+          <td>lorenz</td>
+          <td>Benettin renormalization on the tangent flow, RK4, 1024 trajectories</td>
+          <td>0.9056, Sprott, <em>Chaos and Time-Series Analysis</em> (2003)</td>
+          <td class="num">0.905763</td>
+          <td class="num">0.000163</td>
+          <td>0.000122 (statistical sigma)</td>
+          <td class="num">0.000366</td>
+          <td><span class="tag-A">A</span> 0.000101, asserted 1e-4 floor, 21.4%</td>
+          <td class="num">0.000467</td>
+          <td class="num">0.445</td>
+          <td class="num">0.349</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">138.5 s</td>
+        </tr>
+        <tr>
+          <td>kuramoto</td>
+          <td>Time-averaged order parameter, r^2 = a + b/K fit, intercept form Kc = -b/a</td>
+          <td>2.0, Kuramoto (1975); Strogatz, Physica D 143 (2000)</td>
+          <td class="num">2.000013</td>
+          <td class="num">0.000013</td>
+          <td>0.000123 (statistical sigma)</td>
+          <td class="num">0.000369</td>
+          <td><span class="tag-M">M</span> 0.000066, delta_dt discretization bias, 15.2%</td>
+          <td class="num">0.000435</td>
+          <td class="num">0.035</td>
+          <td class="num">0.030</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">177.4 s</td>
+        </tr>
+        <tr>
+          <td>three_body</td>
+          <td>First return of the 12-D state, DOP853, rtol=1e-12/atol=1e-14</td>
+          <td>6.32591398292621, Fenucci arXiv:2201.01205 (14-digit form, after Chenciner-Montgomery/Simo)</td>
+          <td class="num">6.3259139829</td>
+          <td class="num">8.176e-12</td>
+          <td>1.105e-09 (tolerance-halving: rtol 1e-12 vs 1e-10)</td>
+          <td class="num">3.315e-09</td>
+          <td><span class="tag-M">M</span> 1.85e-13, IC + published-period rounding, 0.0056%</td>
+          <td class="num">3.316e-09</td>
+          <td class="num">0.00247</td>
+          <td class="num">0.00247</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">0.29 s</td>
+        </tr>
+        <tr>
+          <td>fpu</td>
+          <td>Velocity Verlet, dt=0.05 and dt=0.025, first mode-1 energy recurrence peak</td>
+          <td>157 periods, Fermi-Pasta-Ulam LA-1940 (1955), a plot reading</td>
+          <td class="num">153.4345</td>
+          <td class="num">3.5655</td>
+          <td>0.4014 (dt-halving + estimator spread)</td>
+          <td class="num">1.2042</td>
+          <td><span class="tag-M">M</span> 6.1415, 95%-of-peak plateau half-width, 83.6%</td>
+          <td class="num">7.3457</td>
+          <td class="num">2.961</td>
+          <td class="num">0.4854</td>
+          <td class="pass-no">no</td>
+          <td class="num">21.43 s</td>
+        </tr>
+        <tr>
+          <td>feigenbaum</td>
+          <td>Superstable parameters via Newton root-finding, successive ratio delta_N</td>
+          <td>4.66920160910299, Feigenbaum (1978); Briggs, Math. Comp. 57 (1991)</td>
+          <td class="num">4.66920151427718</td>
+          <td class="num">9.483e-08</td>
+          <td>7.572e-07 (successive difference)</td>
+          <td class="num">2.272e-06</td>
+          <td><span class="tag-M">M</span> 4.141e-07, truncation term at level N=10, 15.4%</td>
+          <td class="num">2.686e-06</td>
+          <td class="num">0.0417</td>
+          <td class="num">0.0353</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">0.062 s</td>
+        </tr>
+        <tr>
+          <td>kepler</td>
+          <td>Leapfrog vs RK4 convergence order (block a), Richardson limit of the order sequence</td>
+          <td>2 (order), Hairer, Lubich, Wanner, <em>Geometric Numerical Integration</em>, 2nd ed. (2006)</td>
+          <td class="num">2.001910</td>
+          <td class="num">0.001910</td>
+          <td>0.002631 (spread of a converging sequence)</td>
+          <td class="num">0.007893</td>
+          <td><span class="tag-M">M</span> 0.001910, mean-of-4-orders bias vs Richardson limit, 19.5%</td>
+          <td class="num">0.009803</td>
+          <td class="num">0.242</td>
+          <td class="num">0.195</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">0.6 s</td>
+        </tr>
+        <tr>
+          <td>poisson</td>
+          <td>5-point stencil, direct solve, mean of the 3 finest p_k = log2(e_k/e_k+1)</td>
+          <td>2 (order), LeVeque, <em>Finite Difference Methods for ODEs and PDEs</em>, SIAM (2007), ch. 3</td>
+          <td class="num">2.000228164</td>
+          <td class="num">0.000228164</td>
+          <td>0.000488943 (spread of a converging sequence)</td>
+          <td class="num">0.001466829</td>
+          <td><span class="tag-A">A</span> 0.001042882, derived-formula factor of 2, 41.6%</td>
+          <td class="num">0.002509711</td>
+          <td class="num">0.156</td>
+          <td class="num">0.0909</td>
+          <td class="pass-yes">yes</td>
+          <td class="num">0.764 s</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Before/after the fix stage</h2>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Target</th>
+          <th class="num">Previous measured</th>
+          <th class="num">Previous tolerance</th>
+          <th class="num">abs_diff (previous vs current measured)</th>
+          <th>Reason for the change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ising</td>
+          <td class="num">2.267460</td>
+          <td class="num">0.05</td>
+          <td class="num">0.00004</td>
+          <td>Fixed TOL=0.05 (a 20-sigma band) replaced with a run-time tolerance, 3 sigma(Tc) + 0.002 finite-size bound.</td>
+        </tr>
+        <tr>
+          <td>lorenz</td>
+          <td class="num">0.905763</td>
+          <td class="num">0.000467</td>
+          <td class="num">0.000000</td>
+          <td>No numeric change. The fix made the asserted 1e-4 floor visible against the measured Richardson bound 4.0e-5; the floor still dominates the tolerance.</td>
+        </tr>
+        <tr>
+          <td>kuramoto</td>
+          <td class="num">1.999991</td>
+          <td class="num">0.000474</td>
+          <td class="num">0.000022</td>
+          <td>Mean field is now sampled at theta before any drift, with a symmetric Strang split, instead of after a full drift; this removes the sign-biased discretization artifact.</td>
+        </tr>
+        <tr>
+          <td>three_body</td>
+          <td class="num">6.3259140120</td>
+          <td class="num">1.886232e-07</td>
+          <td class="num">2.906e-08</td>
+          <td>Initial condition switched from 8-decimal to 14-digit Fenucci (arXiv:2201.01205) data, removing the IC-rounding bias that was 96% of the previous tolerance.</td>
+        </tr>
+        <tr>
+          <td>fpu</td>
+          <td class="num">153.4345</td>
+          <td class="num">7.3457</td>
+          <td class="num">0.0000</td>
+          <td>No numeric change. The fix added the 31-moving-mass negative control print and the 0.97-anchored alternative tolerance check.</td>
+        </tr>
+        <tr>
+          <td>kepler</td>
+          <td class="num">2.001910</td>
+          <td class="num">0.027893</td>
+          <td class="num">0.000000</td>
+          <td>Asserted BIAS_A=0.02 (block a) and the asserted 0.01 floor (block b) replaced with a measured Richardson-limit bias and no floor.</td>
+        </tr>
+        <tr>
+          <td>poisson</td>
+          <td class="num">2.000228164</td>
+          <td class="num">0.002509711</td>
+          <td class="num">0.000000000</td>
+          <td>No numeric change. The fix added a printed Richardson limit of the order sequence and a non-eigenvector control block.</td>
+        </tr>
+        <tr>
+          <td>feigenbaum</td>
+          <td class="num muted">&mdash;</td>
+          <td class="num muted">&mdash;</td>
+          <td class="num muted">&mdash;</td>
+          <td>no change</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Caveats</h2>
+    <ul class="caveats">
+      <li><strong>ising:</strong> the printed Tc supports 3 decimals of precision; extra printed digits beyond that are not supported by the error estimate.</li>
+      <li><strong>lorenz:</strong> the asserted 1e-4 floor still dominates the tolerance over the measured 4.0e-5 Richardson bound.</li>
+      <li><strong>kuramoto:</strong> runtime was 177 s and 211 s across the two verify2 runs, both under concurrent load, against a 180 s design limit.</li>
+      <li><strong>fpu:</strong> the published value 157 is a reading from a plotted curve, not a stated number; the 95%-of-peak plateau level used for the bias term is a chosen constant.</li>
+      <li><strong>poisson:</strong> the test function is an exact discrete eigenvector of the 5-point operator, so its order sequence is analytic by construction; the closed-form gate (1e-8 relative) is the real discriminating test.</li>
+      <li><strong>kepler:</strong> block b's tolerance is now 7.9e-6 with the asserted 0.01 floor removed.</li>
+      <li><strong>three_body:</strong> the initial data is the 14-digit form from Fenucci, arXiv:2201.01205.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Reproduction</h2>
+    <div class="footer-list">
+      <div>Python 3.13.5, numpy 2.2.6, scipy 1.16.0.</div>
+      <div>Seeds where used: <code>SEED=20260922</code> (ising, lorenz, kuramoto). three_body, fpu, feigenbaum, kepler, and poisson use no random number and set no seed.</div>
+      <div>Command: <code>python scripts/&lt;target&gt;.py</code></div>
+      <div>Printed-line contract: <code>MEASURED=</code>, <code>PUBLISHED=</code>, <code>ERROR_ESTIMATE=</code>, <code>TOLERANCE=</code>, <code>ABS_DIFF=</code>, <code>RUNTIME_S=</code>, <code>RESULT=</code> (kepler also prints a <code>_2</code>-suffixed block for its second quantity).</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Lesson 8 &mdash; One Machine to a System</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --text2: #cbd5e1;
+  --muted: #94a3b8;
+  --accent1: #fb923c;
+  --accent2: #2dd4bf;
+  --border1: #1e293b;
+  --border2: #334155;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.55;
+  font-size: 16px;
+}
+main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+h1 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: var(--text);
+  border-bottom: 2px solid var(--accent1);
+  padding-bottom: 12px;
+  margin-top: 4px;
+}
+h2 {
+  font-size: 1.15rem;
+  color: var(--accent2);
+  margin-top: 2.2em;
+  border-left: 4px solid var(--accent2);
+  padding-left: 10px;
+}
+h3 {
+  font-size: 1rem;
+  color: var(--text);
+  margin-top: 1.6em;
+}
+p, li { color: var(--text2); }
+.lede {
+  font-size: 1.02rem;
+  color: var(--text);
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 1.1em 0;
+}
+.problem {
+  background: var(--card);
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 1em 0;
+}
+.status {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+.status.assumed { background: var(--muted); }
+.status.cited { background: var(--accent1); }
+var, .sym { font-style: normal; color: var(--accent2); }
+code, pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+}
+pre {
+  background: #0b1220;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  max-width: 100%;
+  color: var(--text2);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  font-size: 0.92rem;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  border: 1px solid var(--border2);
+  padding: 6px 10px;
+  text-align: left;
+  color: var(--text2);
+  white-space: nowrap;
+}
+th { color: var(--text); background: #16233b; }
+.eq {
+  background: #0b1220;
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 0.9em 0;
+  text-align: center;
+  color: var(--text);
+  font-size: 1.02rem;
+  overflow-x: auto;
+}
+.figure {
+  margin: 1.3em 0;
+  text-align: center;
+}
+.figure svg {
+  max-width: 100%;
+  height: auto;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+}
+.caption {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: 8px;
+  text-align: left;
+}
+.exercise {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-left: 4px solid var(--accent1);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 1em 0;
+}
+details {
+  margin-top: 8px;
+  color: var(--text2);
+}
+summary {
+  cursor: pointer;
+  color: var(--accent2);
+  font-weight: 600;
+}
+.limits li { margin-bottom: 6px; }
+.limits b { color: var(--text); }
+a { color: var(--accent2); }
+@media (max-width: 400px) {
+  main { padding: 14px 10px 50px; }
+  h1 { font-size: 1.25rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Lesson 8 &mdash; From One Machine to a System: Centre of Inertia,
+Nadir, and Sizing</h1>
+
+<p class="lede">Series: Power-system dynamics for programmers. Lesson 8
+of 8. Lessons 1 through 7 treated frequency as the output of one
+integrator, driven by one machine or one machine against an infinite
+bus. This lesson removes that simplification. A real grid is many
+machines coupled through a network, and it is answering three
+questions at once: how do several rotors add up to one shared
+frequency, how does that frequency dip after a real loss of infeed,
+and how much grid-forming plant does it take to replace a retiring
+fleet of spinning machines. All three are answered from the same two
+building blocks: a coupled swing equation and a linear-ramp energy
+balance.</p>
+
+<h2>The opening problem</h2>
+
+<div class="problem">
+<p>On 9 August 2019, Great Britain's grid frequency fell to
+48.8&nbsp;Hz. Low-frequency demand disconnection &mdash; automatic,
+relay-triggered shedding of customer load &mdash; acted and shed about
+931&nbsp;MW, following a total loss of infeed of about 1878&nbsp;MW
+<span class="status cited">cited [S14 &mdash; verify]</span>. That
+48.8&nbsp;Hz line is not a round number chosen for teaching; it is the
+threshold at which Great Britain's own protection scheme starts
+shedding customers.</p>
+<p>Take a smaller, cleaner version of the same event for a 50&nbsp;Hz
+grid: a 1000&nbsp;MW loss of infeed, met by 1000&nbsp;MW of primary
+response delivered as a straight ramp over 10&nbsp;s (so the imbalance
+is fully repaid at <var class="sym">t</var> = 10&nbsp;s, not before).
+How much kinetic energy must be spinning on the grid at the instant of
+the loss to keep frequency above 48.8&nbsp;Hz throughout the event?</p>
+<p><b>Answer, computed by this lesson:</b> at least 104.2&nbsp;GVA&middot;s.
+At 100&nbsp;GVA&middot;s &mdash; just under the floor &mdash; the nadir
+is 48.75&nbsp;Hz, on the wrong side of the line. The rest of the lesson
+builds the equation that produces that floor, and two programs that
+check it.</p>
+</div>
+
+<p>The GB 2019 event needed a network of many machines, a governor and
+primary-response chain, and a load-shedding relay ladder. This lesson
+does not reconstruct that network; it builds the smallest model that
+still contains the two ideas the event turned on: many rotors act, to
+first order, like one shared frequency (the centre of inertia), and
+the size of a dip after a loss is set by one ratio &mdash; energy
+stored against power missing and for how long. Those same two ideas
+size the grid-forming converter capacity that replaces a retiring
+machine, the lesson's second half.</p>
+
+<h2>The model: many machines, one shared frequency</h2>
+
+<p>Lesson 1 wrote Newton's law for a single spinning rotor and divided
+by its own rating to get the per-unit swing equation. A network of
+several machines gives each machine its own equation of that same
+form, coupled to the others only through the electrical power it
+exchanges with the network. For machine <var class="sym">i</var>:</p>
+
+<div class="eq">
+<var class="sym">M<sub>i</sub></var>
+d<var class="sym">dw<sub>i</sub></var>/d<var class="sym">t</var> =
+<var class="sym">P<sub>m,i</sub></var> &minus;
+<var class="sym">P<sub>e,i</sub></var> &minus;
+<var class="sym">K<sub>D,i</sub></var> <var class="sym">dw<sub>i</sub></var>
+&nbsp;&nbsp;&nbsp;
+d<var class="sym">&delta;<sub>i</sub></var>/d<var class="sym">t</var> =
+<var class="sym">&omega;<sub>0</sub></var> <var class="sym">dw<sub>i</sub></var>
+</div>
+
+<p>This is the same convention Lesson 1 fixed and every lesson since
+has kept: <var class="sym">dw<sub>i</sub></var> is machine
+<var class="sym">i</var>'s per-unit speed deviation
+(<var class="sym">&omega;<sub>i</sub></var> &minus;
+<var class="sym">&omega;<sub>0</sub></var>)/<var class="sym">&omega;<sub>0</sub></var>;
+<var class="sym">&delta;<sub>i</sub></var> is its rotor angle against a
+common synchronous reference, in radians;
+<var class="sym">&omega;<sub>0</sub></var> = 2&pi;
+<var class="sym">f<sub>0</sub></var> is the base electrical angular
+frequency (314.16&nbsp;rad/s at <var class="sym">f<sub>0</sub></var> =
+50&nbsp;Hz); <var class="sym">P<sub>m,i</sub></var> and
+<var class="sym">P<sub>e,i</sub></var> are mechanical input and
+electrical output power, in per unit on a common system base
+<var class="sym">S<sub>sys</sub></var>; and
+<var class="sym">K<sub>D,i</sub></var> is a per-unit damping
+coefficient &mdash; always written <var class="sym">K<sub>D</sub></var>
+in this series, never the bare letter <var class="sym">D</var>, to keep
+it distinct from a differential operator. <var class="sym">M<sub>i</sub></var>
+is machine <var class="sym">i</var>'s inertia constant re-based to the
+system: <var class="sym">M<sub>i</sub></var> = 2
+<var class="sym">H<sub>i</sub></var> <var class="sym">S<sub>i</sub></var> /
+<var class="sym">S<sub>sys</sub></var>, where
+<var class="sym">H<sub>i</sub></var> is the machine's own inertia
+constant (seconds of stored kinetic energy per unit of its own rating
+<var class="sym">S<sub>i</sub></var>).</p>
+
+<p>Two machines exchange power through a tie that, linearized about an
+operating angle, behaves like a spring:
+<var class="sym">P<sub>e,1</sub></var> = <var class="sym">K<sub>12</sub></var>
+(<var class="sym">&delta;<sub>1</sub></var> &minus;
+<var class="sym">&delta;<sub>2</sub></var>), with
+<var class="sym">P<sub>e,2</sub></var> the same term, sign reversed,
+where <var class="sym">K<sub>12</sub></var> = (
+<var class="sym">E<sub>1</sub></var> <var class="sym">E<sub>2</sub></var>
+/ <var class="sym">X<sub>12</sub></var>) cos(<var class="sym">&delta;<sub>12,0</sub></var>)
+is the synchronizing coefficient (pu/rad) at the pre-disturbance angle
+<var class="sym">&delta;<sub>12,0</sub></var>;
+<var class="sym">E<sub>1</sub></var>, <var class="sym">E<sub>2</sub></var>
+are internal EMF magnitudes (pu, held constant here) and
+<var class="sym">X<sub>12</sub></var> is the tie reactance (pu) &mdash;
+the same linearization Lesson 1 used for one machine against an
+infinite bus, now applied between two finite machines.</p>
+
+<h3>The centre of inertia</h3>
+
+<p>If every machine's speed deviation stayed identical at every
+instant, the network would behave exactly like Lesson 1's single
+lumped rotor. It does not, in general &mdash; the machines swing
+against each other too &mdash; but there is still a well-defined
+"average" that a single-frequency instrument reads. The
+<b>centre-of-inertia (COI) speed deviation</b> is the inertia-weighted
+average of every machine's own deviation:</p>
+
+<div class="eq">
+<var class="sym">dw<sub>COI</sub></var> =
+( &Sigma;<sub>i</sub> <var class="sym">M<sub>i</sub></var>
+<var class="sym">dw<sub>i</sub></var> ) /
+( &Sigma;<sub>i</sub> <var class="sym">M<sub>i</sub></var> )
+</div>
+
+<p>and the COI frequency is <var class="sym">f<sub>COI</sub></var> =
+<var class="sym">f<sub>0</sub></var>(1 + <var class="sym">dw<sub>COI</sub></var>).
+Summing every machine's swing equation, the internal
+<var class="sym">P<sub>e,i</sub></var> tie-flow terms cancel (Machowski
+et al. 2008) <span class="status cited">cited [S05 &mdash;
+verify]</span>, leaving one aggregate equation in exactly
+Lesson 1's form, with <var class="sym">M<sub>i</sub></var> replaced by
+their sum and <var class="sym">dw<sub>i</sub></var> by
+<var class="sym">dw<sub>COI</sub></var>. That aggregate equation is
+what the opening problem and the nadir formula below both use: a
+single-machine result still applies to a whole grid, provided the
+question is about the shared frequency and not about how the machines
+swing against one another.</p>
+
+<p>The system's stored kinetic energy is the same sum, in energy
+units: <var class="sym">E<sub>kin,sys</sub></var> =
+&Sigma;<sub>i</sub> <var class="sym">H<sub>i</sub></var>
+<var class="sym">S<sub>i</sub></var>, and
+&Sigma;<sub>i</sub> <var class="sym">M<sub>i</sub></var> = 2
+<var class="sym">E<sub>kin,sys</sub></var> /
+<var class="sym">S<sub>sys</sub></var>.</p>
+
+<h3>Test system TS4</h3>
+
+<p>The two-machine example running through this lesson is test system
+TS4 of this series' companion textbook P1, 1000&nbsp;MVA system base:
+unit&nbsp;1 rated 400&nbsp;MVA, <var class="sym">H<sub>1</sub></var> =
+4.0&nbsp;s; unit&nbsp;2 rated 300&nbsp;MVA,
+<var class="sym">H<sub>2</sub></var> = 3.0&nbsp;s. System base:
+<var class="sym">M<sub>1</sub></var> = 2 &times; 4.0 &times; 400/1000 =
+3.2&nbsp;s, <var class="sym">M<sub>2</sub></var> = 2 &times; 3.0
+&times; 300/1000 = 1.8&nbsp;s. Each machine carries
+<var class="sym">K<sub>D</sub></var> = 2&nbsp;pu on its own rating,
+re-based to <var class="sym">K<sub>D,1</sub></var> = 2 &times;
+400/1000 = 0.8&nbsp;pu and <var class="sym">K<sub>D,2</sub></var> = 2
+&times; 300/1000 = 0.6&nbsp;pu. The coupling values &mdash; internal
+EMFs <var class="sym">E<sub>1</sub></var> =
+<var class="sym">E<sub>2</sub></var> = 1.05&nbsp;pu, tie reactance
+<var class="sym">X<sub>12</sub></var> = 2.0&nbsp;pu, transfer
+0.2&nbsp;pu &mdash; are not from TS4; they are
+<span class="status assumed">assumed for this lesson</span> to give
+the example a concrete, worked coupling.</p>
+
+<h2>The key derivation</h2>
+
+<h3>The nadir formula and the factor 4</h3>
+
+<p>Take the aggregate (COI) equation from the model section, and add a
+loss of infeed of size <var class="sym">dP</var> (MW, a positive
+number), repaid by a straight-line primary-response ramp over duration
+<var class="sym">T</var>. The net power surplus on the grid is then
+&minus;<var class="sym">dP</var>(1 &minus; <var class="sym">t</var>/<var class="sym">T</var>)
+for 0 &le; <var class="sym">t</var> &le; <var class="sym">T</var>, and
+zero after <var class="sym">T</var>. Two substitutions turn the
+per-unit COI equation into energy and hertz:
+&Sigma;<sub>i</sub> <var class="sym">M<sub>i</sub></var> = 2
+<var class="sym">E<sub>kin,sys</sub></var> /
+<var class="sym">S<sub>sys</sub></var>, and
+<var class="sym">dw<sub>COI</sub></var> =
+<var class="sym">df</var>/<var class="sym">f<sub>0</sub></var>, where
+<var class="sym">df</var> = <var class="sym">f<sub>COI</sub></var>
+&minus; <var class="sym">f<sub>0</sub></var> in Hz. Multiply both sides
+by <var class="sym">S<sub>sys</sub></var> to write power in MW:</p>
+
+<div class="eq">
+(2 <var class="sym">E<sub>kin,sys</sub></var> /
+<var class="sym">f<sub>0</sub></var>)
+d(<var class="sym">df</var>)/d<var class="sym">t</var> =
+&minus;<var class="sym">dP</var> + <var class="sym">dP</var>
+<var class="sym">t</var> / <var class="sym">T</var>,
+&nbsp;&nbsp; 0 &le; <var class="sym">t</var> &le; <var class="sym">T</var>
+</div>
+
+<p>With <var class="sym">E<sub>kin,sys</sub></var> in MVA&middot;s
+(equal to MJ) and power in MW, both sides are in MW, and
+<var class="sym">df</var>, not <var class="sym">dw</var>, is the state.
+Load damping is set to zero here (see the model limits and
+Exercise&nbsp;3).
+At <var class="sym">t</var> = 0 the right-hand side is
+&minus;<var class="sym">dP</var>, giving RoCoF<sub>0</sub> directly:</p>
+
+<div class="eq">
+RoCoF<sub>0</sub> = <var class="sym">f<sub>0</sub></var>
+<var class="sym">dP</var> / (2 <var class="sym">E<sub>kin,sys</sub></var>)
+</div>
+
+<p>Integrating the right-hand side from 0 to <var class="sym">t</var>
+gives &minus;<var class="sym">dP</var> <var class="sym">t</var> +
+<var class="sym">dP</var> <var class="sym">t</var>&sup2;/(2<var class="sym">T</var>).
+The ramp fully repays the loss at <var class="sym">t</var> =
+<var class="sym">T</var>, so the right-hand side is zero from
+<var class="sym">T</var> onward and <var class="sym">df</var> stops
+moving &mdash; the nadir is at exactly <var class="sym">t</var> =
+<var class="sym">T</var>. Evaluating there gives
+&minus;<var class="sym">dP</var><var class="sym">T</var>/2, so:</p>
+
+<div class="eq">
+<var class="sym">df<sub>nadir</sub></var> = &minus;
+<var class="sym">f<sub>0</sub></var> <var class="sym">dP</var>
+<var class="sym">T</var> / (4 <var class="sym">E<sub>kin,sys</sub></var>)
+</div>
+
+<p>The factor 4 is two 2's from two integrations, not one: the first 2
+sits in the coefficient
+2<var class="sym">E<sub>kin,sys</sub></var>/<var class="sym">f<sub>0</sub></var>
+(the same 2 in every swing equation since Lesson 1); the second comes
+from integrating the ramp, &int;<sub>0</sub><sup>T</sup>
+(1 &minus; <var class="sym">t</var>/<var class="sym">T</var>)
+d<var class="sym">t</var> = <var class="sym">T</var>/2, which halves
+the naive product <var class="sym">dP</var>&middot;<var class="sym">T</var>
+since the ramp tapers linearly to zero. Multiply both 2's into
+&minus;<var class="sym">f<sub>0</sub></var><var class="sym">dP</var>/(2<var class="sym">E<sub>kin,sys</sub></var>)
+and the 4 falls out.</p>
+
+<p>At <var class="sym">E<sub>kin,sys</sub></var> =
+200&nbsp;GVA&middot;s <span class="status assumed">assumed for this
+lesson</span> (attach a year and a verify mark if you tie this to a
+real grid) &mdash; the value used in this series' Example 4.1 &mdash;
+and the opening problem's <var class="sym">dP</var> = 1000&nbsp;MW,
+<var class="sym">T</var> = 10&nbsp;s:
+RoCoF<sub>0</sub> = 50&times;1000/(2&times;200000) = 0.125&nbsp;Hz/s
+and <var class="sym">f<sub>nadir</sub></var> = 49.375&nbsp;Hz. Halving
+the stored energy to 100&nbsp;GVA&middot;s doubles both numbers:
+RoCoF<sub>0</sub> = 0.25&nbsp;Hz/s, <var class="sym">f<sub>nadir</sub></var>
+= 48.75&nbsp;Hz &mdash; below the GB event's 48.8&nbsp;Hz line. At
+300&nbsp;GVA&middot;s the nadir is 49.583&nbsp;Hz; at
+50&nbsp;GVA&middot;s it is 47.5&nbsp;Hz. Solving the nadir formula for
+the smallest <var class="sym">E<sub>kin,sys</sub></var> that keeps a
+drop no larger than 1.2&nbsp;Hz (50 &minus; 48.8) gives the opening
+problem's floor:</p>
+
+<div class="eq">
+<var class="sym">E<sub>kin,sys</sub></var> &ge;
+<var class="sym">f<sub>0</sub></var> <var class="sym">dP</var>
+<var class="sym">T</var> / (4 &times; 1.2) = 50 &times; 1000 &times;
+10 / 4.8 = 104.2&nbsp;GVA&middot;s
+</div>
+
+<div class="figure">
+<svg viewBox="0 0 640 400" role="img"
+     aria-label="Frequency versus time for four values of system kinetic energy, with a threshold line at 48.8 hertz and each curve's nadir marked">
+<style>
+.axf { stroke:#334155; stroke-width:1; }
+.axlblf { fill:#94a3b8; font-size:11px; font-family:inherit; }
+.axlblf.mid { text-anchor:middle; }
+.axlblf.end { text-anchor:end; }
+.thrf { stroke:#94a3b8; stroke-width:1; stroke-dasharray:5,4; }
+.tlblf { font-size:10px; font-family:inherit; text-anchor:middle; }
+</style>
+<line x1="60" y1="340" x2="620" y2="340" class="axf"/>
+<line x1="60" y1="20" x2="60" y2="340" class="axf"/>
+<text x="60" y="358" class="axlblf mid">0</text>
+<text x="153.3" y="358" class="axlblf mid">2</text>
+<text x="246.7" y="358" class="axlblf mid">4</text>
+<text x="340" y="358" class="axlblf mid">6</text>
+<text x="433.3" y="358" class="axlblf mid">8</text>
+<text x="526.7" y="358" class="axlblf mid">10</text>
+<text x="620" y="358" class="axlblf mid">12</text>
+<text x="340" y="378" class="axlblf mid">time (s)</text>
+<text x="52" y="44" class="axlblf end">50.0</text>
+<text x="52" y="94" class="axlblf end">49.5</text>
+<text x="52" y="144" class="axlblf end">49.0</text>
+<text x="52" y="194" class="axlblf end">48.5</text>
+<text x="52" y="244" class="axlblf end">48.0</text>
+<text x="52" y="294" class="axlblf end">47.5</text>
+<text x="52" y="344" class="axlblf end">47.0</text>
+<text x="20" y="180" class="axlblf mid" transform="rotate(-90 20 180)">Hz</text>
+<line x1="60" y1="160" x2="620" y2="160" class="thrf"/>
+<text x="565" y="154" class="axlblf">48.8 Hz</text>
+<path d="M 60.0,40.0 L 83.3,44.1 L 106.7,47.9 L 130.0,51.6 L 153.3,55.0
+L 176.7,58.2 L 200.0,61.3 L 223.3,64.1 L 246.7,66.7 L 270.0,69.1
+L 293.3,71.3 L 316.7,73.2 L 340.0,75.0 L 363.3,76.6 L 386.7,77.9
+L 410.0,79.1 L 433.3,80.0 L 456.7,80.7 L 480.0,81.3 L 503.3,81.6
+L 526.7,81.7 L 620.0,81.7" stroke="#fb923c" stroke-width="2.5"
+fill="none"/>
+<path d="M 60.0,40.0 L 83.3,46.1 L 106.7,51.9 L 130.0,57.3 L 153.3,62.5
+L 176.7,67.3 L 200.0,71.9 L 223.3,76.1 L 246.7,80.0 L 270.0,83.6
+L 293.3,86.9 L 316.7,89.8 L 340.0,92.5 L 363.3,94.8 L 386.7,96.9
+L 410.0,98.6 L 433.3,100.0 L 456.7,101.1 L 480.0,101.9 L 503.3,102.3
+L 526.7,102.5 L 620.0,102.5" stroke="#2dd4bf" stroke-width="2.5"
+fill="none"/>
+<path d="M 60.0,40.0 L 83.3,52.2 L 106.7,63.7 L 130.0,74.7 L 153.3,85.0
+L 176.7,94.7 L 200.0,103.8 L 223.3,112.2 L 246.7,120.0 L 270.0,127.2
+L 293.3,133.8 L 316.7,139.7 L 340.0,145.0 L 363.3,149.7 L 386.7,153.8
+L 410.0,157.2 L 433.3,160.0 L 456.7,162.2 L 480.0,163.7 L 503.3,164.7
+L 526.7,165.0 L 620.0,165.0" stroke="#e2e8f0" stroke-width="2.5"
+fill="none"/>
+<path d="M 60.0,40.0 L 83.3,64.4 L 106.7,87.5 L 130.0,109.4 L 153.3,130.0
+L 176.7,149.4 L 200.0,167.5 L 223.3,184.4 L 246.7,200.0 L 270.0,214.4
+L 293.3,227.5 L 316.7,239.4 L 340.0,250.0 L 363.3,259.4 L 386.7,267.5
+L 410.0,274.4 L 433.3,280.0 L 456.7,284.4 L 480.0,287.5 L 503.3,289.4
+L 526.7,290.0 L 620.0,290.0" stroke="#94a3b8" stroke-width="2.5"
+fill="none"/>
+<circle cx="526.7" cy="81.7" r="3.5" fill="#fb923c"/>
+<circle cx="526.7" cy="102.5" r="3.5" fill="#2dd4bf"/>
+<circle cx="526.7" cy="165.0" r="3.5" fill="#e2e8f0"/>
+<circle cx="526.7" cy="290.0" r="3.5" fill="#94a3b8"/>
+<rect x="80" y="266" width="16" height="3" fill="#fb923c"/>
+<text x="100" y="272" class="axlblf">300 GVA&#183;s: 49.583 Hz</text>
+<rect x="80" y="282" width="16" height="3" fill="#2dd4bf"/>
+<text x="100" y="288" class="axlblf">200 GVA&#183;s: 49.375 Hz</text>
+<rect x="80" y="298" width="16" height="3" fill="#e2e8f0"/>
+<text x="100" y="304" class="axlblf">100 GVA&#183;s: 48.750 Hz</text>
+<rect x="80" y="314" width="16" height="3" fill="#94a3b8"/>
+<text x="100" y="320" class="axlblf">50 GVA&#183;s: 47.500 Hz</text>
+</svg>
+<p class="caption">Fig. 8.1. Frequency against time for the opening
+problem's 1000&nbsp;MW loss, 1000&nbsp;MW ramp over
+<var class="sym">T</var> = 10&nbsp;s, at four values of
+<var class="sym">E<sub>kin,sys</sub></var>. Every curve reaches its
+nadir at exactly <var class="sym">t</var> = <var class="sym">T</var> =
+10&nbsp;s (marked dots) and is flat after, since the ramp fully repays
+the loss there. Doubling <var class="sym">E<sub>kin,sys</sub></var>
+from 100 to 200&nbsp;GVA&middot;s halves the dip depth, 1.25&nbsp;Hz to
+0.625&nbsp;Hz &mdash; nadir depth scales as
+1/<var class="sym">E<sub>kin,sys</sub></var>, exactly as
+RoCoF<sub>0</sub> does. Only 100&nbsp;GVA&middot;s crosses the
+48.8&nbsp;Hz line drawn for the GB event; 200 does not.</p>
+</div>
+
+<h3>The 4-by-4 state matrix and its eigenvalues</h3>
+
+<p>The pre-disturbance tie angle follows from the transfer:
+<var class="sym">P<sub>12</sub></var> = (<var class="sym">E<sub>1</sub>E<sub>2</sub></var>
+/ <var class="sym">X<sub>12</sub></var>) sin(<var class="sym">&delta;<sub>12,0</sub></var>),
+so 0.2 = (1.05&times;1.05/2.0) sin(<var class="sym">&delta;<sub>12,0</sub></var>),
+giving <var class="sym">&delta;<sub>12,0</sub></var> =
+21.27&deg;. The linearized synchronizing coefficient at that angle is
+<var class="sym">K<sub>12</sub></var> = (1.05&times;1.05/2.0)
+cos(21.27&deg;) = 0.5137&nbsp;pu/rad. With state
+<var class="sym">x</var> = (<var class="sym">&delta;<sub>1</sub></var>,
+<var class="sym">&delta;<sub>2</sub></var>, <var class="sym">dw<sub>1</sub></var>,
+<var class="sym">dw<sub>2</sub></var>) the linearized system is
+<var class="sym">x&#775;</var> = <var class="sym">A</var>
+<var class="sym">x</var> with</p>
+
+<div class="eq" style="font-size:0.92rem">
+<var class="sym">A</var> =
+&#91;&nbsp;0,&nbsp;0,&nbsp;&omega;<sub>0</sub>,&nbsp;0&nbsp;&#93;<br>
+&#91;&nbsp;0,&nbsp;0,&nbsp;0,&nbsp;&omega;<sub>0</sub>&nbsp;&#93;<br>
+&#91;&nbsp;&minus;K<sub>12</sub>/M<sub>1</sub>,&nbsp;K<sub>12</sub>/M<sub>1</sub>,&nbsp;&minus;K<sub>D1</sub>/M<sub>1</sub>,&nbsp;0&nbsp;&#93;<br>
+&#91;&nbsp;K<sub>12</sub>/M<sub>2</sub>,&nbsp;&minus;K<sub>12</sub>/M<sub>2</sub>,&nbsp;0,&nbsp;&minus;K<sub>D2</sub>/M<sub>2</sub>&nbsp;&#93;
+</div>
+
+<p>Its eigenvalues, computed in the listing below, are
+0&nbsp;1/s, &minus;0.280&nbsp;1/s, and &minus;0.1517 &plusmn;
+j11.83&nbsp;1/s. Three facts, not one, come out of this:</p>
+
+<ul>
+<li><b>Zero is not an instability.</b>
+<var class="sym">&delta;<sub>1</sub></var> and
+<var class="sym">&delta;<sub>2</sub></var> only ever appear in
+<var class="sym">A</var> as the difference
+<var class="sym">&delta;<sub>1</sub></var> &minus;
+<var class="sym">&delta;<sub>2</sub></var>: shifting both angles by the
+same constant changes no row and no power flow, since flow depends
+only on the angle difference across the tie, never on an absolute
+angle. There is no physical reference for "the" angle of the system,
+so a mode that only moves both angles together is expected, not a
+defect.</li>
+<li><b>&minus;0.280&nbsp;1/s is the common (COI) mode</b>: it matches
+&minus;(<var class="sym">K<sub>D1</sub></var>+<var class="sym">K<sub>D2</sub></var>)
+/(<var class="sym">M<sub>1</sub></var>+<var class="sym">M<sub>2</sub></var>)
+= &minus;(0.8+0.6)/(3.2+1.8) = &minus;0.280&nbsp;1/s. The solver
+gives &minus;0.280003&nbsp;1/s. The formula is exact only when
+<var class="sym">K<sub>D1</sub></var>/<var class="sym">M<sub>1</sub></var>
+= <var class="sym">K<sub>D2</sub></var>/<var class="sym">M<sub>2</sub></var>;
+here the two ratios are 0.25 and 0.333&nbsp;1/s, so it holds to five
+decimals, not exactly. System-wide speed decays at total damping over total inertia, the same
+ratio the aggregate equation above predicts on its own.</li>
+<li><b>The complex pair is the relative mode</b>: the two machines
+swinging against each other at 1.884&nbsp;Hz (=11.83/2&pi;), damping
+ratio 0.0128 &mdash; lightly damped, since <var class="sym">K<sub>D</sub></var>
+is small here and the tie is stiff. Independent check:
+<var class="sym">&omega;<sub>n</sub></var> = &radic;(
+<var class="sym">&omega;<sub>0</sub></var>
+<var class="sym">K<sub>12</sub></var> (1/<var class="sym">M<sub>1</sub></var>
++ 1/<var class="sym">M<sub>2</sub></var>)) = 11.8358&nbsp;rad/s. This
+equals the eigenvalue's magnitude |&lambda;| = 11.8358&nbsp;rad/s. The
+imaginary part, 11.8348&nbsp;rad/s, is the damped frequency
+<var class="sym">&omega;<sub>n</sub></var>&radic;(1 &minus;
+&zeta;&sup2;), 0.001&nbsp;rad/s lower. The listing prints 11.84 and
+11.83 only because the two values round to different sides of
+11.835. One network, two
+kinds of mode: the relative mode exists only because there is more
+than one rotor to swing against another.</li>
+</ul>
+
+<div class="figure">
+<svg viewBox="0 0 640 490" role="img"
+     aria-label="Two-unit eigenvalues in the complex plane, real-axis zoom on the left, full plane on the right, with a mode-shape sketch below">
+<style>
+.ax2 { stroke:#334155; stroke-width:1; }
+.axlbl2 { fill:#94a3b8; font-size:10.5px; font-family:inherit; }
+.axlbl2.mid { text-anchor:middle; }
+.axlbl2.end { text-anchor:end; }
+.ptlbl { font-size:10px; font-family:inherit; }
+.panelttl { fill:#cbd5e1; font-size:11px; font-family:inherit; }
+</style>
+<text x="180" y="16" class="panelttl" text-anchor="middle">near-origin
+zoom (real axis)</text>
+<line x1="60" y1="200" x2="300" y2="200" class="ax2"/>
+<line x1="90" y1="192" x2="90" y2="208" class="ax2"/>
+<text x="90" y="222" class="axlbl2 mid">-0.3</text>
+<line x1="150" y1="192" x2="150" y2="208" class="ax2"/>
+<text x="150" y="222" class="axlbl2 mid">-0.2</text>
+<line x1="210" y1="192" x2="210" y2="208" class="ax2"/>
+<text x="210" y="222" class="axlbl2 mid">-0.1</text>
+<line x1="270" y1="192" x2="270" y2="208" class="ax2"/>
+<text x="270" y="222" class="axlbl2 mid">0</text>
+<circle cx="270" cy="200" r="5" fill="#2dd4bf"/>
+<text x="270" y="185" class="ptlbl" fill="#2dd4bf" text-anchor="middle">0</text>
+<circle cx="102" cy="200" r="5" fill="#fb923c"/>
+<text x="102" y="185" class="ptlbl" fill="#fb923c" text-anchor="middle">-0.280</text>
+<text x="180" y="245" class="axlbl2 mid">common mode (COI decay)</text>
+<text x="490" y="16" class="panelttl" text-anchor="middle">full
+complex plane (real and imaginary use different scales)</text>
+<line x1="490" y1="20" x2="490" y2="380" class="ax2"/>
+<line x1="360" y1="200" x2="620" y2="200" class="ax2"/>
+<line x1="360" y1="196" x2="360" y2="204" class="ax2"/>
+<text x="360" y="216" class="axlbl2 mid">-0.5</text>
+<line x1="620" y1="196" x2="620" y2="204" class="ax2"/>
+<text x="620" y="216" class="axlbl2 mid">+0.5</text>
+<text x="490" y="216" class="axlbl2 mid">0 (Re)</text>
+<line x1="486" y1="20" x2="494" y2="20" class="ax2"/>
+<text x="500" y="24" class="axlbl2">j14</text>
+<line x1="486" y1="380" x2="494" y2="380" class="ax2"/>
+<text x="500" y="384" class="axlbl2">-j14</text>
+<circle cx="490" cy="200" r="5" fill="#2dd4bf"/>
+<text x="490" y="188" class="ptlbl" fill="#2dd4bf" text-anchor="middle">0</text>
+<circle cx="417" cy="200" r="5" fill="#fb923c"/>
+<text x="417" y="188" class="ptlbl" fill="#fb923c" text-anchor="middle">-0.280</text>
+<circle cx="451" cy="48" r="5" fill="#e2e8f0"/>
+<text x="451" y="40" class="ptlbl" fill="#e2e8f0" text-anchor="middle">-0.152+j11.83</text>
+<circle cx="451" cy="352" r="5" fill="#e2e8f0"/>
+<text x="451" y="368" class="ptlbl" fill="#e2e8f0" text-anchor="middle">-0.152-j11.83</text>
+<line x1="60" y1="408" x2="620" y2="408" class="ax2"/>
+<text x="180" y="424" class="axlbl2 mid">common mode: both angles move
+together</text>
+<line x1="120" y1="478" x2="120" y2="448" stroke="#2dd4bf"
+      stroke-width="3" marker-end="url(#ah1)"/>
+<line x1="200" y1="478" x2="200" y2="448" stroke="#2dd4bf"
+      stroke-width="3" marker-end="url(#ah1)"/>
+<text x="450" y="424" class="axlbl2 mid">relative mode: opposite
+directions, amplitude &prop; 1/M_i</text>
+<line x1="420" y1="462" x2="420" y2="480" stroke="#fb923c"
+      stroke-width="3" marker-end="url(#ah2)"/>
+<text x="432" y="474" class="axlbl2" text-anchor="start">unit 1</text>
+<line x1="510" y1="462" x2="510" y2="430" stroke="#fb923c"
+      stroke-width="3" marker-end="url(#ah2)"/>
+<text x="522" y="450" class="axlbl2" text-anchor="start">unit 2</text>
+<defs>
+<marker id="ah1" markerWidth="8" markerHeight="8" refX="8" refY="4"
+        orient="auto" markerUnits="userSpaceOnUse">
+<path d="M0,0 L8,4 L0,8 z" fill="#2dd4bf"/></marker>
+<marker id="ah2" markerWidth="8" markerHeight="8" refX="8" refY="4"
+        orient="auto" markerUnits="userSpaceOnUse">
+<path d="M0,0 L8,4 L0,8 z" fill="#fb923c"/></marker>
+</defs>
+</svg>
+<p class="caption">Fig. 8.2. Left: the two real eigenvalues, 0 and
+&minus;0.280&nbsp;1/s, zoomed on the real axis (both have zero
+imaginary part). Right: all three eigenvalues on one complex plane,
+real-axis scale (&plusmn;0.5 over 260&nbsp;px, 260&nbsp;px per unit)
+about 20 times finer than the imaginary-axis scale (&plusmn;14 over
+360&nbsp;px, 12.9&nbsp;px per unit) &mdash; a single linear scale would
+make the two near-origin points indistinguishable. Bottom: the two
+mode shapes. The common mode moves both rotor angles the same amount
+and direction (no change in
+<var class="sym">&delta;<sub>1</sub></var> &minus;
+<var class="sym">&delta;<sub>2</sub></var>, hence only decay, no
+oscillation). The relative mode moves them opposite directions,
+amplitude &prop; 1/<var class="sym">M<sub>i</sub></var>: unit&nbsp;2
+(<var class="sym">M<sub>2</sub></var> = 1.8&nbsp;s) swings 1.78 times
+further than unit&nbsp;1 (<var class="sym">M<sub>1</sub></var> =
+3.2&nbsp;s), since 1/1.8 &divide; 1/3.2 = 1.78.</p>
+</div>
+
+<h3>Sizing a grid-forming fleet: three constraints, three units</h3>
+
+<p>A different question: not what a given amount of inertia does to a
+given loss, but how much grid-forming converter capacity must replace
+a retiring fleet of spinning machines. Take the sizing case from this
+series' Example 4.2: 8 synchronous condensers &mdash; a synchronous
+machine spun with no prime mover, giving inertia and reactive support
+only &mdash; each rated 200&nbsp;MVA, 1.6&nbsp;GVA total. (The project
+brief's own label is "1.6&nbsp;GW"; a condenser is rated in MVA, so
+this lesson keeps the correct unit. The fleet is a design case set by
+this book's plan, not a published, in-service one.) Each condenser
+carries <var class="sym">H</var> = 3.5&nbsp;s including its flywheel
+<span class="status assumed">assumed for this lesson</span> (cite a
+manufacturer figure with verify if one is used), so
+<var class="sym">E<sub>kin</sub></var> = 8 &times; 200 &times; 3.5 =
+5600&nbsp;MVA&middot;s = 5.6&nbsp;GVA&middot;s. Size a replacement
+against three constraints, in three separate units, never added:</p>
+
+<table>
+<tr><th>Constraint</th><th>Formula</th><th>Result</th><th>Binds?</th></tr>
+<tr><td>Energy, over a 0.8&nbsp;Hz drop</td>
+<td>2 <var class="sym">E<sub>kin</sub></var>
+<var class="sym">df</var> / <var class="sym">f<sub>0</sub></var></td>
+<td>2&times;5600&times;0.8/50 = 179.2&nbsp;MJ = 49.8&nbsp;kWh</td>
+<td>No</td></tr>
+<tr><td>Power headroom, at 1&nbsp;Hz/s</td>
+<td>2 <var class="sym">E<sub>kin</sub></var>
+RoCoF / <var class="sym">f<sub>0</sub></var></td>
+<td>2&times;5600&times;1/50 = 224&nbsp;MW</td>
+<td>Yes</td></tr>
+<tr><td>Current, on top of 1.0&nbsp;pu dispatch</td>
+<td>0.20&nbsp;pu + 1.0&nbsp;pu dispatch</td>
+<td>1.2&nbsp;pu = <var class="sym">I<sub>max</sub></var></td>
+<td>Yes</td></tr>
+</table>
+
+<p>Energy: take the 1120&nbsp;MVA fleet as batteries with one hour of
+storage, at unity power factor so that 1120&nbsp;MVA carries
+1120&nbsp;MW <span class="status assumed">assumed for this case</span>.
+It holds 1120&nbsp;MW &times; 1&nbsp;h = 1120&nbsp;MWh =
+1,120,000&nbsp;kWh, 22,500 times the 49.8&nbsp;kWh required. Energy does
+not bind because the nadir event lasts about 10&nbsp;s and the store
+lasts 3600&nbsp;s. (The 179.2&nbsp;MJ figure is linearized in
+<var class="sym">df</var>; the exact release,
+<var class="sym">E<sub>kin</sub></var>[1 &minus; (1 &minus;
+<var class="sym">df</var>/<var class="sym">f<sub>0</sub></var>)&sup2;],
+is 177.8&nbsp;MJ, 0.8% lower.) Power: at 1&nbsp;Hz/s
+<span class="status assumed">assumed for this case</span> (see the
+model-limits note on RoCoF figures below), a converter running virtual
+inertia <var class="sym">H<sub>v</sub></var>
+= 5&nbsp;s delivers 2<var class="sym">H<sub>v</sub></var>
+RoCoF/<var class="sym">f<sub>0</sub></var> = 2&times;5&times;1/50 =
+0.20&nbsp;pu of its own rating (this reuses the converter model and
+the Park amplitude-invariant, d-axis-on-measured-voltage convention
+fixed earlier in this series, not re-derived here), so 224&nbsp;MW
+needs 224/0.20 = 1120&nbsp;MVA of grid-forming plant. Current: that
+same 0.20&nbsp;pu, stacked on 1.0&nbsp;pu dispatch current, uses
+1.2&nbsp;pu &mdash; exactly <var class="sym">I<sub>max</sub></var> =
+1.2&nbsp;pu <span class="status assumed">assumed for this case</span>,
+with nothing left over. Adding the two currents as plain magnitudes
+assumes both are in phase with the voltage (unity-power-factor
+dispatch).</p>
+
+<p>Power headroom and current limit bind together at 1120&nbsp;MVA;
+energy does not bind at all. The three rows are never combined into
+one number &mdash; MJ, MW, and pu current are different physical
+quantities, and "the largest of the three" would be sized by nothing
+meaningful. Comparing them separately is exactly what identifies
+headroom and current as the binding pair.</p>
+
+<div class="figure">
+<svg viewBox="0 0 640 260" role="img"
+     aria-label="Three sizing panels, each in its own unit: energy in megajoules on a log scale, power in megawatts, and current in per unit, each showing the fleet's capacity against the requirement">
+<style>
+.axs { stroke:#334155; stroke-width:1; }
+.axlbls { fill:#94a3b8; font-size:9.5px; font-family:inherit; }
+.axlbls.mid { text-anchor:middle; }
+.axlbls.end { text-anchor:end; }
+.pttl { fill:#cbd5e1; font-size:11px; font-family:inherit;
+        text-anchor:middle; }
+.imaxln { stroke:#94a3b8; stroke-width:1; stroke-dasharray:4,3; }
+</style>
+<text x="130" y="15" class="pttl">Energy (MJ, log scale)</text>
+<line x1="30" y1="220" x2="230" y2="220" class="axs"/>
+<line x1="30" y1="220" x2="30" y2="60" class="axs"/>
+<text x="26" y="223" class="axlbls end">10&sup2;</text>
+<text x="26" y="127" class="axlbls end">10&#8309;</text>
+<text x="26" y="63" class="axlbls end">10&#8311;</text>
+<rect x="70" y="211.9" width="40" height="8.1" fill="#2dd4bf"/>
+<text x="90" y="205" class="axlbls mid">179.2 MJ</text>
+<text x="90" y="240" class="axlbls mid">required</text>
+<rect x="140" y="72.6" width="40" height="147.4" fill="#fb923c"/>
+<text x="160" y="66" class="axlbls mid">4.03&times;10&#8310; MJ</text>
+<text x="160" y="240" class="axlbls mid">1120 MWh store</text>
+<text x="130" y="252" class="axlbls mid">22,500&times; the requirement</text>
+<text x="330" y="15" class="pttl">Power headroom (MW)</text>
+<line x1="250" y1="220" x2="410" y2="220" class="axs"/>
+<line x1="250" y1="220" x2="250" y2="60" class="axs"/>
+<text x="246" y="223" class="axlbls end">0</text>
+<text x="246" y="63" class="axlbls end">250</text>
+<rect x="280" y="76.6" width="30" height="143.4" fill="#2dd4bf"/>
+<text x="295" y="70" class="axlbls mid">224 MW</text>
+<text x="295" y="240" class="axlbls mid">required</text>
+<rect x="350" y="76.6" width="30" height="143.4" fill="#fb923c"/>
+<text x="365" y="70" class="axlbls mid">224 MW</text>
+<text x="365" y="240" class="axlbls mid">1120 MVA fleet</text>
+<text x="330" y="252" class="axlbls mid">binds: no headroom left over</text>
+<text x="520" y="15" class="pttl">Converter current (pu)</text>
+<line x1="430" y1="220" x2="610" y2="220" class="axs"/>
+<line x1="430" y1="220" x2="430" y2="60" class="axs"/>
+<text x="426" y="223" class="axlbls end">0</text>
+<text x="426" y="63" class="axlbls end">1.2</text>
+<line x1="430" y1="60" x2="610" y2="60" class="imaxln"/>
+<text x="580" y="54" class="axlbls">I_max</text>
+<rect x="500" y="86.7" width="40" height="133.3" fill="#2dd4bf"/>
+<rect x="500" y="60.0" width="40" height="26.7" fill="#fb923c"/>
+<text x="520" y="156" class="axlbls mid" style="fill:#0f172a">1.0 pu dispatch</text>
+<text x="520" y="50" class="axlbls mid">+0.2 pu headroom</text>
+<text x="520" y="240" class="axlbls mid">totals 1.2 pu = I_max</text>
+</svg>
+<p class="caption">Fig. 8.3. The three sizing constraints, each in its
+own unit and panel: energy in megajoules (logarithmic axis, since
+179.2&nbsp;MJ and 4.03&times;10<sup>6</sup>&nbsp;MJ differ by a factor
+of 22,500, or 4.35 orders of magnitude, still the same unit), power headroom in
+megawatts, converter current in per unit. Energy: the 1120&nbsp;MW,
+one-hour battery (unity power factor assumed) holds 1120&nbsp;MWh,
+22,500 times the requirement. Power: the
+1120&nbsp;MVA fleet delivers exactly the 224&nbsp;MW required, no
+margin. Current: that fleet's 0.20&nbsp;pu of added current lands
+exactly on <var class="sym">I<sub>max</sub></var> = 1.2&nbsp;pu
+stacked on 1.0&nbsp;pu dispatch. No axis is shared between panels, and
+no bar is compared across panels &mdash; that would add unlike
+quantities.</p>
+</div>
+
+<h2>The code</h2>
+
+<p>The first listing integrates the aggregate nadir equation with
+fourth-order Runge&ndash;Kutta (RK4). Its global error falls as the
+fourth power of the step, against the first power for the forward
+Euler of Lesson 1. Here the right-hand side depends on
+<var class="sym">t</var> only, so each RK4 step is Simpson's rule, which
+is exact for the linear ramp; the listing's nadirs therefore equal the
+closed form up to floating-point rounding. It sweeps <var class="sym">E<sub>kin,sys</sub></var> over
+the four cases in Fig.&nbsp;8.1, bisects for the smallest value that
+keeps the nadir at or above 48.8&nbsp;Hz, then reproduces
+Exercise&nbsp;2's sweep over <var class="sym">T</var>.</p>
+
+<pre><code>"""Lesson 8: aggregated nadir model, RK4 integration, and inertia sizing.
+
+Swing convention (system-wide, centre-of-inertia form):
+    2 E_kin_sys / f_0 * d(df)/dt = dP(t)
+State: df (Hz), integrated by RK4 on a linear primary-response ramp.
+"""
+F0 = 50.0  # Hz, nominal frequency
+
+
+def dp_ramp(t, dp0, ramp_t):
+    """Net imbalance power (MW) at time t: loss dp0, ramped away by T."""
+    if t &gt;= ramp_t:
+        return 0.0
+    return -dp0 + dp0 * t / ramp_t
+
+
+def rk4_nadir(e_kin_sys, dp0, ramp_t, dt=0.001, t_end=None):
+    """Integrate d(df)/dt = f0 * dp(t) / (2 * e_kin_sys); return min df."""
+    if t_end is None:
+        t_end = ramp_t
+    coef = F0 / (2.0 * e_kin_sys)
+
+    def deriv(t):
+        return coef * dp_ramp(t, dp0, ramp_t)
+
+    t = 0.0
+    df = 0.0
+    df_min = 0.0
+    n = int(round(t_end / dt))
+    for i in range(n):
+        k1 = deriv(t)
+        k2 = deriv(t + dt / 2.0)
+        k3 = deriv(t + dt / 2.0)
+        k4 = deriv(t + dt)
+        df = df + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        t = t + dt
+        if df &lt; df_min:
+            df_min = df
+    return df_min
+
+
+def rocof0(e_kin_sys, dp0):
+    return F0 * dp0 / (2.0 * e_kin_sys)
+
+
+def bisect_floor(dp0, ramp_t, f_floor_drop, lo=10.0, hi=500.0, tol=1e-4):
+    """Smallest E_kin_sys (GVA.s) keeping |nadir drop| &lt;= f_floor_drop."""
+    def drop_at(e):
+        return -rk4_nadir(e * 1000.0, dp0, ramp_t)  # GVA.s -&gt; MVA.s
+
+    # drop_at is decreasing in e; find root drop_at(e) = f_floor_drop
+    while hi - lo &gt; tol:
+        mid = 0.5 * (lo + hi)
+        if drop_at(mid) &gt; f_floor_drop:
+            lo = mid
+        else:
+            hi = mid
+    return hi
+
+
+def main():
+    dp0 = 1000.0  # MW
+    ramp_t = 10.0  # s
+
+    print("RoCoF_0 and nadir vs E_kin_sys (dP=1000 MW, T=10 s):")
+    for e_gva in (300.0, 200.0, 100.0, 50.0):
+        e_mva = e_gva * 1000.0  # GVA.s -&gt; MVA.s
+        rc0 = rocof0(e_mva, dp0)
+        drop = rk4_nadir(e_mva, dp0, ramp_t)
+        f_nadir = F0 + drop
+        print(f"  E_kin_sys = {e_gva:6.1f} GVA.s  "
+              f"RoCoF_0 = {rc0:.3f} Hz/s  "
+              f"f_nadir = {f_nadir:.3f} Hz")
+
+    # Floor for 48.8 Hz (drop of 1.2 Hz)
+    floor = bisect_floor(dp0, ramp_t, 1.2)
+    print(f"\nSmallest E_kin_sys keeping nadir &gt;= 48.8 Hz: "
+          f"{floor:.1f} GVA.s")
+
+    # analytic check: E_floor = f0 dP T / (4 * 1.2)
+    analytic = F0 * dp0 * ramp_t / (4.0 * 1.2) / 1000.0  # -&gt; GVA.s
+    print(f"Analytic formula f0 dP T / (4 * 1.2): {analytic:.1f} GVA.s")
+
+    # check at 100 GVA.s directly
+    drop100 = rk4_nadir(100.0 * 1000.0, dp0, ramp_t)
+    print(f"\nCheck at 100 GVA.s: f_nadir = {F0 + drop100:.3f} Hz "
+          f"(below 48.8 Hz line: {F0 + drop100 &lt; 48.8})")
+
+    # Exercise 2: sweep T at 200 GVA.s
+    print("\nExercise 2: sweep T at E_kin_sys = 200 GVA.s")
+    for t_ramp in (5.0, 10.0, 20.0, 30.0):
+        drop = rk4_nadir(200.0 * 1000.0, dp0, t_ramp)
+        print(f"  T = {t_ramp:4.1f} s  df_nadir = {drop:.4f} Hz")
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+
+<p>Actual output of this listing, run as printed
+(<code>lesson8_nadir.py</code>):</p>
+
+<pre><code>RoCoF_0 and nadir vs E_kin_sys (dP=1000 MW, T=10 s):
+  E_kin_sys =  300.0 GVA.s  RoCoF_0 = 0.083 Hz/s  f_nadir = 49.583 Hz
+  E_kin_sys =  200.0 GVA.s  RoCoF_0 = 0.125 Hz/s  f_nadir = 49.375 Hz
+  E_kin_sys =  100.0 GVA.s  RoCoF_0 = 0.250 Hz/s  f_nadir = 48.750 Hz
+  E_kin_sys =   50.0 GVA.s  RoCoF_0 = 0.500 Hz/s  f_nadir = 47.500 Hz
+
+Smallest E_kin_sys keeping nadir &gt;= 48.8 Hz: 104.2 GVA.s
+Analytic formula f0 dP T / (4 * 1.2): 104.2 GVA.s
+
+Check at 100 GVA.s: f_nadir = 48.750 Hz (below 48.8 Hz line: True)
+
+Exercise 2: sweep T at E_kin_sys = 200 GVA.s
+  T =  5.0 s  df_nadir = -0.3125 Hz
+  T = 10.0 s  df_nadir = -0.6250 Hz
+  T = 20.0 s  df_nadir = -1.2500 Hz
+  T = 30.0 s  df_nadir = -1.8750 Hz
+</code></pre>
+
+<p><b>Computed by the listing.</b> Every number above &mdash; 49.583,
+49.375, 48.750, 47.500&nbsp;Hz, the 104.2&nbsp;GVA&middot;s floor, and
+Exercise&nbsp;2's sweep &mdash; is this run's own printed output, not a
+hand-typed copy of the closed form. The analytic line is a second,
+independent computation of the same floor, agreeing with the bisection
+to the bisection's own tolerance.</p>
+
+<p>The second listing builds the 4-by-4 state matrix from the key
+derivation and asks <code>numpy.linalg.eigvals</code> &mdash; the one
+numpy call this lesson's house rules allow &mdash; for its eigenvalues,
+then checks the relative mode's frequency and damping ratio.</p>
+
+<pre><code>"""Lesson 8: two-unit state matrix and its eigenvalues.
+
+State x = (delta_1, delta_2, dw_1, dw_2). System base 1000 MVA, 50 Hz.
+Swing convention: M_i d(dw_i)/dt = P_m - P_e - K_D dw_i,
+                  M_i = 2 H_i S_i / S_sys (system base),
+                  d(delta)/dt = omega_0 dw   (dw in pu, omega_0 = 2*pi*f0)
+"""
+import math
+import numpy as np
+
+F0 = 50.0
+OMEGA0 = 2.0 * math.pi * F0
+
+M1, M2 = 3.2, 1.8      # s, system-base inertia (2*H*S/S_sys)
+KD1, KD2 = 0.8, 0.6     # pu on system base
+E1, E2 = 1.05, 1.05
+X12 = 2.0               # pu
+P_TRANSFER = 0.2        # pu, pre-disturbance transfer
+
+
+def build_state_matrix(delta12):
+    """4x4 state matrix for x = (d1, d2, dw1, dw2), as nested lists."""
+    k12 = (E1 * E2 / X12) * math.cos(delta12)  # pu/rad
+    a = [
+        [0.0, 0.0, OMEGA0, 0.0],
+        [0.0, 0.0, 0.0, OMEGA0],
+        [-k12 / M1, k12 / M1, -KD1 / M1, 0.0],
+        [k12 / M2, -k12 / M2, 0.0, -KD2 / M2],
+    ]
+    return a, k12
+
+
+def main():
+    delta12 = math.asin(P_TRANSFER * X12 / (E1 * E2))
+    print(f"delta_12 = {math.degrees(delta12):.2f} deg")
+
+    a, k12 = build_state_matrix(delta12)
+    print(f"K_12 = {k12:.4f} pu/rad")
+
+    eigs = np.linalg.eigvals(a)
+    eigs = sorted(eigs, key=lambda z: (abs(z.imag), z.real))
+    print("Eigenvalues (1/s):")
+    seen = set()
+    for z in eigs:
+        key = (round(z.real, 6), round(abs(z.imag), 6))
+        if key in seen:
+            continue
+        seen.add(key)
+        if abs(z.imag) &lt; 1e-8:
+            print(f"  {z.real:.4f}")
+        else:
+            print(f"  {z.real:.4f} +/- j{abs(z.imag):.2f}")
+
+    common_expected = -(KD1 + KD2) / (M1 + M2)
+    print(f"\nExpected common mode -(KD1+KD2)/(M1+M2) = "
+          f"{common_expected:.4f} 1/s")
+
+    omega_n = math.sqrt(OMEGA0 * k12 * (1.0 / M1 + 1.0 / M2))
+    print(f"Check omega_n = sqrt(omega0*K12*(1/M1+1/M2)) = "
+          f"{omega_n:.2f} rad/s")
+
+    rel = [z for z in eigs if abs(z.imag) &gt; 1e-8][0]
+    f_rel = abs(rel.imag) / (2.0 * math.pi)
+    zeta = -rel.real / abs(rel)
+    print(f"Relative mode frequency = {f_rel:.3f} Hz")
+    print(f"Relative mode damping ratio = {zeta:.4f}")
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+
+<p>Actual output of this listing, run as printed
+(<code>lesson8_two_unit.py</code>):</p>
+
+<pre><code>delta_12 = 21.27 deg
+K_12 = 0.5137 pu/rad
+Eigenvalues (1/s):
+  -0.2800
+  0.0000
+  -0.1517 +/- j11.83
+
+Expected common mode -(KD1+KD2)/(M1+M2) = -0.2800 1/s
+Check omega_n = sqrt(omega0*K12*(1/M1+1/M2)) = 11.84 rad/s
+Relative mode frequency = 1.884 Hz
+Relative mode damping ratio = 0.0128
+</code></pre>
+
+<p><b>Computed by the listing.</b> The state matrix is built once from
+<code>delta12</code> and passed straight to
+<code>numpy.linalg.eigvals</code> as a plain nested list &mdash; numpy
+is used only for that one eigenvalue call, everything else is
+<code>math</code>. The independent check
+(<code>omega_n</code> = 11.8358&nbsp;rad/s against the eigenvalue's
+magnitude of 11.8358&nbsp;rad/s; the printed 11.84 against the
+imaginary part's 11.83 is a rounding split, since the damped frequency
+11.8348&nbsp;rad/s is 0.001&nbsp;rad/s lower) and the common-mode
+formula check (&minus;0.2800 against &minus;0.280003) both agree with
+the solver to four decimals, which is what makes
+the classification into "common mode" and "relative mode" more than a
+label &mdash; both have a second, hand-derivable formula backing them.</p>
+
+<h2>What this model captures, and what it misses</h2>
+
+<ul class="limits">
+<li><b>One aggregated mass for the nadir.</b> The nadir formula treats
+the system as one rotor on <var class="sym">E<sub>kin,sys</sub></var>.
+Real machines do not swing perfectly together after a large loss
+&mdash; that is the relative mode the two-unit eigenvalue analysis
+exposes. The aggregated nadir is a centre-of-inertia answer;
+individual machines can dip lower, or recover faster, than it says.</li>
+<li><b>No load damping.</b> This lesson's nadir derivation sets
+<var class="sym">K<sub>D</sub></var> = 0 for the aggregate equation
+(load reduces its own demand as frequency falls, an effect this series
+names <var class="sym">D<sub>load</sub></var>, never bare
+<var class="sym">D</var>). Exercise&nbsp;3 adds it back and shows the
+nadir gets shallower.</li>
+<li><b>A linear ramp stands in for governor and converter response,</b>
+not the real dynamics of either (Anderson and Mirheydar 1990)
+<span class="status cited">cited [S13 &mdash; verify]</span>, the
+standard reference for this class of approximation and its limits.</li>
+<li><b>Two units stand in for a network.</b> A real grid has many
+machines and tie lines, with more than one relative mode; two units is
+the smallest system that shows the mechanism at all.</li>
+<li><b>Converter stability while saturated at
+<var class="sym">I<sub>max</sub></var> is not proved here, and is an
+open problem</b> (National Grid ESO GC0137; IEEE Std 2800-2022)
+<span class="status cited">cited [S17, S18 &mdash; verify]</span>.
+Sizing a fleet to sit exactly at <var class="sym">I<sub>max</sub></var>
+says nothing about whether it stays stable once actually saturated
+there.</li>
+<li><b>Two different rate-of-change-of-frequency figures, kept
+separate, on purpose.</b> The 1&nbsp;Hz/s figure used in the sizing
+case above is a design value for this case, close to the figure used
+in Ireland and in Great Britain loss-of-mains protection policy
+<span class="status cited">cited [S16 &mdash; verify]</span>. It is a
+different number, for a different purpose, from the ENTSO-E withstand
+guidance figure, reported as 2&nbsp;Hz/s measured over 500&nbsp;ms
+<span class="status cited">cited [S15 &mdash; verify]</span>. This
+lesson never merges them into one figure and never writes "ENTSO-E
+1&nbsp;Hz/s" &mdash; that string names two different sources as one.</li>
+</ul>
+
+<h2>Exercises</h2>
+
+<div class="exercise">
+<p><b>1. (Derivational)</b> Derive the nadir formula
+<var class="sym">df<sub>nadir</sub></var> = &minus;
+<var class="sym">f<sub>0</sub></var> <var class="sym">dP</var>
+<var class="sym">T</var> / (4 <var class="sym">E<sub>kin,sys</sub></var>)
+from the aggregate swing equation, and say exactly where the factor 4
+comes from.</p>
+<details>
+<summary>Answer target</summary>
+<p>As in the key derivation: one factor of 2 is already present in the
+coefficient 2<var class="sym">E<sub>kin,sys</sub></var>/<var class="sym">f<sub>0</sub></var>
+on the left of the differential equation; the second factor of 2 comes
+from &int;<sub>0</sub><sup>T</sup>(1 &minus;
+<var class="sym">t</var>/<var class="sym">T</var>)
+d<var class="sym">t</var> = <var class="sym">T</var>/2 when the ramp is
+integrated from 0 to <var class="sym">T</var>. The nadir occurs at
+<var class="sym">t</var> = <var class="sym">T</var> because the
+right-hand side is exactly zero from then on.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>2. (Computational)</b> Sweep <var class="sym">T</var> over 5, 10,
+20, 30&nbsp;s at <var class="sym">E<sub>kin,sys</sub></var> =
+200&nbsp;GVA&middot;s and report the nadir at each.</p>
+<details>
+<summary>Answer target</summary>
+<p>The formula gives &minus;0.3125, &minus;0.625, &minus;1.25,
+&minus;1.875&nbsp;Hz. The listing's own RK4 run above prints exactly
+these four values to four decimals, agreeing with the closed form.
+The agreement is exact, not a small-step effect: for a right-hand side
+that depends on <var class="sym">t</var> only, RK4 is Simpson's rule,
+and Simpson's rule integrates the linear ramp without error.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>3. (Derivational)</b> Add load damping
+<var class="sym">D<sub>load</sub></var> (MW/Hz) to the aggregate
+equation: (2 <var class="sym">E<sub>kin,sys</sub></var> /
+<var class="sym">f<sub>0</sub></var>) d(<var class="sym">df</var>)/d<var class="sym">t</var>
+= <var class="sym">dP<sub>ramp</sub></var>(<var class="sym">t</var>)
+&minus; <var class="sym">D<sub>load</sub></var>
+<var class="sym">df</var>. Show the nadir is shallower than the
+undamped case, and name the dimensionless group that decides when
+damping dominates the ramp.</p>
+<details>
+<summary>Answer target</summary>
+<p>Proof that the nadir is shallower: let
+<var class="sym">y</var> = <var class="sym">df<sub>damped</sub></var>
+&minus; <var class="sym">df<sub>undamped</sub></var> and
+<var class="sym">a</var> = <var class="sym">f<sub>0</sub></var>
+<var class="sym">D<sub>load</sub></var> / (2
+<var class="sym">E<sub>kin,sys</sub></var>) &gt; 0. Subtracting the two
+equations gives d<var class="sym">y</var>/d<var class="sym">t</var> +
+<var class="sym">a</var> <var class="sym">y</var> = &minus;<var class="sym">a</var>
+<var class="sym">df<sub>undamped</sub></var> &ge; 0, since
+<var class="sym">df<sub>undamped</sub></var> &le; 0 for all
+<var class="sym">t</var>, with <var class="sym">y</var>(0) = 0. So
+<var class="sym">y</var>(<var class="sym">t</var>) &ge; 0 at every
+instant: the damped curve never goes below the undamped one, and its
+minimum is no lower. With damping the nadir also moves earlier than
+<var class="sym">T</var>: at <var class="sym">t</var> =
+<var class="sym">T</var> the right-hand side is
+&minus;<var class="sym">D<sub>load</sub></var>
+<var class="sym">df</var> &gt; 0, so frequency is already rising.</p>
+<p>Group: <var class="sym">D<sub>load</sub></var>
+<var class="sym">T</var> <var class="sym">f<sub>0</sub></var> / (2
+<var class="sym">E<sub>kin,sys</sub></var>) (MW/Hz &times; s &times; Hz
+/ MJ cancels to a pure number). A probe run at
+<var class="sym">E<sub>kin,sys</sub></var> = 200&nbsp;GVA&middot;s,
+<var class="sym">T</var> = 10&nbsp;s prints: group 0.0000,
+<var class="sym">df<sub>nadir</sub></var> = &minus;0.6250&nbsp;Hz at
+<var class="sym">D<sub>load</sub></var> = 0 (matches Exercise&nbsp;2);
+group 0.6250, &minus;0.4464&nbsp;Hz at
+<var class="sym">t</var> = 7.77&nbsp;s for
+<var class="sym">D<sub>load</sub></var> = 500&nbsp;MW/Hz, already
+shallower; group 6.2500, &minus;0.1366&nbsp;Hz at
+<var class="sym">t</var> = 3.17&nbsp;s for
+<var class="sym">D<sub>load</sub></var> = 5000&nbsp;MW/Hz, where the
+group is far above 1 and damping dominates the ramp. Verify the group
+numerically, as this run does, before quoting it.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>4. (Computational)</b> In the two-unit listing, raise
+<var class="sym">X<sub>12</sub></var> from 2.0 to 4.0&nbsp;pu at the
+same 0.2&nbsp;pu transfer, and report the relative-mode frequency.</p>
+<details>
+<summary>Answer target</summary>
+<p>At <var class="sym">X<sub>12</sub></var> = 4.0&nbsp;pu the
+pre-disturbance angle widens to
+<var class="sym">&delta;<sub>12,0</sub></var> = 46.52&deg; (the peak transfer
+<var class="sym">E<sub>1</sub>E<sub>2</sub></var>/<var class="sym">X<sub>12</sub></var>
+falls from 0.5513 to 0.2756&nbsp;pu, so a larger angle is needed to
+carry the same 0.2&nbsp;pu transfer), and <var class="sym">K<sub>12</sub></var>
+falls from 0.5137 to 0.1897&nbsp;pu/rad. Re-running the listing with
+this <var class="sym">X<sub>12</sub></var> prints a relative-mode
+frequency of 1.144&nbsp;Hz, down from 1.884&nbsp;Hz &mdash; it falls
+because <var class="sym">K<sub>12</sub></var> falls, and
+<var class="sym">&omega;<sub>n</sub></var> &prop;
+&radic;<var class="sym">K<sub>12</sub></var>.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>5. (Conceptual)</b> Example 4.2's sizing case concludes that
+power headroom binds and energy does not. State one change to the case
+that reverses that conclusion.</p>
+<details>
+<summary>Answer target</summary>
+<p>Any of: hold the response for minutes rather than seconds, which
+scales the energy requirement while leaving power and current
+unchanged; specify a converter fleet with no long-duration store
+behind it (photovoltaic generation without a battery, which supplies
+power for an instant but cannot sustain it); or set the requirement by
+a deep, sustained excursion rather than a rate of change &mdash; again
+energy-shaped, not power-shaped.</p>
+</details>
+</div>
+
+<div class="exercise">
+<p><b>6. (Conceptual)</b> Why is the zero eigenvalue of the two-unit
+model not an instability?</p>
+<details>
+<summary>Answer target</summary>
+<p>Shifting both rotor angles
+<var class="sym">&delta;<sub>1</sub></var> and
+<var class="sym">&delta;<sub>2</sub></var> by the same constant changes
+no entry of the state matrix and no power flow, because the tie's
+power flow depends only on the angle difference
+<var class="sym">&delta;<sub>1</sub></var> &minus;
+<var class="sym">&delta;<sub>2</sub></var>, never on either angle by
+itself. There is no physical reference an absolute rotor angle is
+measured against, so a mode that does nothing but move that arbitrary
+reference is exactly what you should expect, not a sign that the
+system will run away.</p>
+</details>
+</div>
+
+</main>
+</body>
+</html>

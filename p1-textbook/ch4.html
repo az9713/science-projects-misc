@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Chapter 4 — System-level stability and a sizing case</title>
+<style>
+:root{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --text:#e2e8f0;
+  --text2:#cbd5e1;
+  --muted:#94a3b8;
+  --accent1:#fb923c;
+  --accent2:#2dd4bf;
+  --border1:#1e293b;
+  --border2:#334155;
+  --measure:72ch;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{
+  margin:0;
+  padding:0 16px 96px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:var(--measure);margin:0 auto}
+header.chap{padding:40px 0 8px;border-bottom:1px solid var(--border2)}
+h1{font-size:1.72rem;line-height:1.25;margin:0 0 10px;color:var(--text)}
+.sub{color:var(--muted);font-size:.94rem;margin:0}
+h2{font-size:1.25rem;margin:44px 0 10px;color:var(--accent2);line-height:1.3;
+   border-top:1px solid var(--border2);padding-top:22px}
+h3{font-size:1.06rem;margin:26px 0 8px;color:var(--text)}
+h4{font-size:.98rem;margin:20px 0 6px;color:var(--text2)}
+p{margin:0 0 14px;color:var(--text2)}
+strong{color:var(--text)}
+var{font-style:italic;color:var(--text)}
+code{font-family:"DejaVu Sans Mono",Consolas,monospace;font-size:.88em;color:var(--accent2)}
+a{color:var(--accent2)}
+ul,ol{color:var(--text2);padding-left:22px;margin:0 0 14px}
+li{margin:0 0 7px}
+.lead{font-size:1.04rem;color:var(--text)}
+.box{background:var(--card);border:1px solid var(--border2);border-radius:8px;
+     padding:14px 16px;margin:20px 0}
+.box h4{margin-top:0}
+.note{border-left:3px solid var(--accent1);background:var(--card);
+      border-radius:0 8px 8px 0;padding:12px 14px;margin:18px 0}
+.localnot{border-left:3px solid var(--accent2);background:var(--card);
+      border-radius:0 8px 8px 0;padding:12px 14px;margin:18px 0;font-size:.94rem}
+.localnot ul{margin:8px 0 0;padding-left:20px}
+.def,.model,.lem,.prop,.thm,.cor,.cit,.ex,.rem{
+  background:var(--card);border:1px solid var(--border2);border-radius:8px;
+  padding:14px 16px;margin:22px 0}
+.def{border-left:4px solid var(--accent2)}
+.model{border-left:4px solid var(--accent2)}
+.thm{border-left:4px solid var(--accent1)}
+.cor{border-left:4px solid var(--accent1)}
+.cit{border-left:4px solid var(--muted)}
+.ex{border-left:4px solid var(--accent1)}
+.rem{border-left:4px solid var(--border2)}
+.rhead{font-weight:bold;color:var(--text);display:block;margin-bottom:6px}
+.status{display:inline-block;font-size:.76rem;letter-spacing:.03em;
+  text-transform:uppercase;color:var(--bg);background:var(--accent2);
+  border-radius:4px;padding:1px 7px;margin-left:6px;vertical-align:2px;
+  font-family:system-ui,sans-serif}
+.status.cited{background:var(--muted)}
+.status.assumed{background:var(--accent1)}
+.rid{font-size:.76rem;color:var(--muted);font-family:system-ui,sans-serif;
+  margin-left:6px}
+.proof{border-top:1px dashed var(--border2);margin-top:12px;padding-top:10px}
+.proof-h{font-style:italic;color:var(--muted)}
+.eq{display:flex;align-items:center;gap:10px;margin:16px 0;
+    background:var(--card);border:1px solid var(--border1);border-radius:6px;
+    padding:10px 12px;overflow-x:auto}
+.eq .body{flex:1 1 auto;min-width:0;color:var(--text);font-size:1.01rem}
+.eq .num{flex:0 0 auto;color:var(--muted);font-size:.86rem;
+    font-family:system-ui,sans-serif}
+.frac{display:inline-block;vertical-align:middle;text-align:center;margin:0 3px}
+.frac .n{display:block;border-bottom:1px solid var(--text2);padding:0 4px}
+.frac .d{display:block;padding:0 4px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0;
+    border:1px solid var(--border2);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;
+      font-family:system-ui,-apple-system,sans-serif}
+th,td{border-bottom:1px solid var(--border2);padding:7px 10px;text-align:left;
+      color:var(--text2);white-space:nowrap}
+th{color:var(--text);font-weight:600;background:var(--bg)}
+td.num,th.num{text-align:right}
+figure{margin:26px 0;background:var(--card);border:1px solid var(--border2);
+       border-radius:8px;padding:12px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{font-size:.88rem;color:var(--muted);margin-top:10px;line-height:1.5}
+figcaption b{color:var(--text2)}
+.exercise{background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:14px 16px;margin:18px 0}
+.exercise .rhead{color:var(--accent1)}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--accent2);font-size:.92rem;
+  font-family:system-ui,sans-serif}
+details[open] summary{margin-bottom:8px}
+.cite{color:var(--muted);font-size:.9em}
+.verify{color:var(--accent1);font-size:.82em;font-family:system-ui,sans-serif}
+hr{border:0;border-top:1px solid var(--border2);margin:34px 0}
+.small{font-size:.9rem;color:var(--muted)}
+@media (max-width:420px){
+  body{font-size:16px;padding:0 12px 64px}
+  h1{font-size:1.44rem}
+  h2{font-size:1.14rem}
+  .eq{font-size:.95rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="chap">
+  <h1>Chapter 4 — System-level stability and a sizing case</h1>
+  <p class="sub">Grid-Forming Inverters and Power-System Stability · Results R34 to R40 · 50 Hz unless a passage states otherwise</p>
+</header>
+
+<h2 id="s4-0">The problem this chapter answers</h2>
+
+<p class="lead">A system operator has eight synchronous condensers. A synchronous
+condenser is a synchronous machine with no turbine and no load on its shaft. It supplies
+reactive power, short-circuit current and inertia; on average it generates no active
+power. The operator must decide whether grid-forming converters can replace the inertia
+of those eight machines, and how much converter plant to buy. That decision needs a
+number, and the number is not "1.6 GW of grid-forming plant". It is three numbers, in
+three different units, and only one of them binds. Reactive power and short-circuit
+current are two further services the condensers supply. This chapter sizes the inertia
+replacement only; §4.5 Constraint 3 shows why the other two cannot be ignored at the same
+instant.</p>
+
+<p>Chapter 1 gave one machine against a stiff grid, Chapter 2 one grid-following converter
+against a Thevenin source, and Chapter 3 one grid-forming converter with its pair
+(<var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub>). A purchase decision is about a
+fleet inside a network.</p>
+
+<p>This chapter builds that step, in four moves.</p>
+
+<ol>
+<li>It reduces a network with load buses to one set of coupled swing equations
+(Definition 4.1, Model 4.2).</li>
+<li>It assembles machines and grid-forming converters into one small-signal state-space model
+and reads stability from the eigenvalues (Definition 4.3, Model 4.4).</li>
+<li>It derives the initial rate of change of frequency (Theorem 4.5) and the frequency nadir
+(Theorem 4.6).</li>
+<li>It sizes a grid-forming fleet against energy, power headroom and the converter
+current limit, separately, and identifies which one binds (Example 4.2).</li>
+</ol>
+
+<p>The answer for the case defined in this chapter is stated here, so that the reader can
+check the argument against it. <strong>Power headroom binds. The current limit binds at
+the same instant. Stored energy is not close to binding.</strong> A 1.6 GVA condenser
+fleet releases 179.2 MJ over a 0.8 Hz excursion. A 1120 MVA converter fleet with a
+one-hour store holds 4 032 000 MJ, which is 22 500 times as much. The same fleet must
+hold 224 MW of power above its dispatch. A converter running at 1.0 pu with a current
+limit of 1.2 pu has exactly 0.20 pu of current left. Every one of those numbers is
+derived in Example 4.2.</p>
+
+<div class="box">
+<h4>How to read the results, the statuses and the citations</h4>
+<p>Each result carries a local number (<em>Definition 4.1</em>, <em>Theorem 4.5</em>)
+and the global identifier from the book plan (<code>R34</code>, <code>R35</code>). Prose
+uses the local number. Prerequisites from earlier chapters are cited by their global
+identifier and linked to the result in the chapter that proves them. Each result also
+carries its epistemic status in words: <em>proved here</em>, <em>computed here</em>,
+<em>cited</em>, or <em>assumed for this case</em>. A cited result is never written as though
+this book proved it.</p>
+<p>Every published number carries a citation of the form
+<span class="cite">[S14, National Grid ESO 2019, <em>Technical Report on the events of
+9 August 2019</em>, event summary — verify]</span>. The draft stage could not open these
+sources. The location part therefore names the topic inside the source, not a page
+number, and every citation carries <span class="verify">— verify</span>. Only a human who
+has read the page removes that mark and replaces the topic with a page. A number this
+book computes carries no citation; it carries its example number instead.</p>
+</div>
+
+<h3>Chapter notation</h3>
+
+<p>Every symbol below is from the book-wide notation table, section 3.5. The middle
+column gives the plain-text name used in that table, because this chapter renders Greek
+letters and deltas as glyphs. Sections that need a symbol outside the table declare it in
+a <em>Local notation</em> panel at the top of the section, and nowhere else.</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>Symbol</th><th>Plan name</th><th>Meaning</th><th>Unit</th></tr></thead>
+<tbody>
+<tr><td><strong>Y</strong></td><td>Y</td><td>bus admittance matrix</td><td>pu</td></tr>
+<tr><td><strong>Y</strong><sub>red</sub></td><td>Y_red</td><td>Kron-reduced admittance matrix at the internal nodes</td><td>pu</td></tr>
+<tr><td><var>B</var><sub><var>ij</var></sub></td><td>B_ij</td><td>susceptance of the reduced branch between nodes <var>i</var> and <var>j</var></td><td>pu</td></tr>
+<tr><td>δ<sub>COI</sub></td><td>delta_COI</td><td>centre-of-inertia angle</td><td>rad</td></tr>
+<tr><td>ω<sub>COI</sub></td><td>omega_COI</td><td>centre-of-inertia frequency</td><td>rad/s</td></tr>
+<tr><td><var>H</var><sub><var>i</var></sub>, <var>S</var><sub><var>i</var></sub></td><td>H_i, S_i</td><td>inertia constant and rating of unit <var>i</var></td><td>s, VA</td></tr>
+<tr><td><var>E</var><sub>kin,sys</sub></td><td>E_kin_sys</td><td>system stored kinetic energy, Σ <var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub></td><td>MJ; 1 GVA·s = 1000 MJ</td></tr>
+<tr><td><var>H</var><sub>sys</sub></td><td>H_sys</td><td>system inertia constant on the system base</td><td>s</td></tr>
+<tr><td><var>S</var><sub>sys</sub></td><td>S_sys</td><td>system base apparent power</td><td>VA (GVA)</td></tr>
+<tr><td>Δ<var>P</var></td><td>dP</td><td>step loss of infeed</td><td>MW</td></tr>
+<tr><td>RoCoF</td><td>RoCoF</td><td>rate of change of frequency, d<var>f</var>/d<var>t</var></td><td>Hz/s</td></tr>
+<tr><td>RoCoF<sub>0</sub></td><td>RoCoF_0</td><td>initial rate of change of frequency</td><td>Hz/s</td></tr>
+<tr><td><var>f</var><sub>nadir</sub></td><td>f_nadir</td><td>lowest frequency reached after the loss</td><td>Hz</td></tr>
+<tr><td>Δ<var>f</var><sub>nadir</sub></td><td>df_nadir</td><td>frequency deviation at the nadir</td><td>Hz</td></tr>
+<tr><td><var>T</var></td><td>T</td><td>time over which primary response is fully delivered</td><td>s</td></tr>
+<tr><td><var>R</var><sub>p</sub></td><td>R_p</td><td>volume of primary response</td><td>MW</td></tr>
+<tr><td><var>D</var><sub>load</sub></td><td>D_load</td><td>load damping</td><td>MW/Hz</td></tr>
+<tr><td><strong>x</strong>, <strong>u</strong>, <strong>y</strong></td><td>x, u, y</td><td>small-signal state, input and output vectors</td><td>mixed</td></tr>
+<tr><td><strong>A</strong>, <strong>B</strong>, <strong>C</strong>, <strong>D</strong></td><td>A, B, C, D</td><td>state, input, output and feedthrough matrices</td><td>mixed</td></tr>
+<tr><td>λ<sub><var>i</var></sub>, σ<sub><var>i</var></sub>, ω<sub>d,<var>i</var></sub></td><td>lambda_i, sigma_i, omega_d_i</td><td>eigenvalue <var>i</var> and its real and imaginary parts</td><td>1/s, 1/s, rad/s</td></tr>
+<tr><td>ζ<sub><var>i</var></sub></td><td>zeta_i</td><td>damping ratio of mode <var>i</var></td><td>—</td></tr>
+<tr><td><var>p</var><sub><var>ki</var></sub></td><td>p_ki</td><td>participation factor of state <var>k</var> in mode <var>i</var></td><td>—</td></tr>
+<tr><td><var>f</var><sub>0</sub>, ω<sub>0</sub></td><td>f_0, omega_0</td><td>rated frequency and rated electrical angular frequency</td><td>Hz, rad/s</td></tr>
+<tr><td><var>H</var>, <var>E</var><sub>kin</sub>, <var>K</var><sub>D</sub></td><td>H, E_kin, K_D</td><td>inertia constant, stored energy and damping coefficient of one unit</td><td>s, MJ, pu</td></tr>
+<tr><td>δ, Δω</td><td>delta, dw</td><td>rotor or internal angle, and per-unit speed deviation (ω − ω<sub>0</sub>)/ω<sub>0</sub>. Chapter 1 writes the deviation Δω̄ with a bar (R02); this chapter drops the bar.</td><td>rad, —</td></tr>
+<tr><td><var>P</var><sub>m</sub>, <var>P</var><sub>e</sub></td><td>P_m, P_e</td><td>mechanical power in, electrical power out</td><td>pu</td></tr>
+<tr><td><var>K</var><sub>s</sub></td><td>K_s</td><td>synchronizing torque coefficient</td><td>pu/rad</td></tr>
+<tr><td><var>H</var><sub>v</sub>, <var>H</var><sub>eq</sub>, <var>K</var><sub>D,eq</sub></td><td>H_v, H_eq, K_D_eq</td><td>virtual and equivalent inertia constants, equivalent damping</td><td>s, s, pu</td></tr>
+<tr><td><var>I</var><sub>max</sub></td><td>I_max</td><td>converter current limit</td><td>pu</td></tr>
+<tr><td><var>E</var><sub>res</sub></td><td>E_res</td><td>usable energy reserve of a converter</td><td>MJ</td></tr>
+<tr><td><var>P</var>, <var>Q</var></td><td>P, Q</td><td>active and reactive power</td><td>pu or MW, Mvar</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Terms used in this chapter</h3>
+
+<div class="localnot">
+<strong>Terms of art.</strong> Each term below is used in this chapter and is defined
+nowhere else in the book. Each definition names where the chapter uses it.
+<ul>
+<li><strong>Synchronous condenser</strong> — a synchronous machine with no turbine and
+no mechanical load on its shaft. It runs connected to the grid and supplies reactive
+power, short-circuit current and the inertia of its rotor. On average it generates no
+active power; it draws a small amount to cover its losses. A <strong>flywheel</strong>
+is a mass added to the shaft to raise <var>H</var>. Used in Example 4.2.</li>
+<li><strong>Infeed</strong> — active power injected into the system by a generating unit
+or an import link. A <strong>loss of infeed</strong> is the sudden disconnection of that
+injection; Δ<var>P</var> is its size in MW. Used in Theorems 4.5 and 4.6.</li>
+<li><strong>Governor</strong> — the controller on a machine that changes mechanical power
+in response to a measured frequency deviation. A <strong>deadband</strong> is the band of
+frequency deviation around <var>f</var><sub>0</sub> inside which the governor does not
+act. Used in §4.3 and §4.4.1.</li>
+<li><strong>Primary response</strong> — the active-power increase that governors, and
+equivalent converter controls, deliver in response to a frequency fall within seconds and
+without an operator instruction. <var>R</var><sub>p</sub> is its volume in
+MW and <var>T</var> the time by which it is fully delivered. On a grid-forming converter
+the droop law of <a href="ch3.html#model-3-2">R25</a> produces it. Used in Theorem 4.6.</li>
+<li><strong>Headroom</strong> — the active power a unit or a fleet can add above its
+present dispatch, in MW or in per unit of rating. For a converter it is bounded by
+<var>I</var><sub>max</sub> (<a href="ch3.html#cor-3-8">R33</a>). Used in Example 4.2 as
+<var>P</var><sub>headroom</sub>.</li>
+<li><strong>Low-frequency demand disconnection</strong> — a relay scheme that
+disconnects blocks of demand automatically when the frequency falls to preset levels,
+to stop the fall. In Great Britain it acted at 48.8 Hz on 9 August 2019
+<span class="cite">[S14, National Grid ESO 2019, <em>Technical Report on the events of
+9 August 2019</em>, event summary — verify]</span>. Used in Example 4.1 and
+Citation 4.7.</li>
+<li><strong>Embedded generation</strong> — generation connected to the distribution
+network rather than to the transmission network. The system operator does not measure
+its output directly, and it carries its own protection. Used in Citation 4.7.</li>
+<li><strong>Loss-of-mains protection</strong> — protection on embedded generation that
+disconnects the unit when it detects that its part of the network has separated from
+the main system. That separated state is called <strong>islanding</strong>. One
+detection method measures RoCoF and trips above a threshold. A system-wide frequency
+fall can exceed the same threshold, so the relay cannot tell islanding from a system
+event. Used in §4.3 and Exercise 4.1.</li>
+</ul>
+</div>
+
+<!-- ============================================================ 4.1 -->
+<h2 id="s4-1">4.1 From one machine to a network</h2>
+
+<div class="localnot">
+<strong>Local notation for §4.1.</strong> These symbols are not in the book-wide table.
+They are defined here and used with this meaning for the rest of the chapter.
+<ul>
+<li><var>t</var> — time, in seconds, measured from the disturbance.</li>
+<li><var>n</var> — number of source units in the system.</li>
+<li><var>E</var><sub><var>i</var></sub> — internal voltage magnitude of unit <var>i</var>,
+in per unit. For a machine this is the constant emf behind transient reactance of <a href="ch1.html#model-1-5">R05</a>.
+For a grid-forming converter it is the commanded internal voltage of <a href="ch3.html#def-3-1">R24</a>.</li>
+<li>δ<sub><var>i</var></sub>, Δω<sub><var>i</var></sub> — the angle δ and the per-unit
+speed deviation Δω of unit <var>i</var>. The unsubscripted symbols keep their book
+meaning.</li>
+<li><var>K</var><sub>D,<var>i</var></sub> — damping coefficient of unit <var>i</var>, in per unit on its own base.</li>
+<li><var>I</var><sub><var>i</var></sub> — current phasor injected by unit <var>i</var> at its internal node, in per unit on <var>S</var><sub>sys</sub>.</li>
+<li>δ<sub><var>i</var>,0</sub> — equilibrium value of δ<sub><var>i</var></sub>.</li>
+<li><var>X</var><sub><var>i</var></sub> — total reactance between the internal node of
+unit <var>i</var> and the load bus, in per unit on <var>S</var><sub>sys</sub>.</li>
+<li><var>V</var><sub>L</sub> — voltage phasor at load bus L, in per unit.</li>
+<li><var>Y</var><sub>L</sub> — constant-impedance load admittance at bus L, in per unit.</li>
+<li><var>P</var><sub><var>i</var></sub>, <var>Q</var><sub><var>i</var></sub> — active and
+reactive power injected by unit <var>i</var> at its internal node, at the equilibrium.
+<var>P</var><sub>e,<var>i</var></sub> and <var>P</var><sub>m,<var>i</var></sub> — electrical
+output and mechanical or commanded input of unit <var>i</var> in (4.3), on the system base;
+at the equilibrium <var>P</var><sub>e,<var>i</var></sub> = <var>P</var><sub>m,<var>i</var></sub>
+= <var>P</var><sub><var>i</var></sub>.</li>
+<li><var>G</var><sub><var>ij</var></sub> — conductance of the reduced branch between
+nodes <var>i</var> and <var>j</var>. The book table lists only
+<var>B</var><sub><var>ij</var></sub>, because a lossless reduction has no conductance.
+Reduction of a load that consumes real power produces one, so the symbol is needed.</li>
+<li><var>N</var> — number of buses in the unreduced network.</li>
+<li><var>y</var><sub><var>ij</var></sub>, <var>y</var><sub><var>i</var>0</sub> —
+series admittance of the branch between buses <var>i</var> and <var>j</var>, and shunt
+admittance from bus <var>i</var> to the reference, both in per unit.</li>
+<li><strong>V</strong>, <strong>I</strong><sub>bus</sub> — vectors of bus voltage
+phasors and injected currents. Subscripts A and B select the two partitions of §4.1.2:
+group A is the internal source nodes, group B every other bus.</li>
+</ul>
+</div>
+
+<p>A power system is a set of source nodes, a set of load nodes, and a mesh of branches.
+The swing equation of <a href="ch1.html#model-1-4">R04</a> applies to every source separately; the network couples them. This
+section writes that coupling as a matrix, then removes every node with no dynamics of its
+own, leaving one equation per unit.</p>
+
+<h3>4.1.1 The bus admittance matrix</h3>
+
+<div class="def" id="def-4-1" data-rid="R34">
+<span class="rhead">Definition 4.1 — Bus admittance matrix
+<span class="status">stated here</span><span class="rid">R34, part 1</span></span>
+<p>Number the buses 1 to <var>N</var>. For a network of branches with series admittance
+<var>y</var><sub><var>ij</var></sub> between buses <var>i</var> and <var>j</var>, and
+shunt admittance <var>y</var><sub><var>i</var>0</sub> from bus <var>i</var> to the
+reference, the bus admittance matrix <strong>Y</strong> has entries</p>
+<ul>
+<li><strong>Y</strong><sub><var>ii</var></sub> = <var>y</var><sub><var>i</var>0</sub> +
+Σ<sub><var>j</var> ≠ <var>i</var></sub> <var>y</var><sub><var>ij</var></sub>,</li>
+<li><strong>Y</strong><sub><var>ij</var></sub> = −<var>y</var><sub><var>ij</var></sub>
+for <var>i</var> ≠ <var>j</var>,</li>
+</ul>
+<p>and the network equation is <strong>I</strong><sub>bus</sub> = <strong>Y V</strong>,
+where <strong>V</strong> is the vector of bus voltage phasors and
+<strong>I</strong><sub>bus</sub> the vector of injected currents. All quantities are in per unit on the system base
+<var>S</var><sub>sys</sub>, using the base definitions of <a href="ch1.html#def-1-1">R01</a>.</p>
+</div>
+
+<p>Two facts about <strong>Y</strong> matter here. It is symmetric, because a passive branch
+carries the same admittance both ways. And a constant-impedance load is not an injection: it
+is a shunt admittance, so it enters <strong>Y</strong><sub><var>ii</var></sub> and
+contributes zero to <strong>I</strong><sub>bus</sub>. The second fact makes the next step possible.</p>
+
+<h3>4.1.2 Kron reduction</h3>
+
+<p>Split the buses into two groups. Group A holds the <var>n</var> internal source nodes,
+one behind each unit's internal reactance. Group B holds every other bus, including bus L.
+Every load is modelled as a constant impedance and folded into <strong>Y</strong>, so no bus
+in group B injects current. Write the partitioned network equation.</p>
+
+<div class="eq"><div class="body">
+[ <strong>I</strong><sub>A</sub> ; <strong>0</strong> ] =
+[ <strong>Y</strong><sub>AA</sub> &nbsp; <strong>Y</strong><sub>AB</sub> ;
+<strong>Y</strong><sub>BA</sub> &nbsp; <strong>Y</strong><sub>BB</sub> ]
+[ <strong>V</strong><sub>A</sub> ; <strong>V</strong><sub>B</sub> ]
+</div></div>
+
+<p>The lower block reads <strong>Y</strong><sub>BA</sub><strong>V</strong><sub>A</sub> +
+<strong>Y</strong><sub>BB</sub><strong>V</strong><sub>B</sub> = <strong>0</strong>. If
+<strong>Y</strong><sub>BB</sub> is invertible, solve it for
+<strong>V</strong><sub>B</sub> and substitute into the upper block.</p>
+
+<div class="eq"><div class="body">
+<strong>Y</strong><sub>red</sub> = <strong>Y</strong><sub>AA</sub> −
+<strong>Y</strong><sub>AB</sub> <strong>Y</strong><sub>BB</sub><sup>−1</sup>
+<strong>Y</strong><sub>BA</sub>,
+&nbsp;&nbsp; <strong>I</strong><sub>A</sub> = <strong>Y</strong><sub>red</sub>
+<strong>V</strong><sub>A</sub>
+</div><div class="num">(4.1)</div></div>
+
+<p>Equation (4.1) is Kron reduction. It is exact, not an approximation, under one
+condition: the eliminated buses inject no current. That condition holds here because every
+load is a constant impedance. It fails for a constant-power load, and it fails for any bus
+with its own dynamics. A constant-power load can be brought inside the condition: replace
+it with the constant impedance that draws the same power at the operating-point voltage.
+The replacement is exact at that point and approximate away from it, which is the same
+trade Model 4.4 makes when it linearises. The step is standard
+<span class="cite">[S05, Machowski, Bialek and Bumby 2008, <em>Power System Dynamics:
+Stability and Control</em>, 2nd ed., network reduction for multi-machine models —
+verify]</span>.</p>
+
+<p>Kron reduction removes structure and keeps behaviour. The reduced network has no load
+bus and no line: every pair of source nodes is connected directly, so a radial system becomes
+a complete mesh. The branches are not pure susceptances, because the real power drawn by the
+load appears as the conductances <var>G</var><sub><var>ij</var></sub>.</p>
+
+<div class="model" id="model-4-2" data-rid="R34">
+<span class="rhead">Model 4.2 — Reduced multi-unit power injection
+<span class="status">proved here</span><span class="rid">R34, part 1</span></span>
+<p>Write <strong>Y</strong><sub>red,<var>ij</var></sub> =
+<var>G</var><sub><var>ij</var></sub> + j<var>B</var><sub><var>ij</var></sub> and hold each
+internal voltage magnitude <var>E</var><sub><var>i</var></sub> constant. The active power
+leaving internal node <var>i</var> is</p>
+<div class="eq"><div class="body">
+<var>P</var><sub>e,<var>i</var></sub> = Σ<sub><var>j</var></sub>
+<var>E</var><sub><var>i</var></sub><var>E</var><sub><var>j</var></sub>
+[ <var>B</var><sub><var>ij</var></sub> sin(δ<sub><var>i</var></sub> −
+δ<sub><var>j</var></sub>) + <var>G</var><sub><var>ij</var></sub>
+cos(δ<sub><var>i</var></sub> − δ<sub><var>j</var></sub>) ]
+</div><div class="num">(4.2)</div></div>
+<div class="proof">
+<p class="proof-h">Derivation.</p>
+<p>Row <var>i</var> of (4.1) gives the current leaving internal node <var>i</var>:
+<var>I</var><sub><var>i</var></sub> = Σ<sub><var>j</var></sub>
+<strong>Y</strong><sub>red,<var>ij</var></sub> <var>E</var><sub><var>j</var></sub>
+e<sup>jδ<sub><var>j</var></sub></sup>. Here j outside a subscript is the imaginary unit
+and <var>j</var> inside a subscript is a node index. The complex power leaving the node
+is <var>S</var><sub><var>i</var></sub> = <var>E</var><sub><var>i</var></sub>
+e<sup>jδ<sub><var>i</var></sub></sup> conj(<var>I</var><sub><var>i</var></sub>). Substitute
+<strong>Y</strong><sub>red,<var>ij</var></sub> = <var>G</var><sub><var>ij</var></sub> +
+j<var>B</var><sub><var>ij</var></sub>:</p>
+<p><var>S</var><sub><var>i</var></sub> = Σ<sub><var>j</var></sub>
+<var>E</var><sub><var>i</var></sub><var>E</var><sub><var>j</var></sub>
+(<var>G</var><sub><var>ij</var></sub> − j<var>B</var><sub><var>ij</var></sub>)
+e<sup>j(δ<sub><var>i</var></sub> − δ<sub><var>j</var></sub>)</sup>.</p>
+<p>Write the exponential as cos(δ<sub><var>i</var></sub> − δ<sub><var>j</var></sub>) +
+j sin(δ<sub><var>i</var></sub> − δ<sub><var>j</var></sub>) and take the real part. The
+product (<var>G</var> − j<var>B</var>)(cos + j sin) has real part
+<var>G</var> cos + <var>B</var> sin, because (−j)(j) = +1. That is (4.2). The imaginary
+part, <var>G</var> sin − <var>B</var> cos, is the reactive power
+<var>Q</var><sub><var>i</var></sub>, which this chapter does not use. ∎</p>
+<p><strong>Sign of <var>B</var><sub><var>ij</var></sub>.</strong>
+<var>B</var><sub><var>ij</var></sub> is an element of <strong>Y</strong><sub>red</sub>,
+not the susceptance of a physical branch. For a lossless branch of reactance
+<var>X</var> between nodes <var>i</var> and <var>j</var>, the branch admittance is
+−j/<var>X</var>, and by Definition 4.1 the matrix element is
+<strong>Y</strong><sub><var>ij</var></sub> = +j/<var>X</var>. So
+<var>B</var><sub><var>ij</var></sub> = +1/<var>X</var>, and the values printed in §4.1.3
+are positive for that reason.</p>
+</div>
+<p><strong>Assumptions.</strong> Balanced three-phase operation. Fundamental-frequency
+phasors. Every load a constant impedance. Every internal voltage magnitude constant, which
+is the classical machine model of <a href="ch1.html#model-1-5">R05</a> for a machine and the constant-<var>E</var>
+approximation of <a href="ch3.html#def-3-1">R24</a> for a grid-forming converter. The network is algebraic: it has no
+state.</p>
+<p><strong>Omissions.</strong> Network electromagnetic transients, so nothing below the
+fundamental-frequency timescale. Flux decay and excitation dynamics, so no voltage-stability
+conclusion. Constant-power and motor loads. Tap changers. The first is repaid in §4.6 as an
+open problem (R40); the rest are in the book scope statement.</p>
+</div>
+
+<p>Setting every <var>G</var><sub><var>ij</var></sub> to zero recovers <a href="ch1.html#model-1-5">R05</a>. For two nodes
+with one susceptance <var>B</var><sub>12</sub> = 1/<var>X</var> between them, (4.2) gives
+<var>P</var><sub>e,1</sub> = (<var>E</var><sub>1</sub><var>E</var><sub>2</sub>/<var>X</var>)
+sin(δ<sub>1</sub> − δ<sub>2</sub>). Model 4.2 is a strict generalisation of
+the model the reader already has.</p>
+
+<h3>4.1.3 Test system TS4</h3>
+
+<p>One test system serves every figure and network exercise in this chapter, and no other
+network is introduced. TS4 is a design case defined by this book. It is not measured plant,
+and none of its numbers is a published value.</p>
+
+<div class="tw">
+<table>
+<thead><tr>
+<th>Unit</th><th>Type</th><th class="num"><var>S</var><sub><var>i</var></sub> (MVA)</th>
+<th class="num"><var>H</var><sub><var>i</var></sub> or <var>H</var><sub>eq</sub> (s)</th>
+<th class="num"><var>K</var><sub>D</sub> or <var>K</var><sub>D,eq</sub> (pu, own base)</th>
+<th class="num">internal <var>X</var> (pu, own base)</th>
+<th class="num">dispatch (pu)</th>
+<th class="num"><var>X</var> to bus L (pu, system base)</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>synchronous machine</td><td class="num">400</td><td class="num">4.0</td><td class="num">2</td><td class="num">0.30</td><td class="num">0.75</td><td class="num">0.10</td></tr>
+<tr><td>2</td><td>synchronous machine</td><td class="num">300</td><td class="num">3.0</td><td class="num">2</td><td class="num">0.35</td><td class="num">0.60</td><td class="num">0.12</td></tr>
+<tr><td>3</td><td>grid-forming converter</td><td class="num">200</td><td class="num">2.0</td><td class="num">20</td><td class="num">0.20</td><td class="num">0.50</td><td class="num">0.08</td></tr>
+<tr><td>4</td><td>grid-forming converter</td><td class="num">100</td><td class="num">2.0</td><td class="num">20</td><td class="num">0.20</td><td class="num">0.50</td><td class="num">0.15</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>System base <var>S</var><sub>sys</sub> = 1000 MVA. Rated frequency
+<var>f</var><sub>0</sub> = 50 Hz, so ω<sub>0</sub> = 2π × 50 = 314.1593 rad/s. The load at
+bus L is 630 MW and 120 Mvar, constant impedance, so
+<var>Y</var><sub>L</sub> = (630 − j120)/1000 = 0.6300 − j0.1200 pu. Generation sums to
+400(0.75) + 300(0.60) + 200(0.50) + 100(0.50) = 300 + 180 + 100 + 50 = 630 MW, so the case
+balances exactly. The converters carry <var>H</var><sub>eq</sub> and
+<var>K</var><sub>D,eq</sub>, which by <a href="ch3.html#thm-3-7">R32</a> is what any of the four grid-forming families
+reduces to near the operating point. By <a href="ch3.html#thm-3-3">R26</a> those two values are the droop law with
+<var>m</var><sub>p</sub> = 0.05 pu. The power-filter cutoff is then
+ω<sub>c</sub> = 1/(2<var>m</var><sub>p</sub><var>H</var><sub>eq</sub>) =
+1/(2 × 0.05 × 2.0) = 5.0 rad/s, which is 0.80 Hz.</p>
+
+<p>Stored kinetic energy follows from <a href="ch1.html#def-1-3">R03</a> applied unit by unit:</p>
+
+<p><var>E</var><sub>kin,sys</sub> = 400(4.0) + 300(3.0) + 200(2.0) + 100(2.0)
+= 1600 + 900 + 400 + 200 = 3100 MVA·s = 3.100 GVA·s, so
+<var>H</var><sub>sys</sub> = 3100/1000 = 3.100 s on the 1000 MVA base.</p>
+
+<p>Each unit's internal reactance is on its own base. Converting to the system base
+multiplies by <var>S</var><sub>sys</sub>/<var>S</var><sub><var>i</var></sub>, and the
+connecting reactance is already on the system base. The total reactance from internal node
+to bus L is therefore</p>
+
+<ul>
+<li>unit 1: 0.30 × 1000/400 + 0.10 = 0.7500 + 0.10 = <strong>0.8500 pu</strong>;</li>
+<li>unit 2: 0.35 × 1000/300 + 0.12 = 1.1667 + 0.12 = <strong>1.2867 pu</strong>;</li>
+<li>unit 3: 0.20 × 1000/200 + 0.08 = 1.0000 + 0.08 = <strong>1.0800 pu</strong>;</li>
+<li>unit 4: 0.20 × 1000/100 + 0.15 = 2.0000 + 0.15 = <strong>2.1500 pu</strong>.</li>
+</ul>
+
+<p>The equilibrium needs three assumptions, all choices of this case. <em>Assumed for this
+case:</em></p><ol><li>the load-bus voltage is <var>V</var><sub>L</sub> = 1.0∠0° pu;</li>
+<li>each unit's reactive injection is proportional to its rating,
+<var>Q</var><sub><var>i</var></sub> = 120 × <var>S</var><sub><var>i</var></sub>/1000 Mvar,
+so the four sum to 120 Mvar;</li><li>each unit's active injection is its dispatch.</li></ol>
+<p>With these, the current injected by unit <var>i</var> is
+<var>I</var><sub><var>i</var></sub> = conj((<var>P</var><sub><var>i</var></sub> +
+j<var>Q</var><sub><var>i</var></sub>)/<var>V</var><sub>L</sub>), and the internal voltage
+phasor is <var>V</var><sub>L</sub> + j<var>X</var><sub><var>i</var></sub>
+<var>I</var><sub><var>i</var></sub>. The result is:</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>Unit</th><th class="num"><var>X</var><sub><var>i</var></sub> (pu)</th>
+<th class="num"><var>P</var><sub><var>i</var></sub> (pu)</th>
+<th class="num"><var>Q</var><sub><var>i</var></sub> (pu)</th>
+<th class="num"><var>E</var><sub><var>i</var></sub> (pu)</th>
+<th class="num">δ<sub><var>i</var></sub> (deg)</th></tr></thead>
+<tbody>
+<tr><td>1</td><td class="num">0.8500</td><td class="num">0.3000</td><td class="num">0.0480</td><td class="num">1.0716</td><td class="num">13.767</td></tr>
+<tr><td>2</td><td class="num">1.2867</td><td class="num">0.1800</td><td class="num">0.0360</td><td class="num">1.0716</td><td class="num">12.481</td></tr>
+<tr><td>3</td><td class="num">1.0800</td><td class="num">0.1000</td><td class="num">0.0240</td><td class="num">1.0316</td><td class="num">6.009</td></tr>
+<tr><td>4</td><td class="num">2.1500</td><td class="num">0.0500</td><td class="num">0.0120</td><td class="num">1.0314</td><td class="num">5.983</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Reducing the five-bus network (four internal nodes and bus L) by (4.1) gives the
+transfer terms of the reduced mesh. The six transfer susceptances are
+<var>B</var><sub>12</sub> = 0.2555, <var>B</var><sub>13</sub> = 0.3043,
+<var>B</var><sub>14</sub> = 0.1529, <var>B</var><sub>23</sub> = 0.2011,
+<var>B</var><sub>24</sub> = 0.1010 and <var>B</var><sub>34</sub> = 0.1203 pu. The matching
+conductances are <var>G</var><sub>12</sub> = 0.0465, <var>G</var><sub>13</sub> = 0.0553,
+<var>G</var><sub>14</sub> = 0.0278, <var>G</var><sub>23</sub> = 0.0366,
+<var>G</var><sub>24</sub> = 0.0184 and <var>G</var><sub>34</sub> = 0.0219 pu. The
+diagonal of <strong>Y</strong><sub>red</sub> also carries a conductance at each internal
+node: <var>G</var><sub>11</sub> = 0.0703, <var>G</var><sub>22</sub> = 0.0307,
+<var>G</var><sub>33</sub> = 0.0436 and <var>G</var><sub>44</sub> = 0.0110 pu. The
+diagonal susceptances <var>B</var><sub><var>ii</var></sub> do not enter (4.2), because
+sin(δ<sub><var>i</var></sub> − δ<sub><var>i</var></sub>) = 0.</p>
+
+<p>The conductances are not numerical noise. They are the load, redistributed onto every
+branch and every node of the reduced mesh. In (4.2) the <var>j</var> = <var>i</var> term
+is <var>E</var><sub><var>i</var></sub>²<var>G</var><sub><var>ii</var></sub>. For unit 1 it
+is 1.0716² × 0.0703 = 0.0807 pu, which is 27 % of that unit's dispatch. Substituting all
+sixteen entries into (4.2) returns
+<var>P</var><sub>e,1</sub> = 0.3000, <var>P</var><sub>e,2</sub> = 0.1800,
+<var>P</var><sub>e,3</sub> = 0.1000 and <var>P</var><sub>e,4</sub> = 0.0500 pu, which are
+the four dispatches. With the diagonal terms left out, the same sum returns 0.2193,
+0.1448, 0.0537 and 0.0383 pu. Run both sums; the difference is the load. The reduction is
+therefore exact to the digits printed here.</p>
+
+<figure id="fig-4-1">
+<svg viewBox="0 0 640 430" role="img" aria-label="One-line diagram of test system TS4 beside its Kron-reduced equivalent">
+  <rect x="0" y="0" width="640" height="430" fill="#1e293b"/>
+  <text x="12" y="20" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="13" font-weight="bold">(a) TS4 as built: four units, one load bus</text>
+  <!-- unit boxes -->
+  <g font-family="system-ui,sans-serif" font-size="11" fill="#cbd5e1">
+    <rect x="16" y="40" width="88" height="30" rx="5" fill="#0f172a" stroke="#2dd4bf"/>
+    <text x="60" y="59" text-anchor="middle" fill="#2dd4bf">SM 1  400 MVA</text>
+    <rect x="16" y="90" width="88" height="30" rx="5" fill="#0f172a" stroke="#2dd4bf"/>
+    <text x="60" y="109" text-anchor="middle" fill="#2dd4bf">SM 2  300 MVA</text>
+    <rect x="16" y="140" width="88" height="30" rx="5" fill="#0f172a" stroke="#fb923c"/>
+    <text x="60" y="159" text-anchor="middle" fill="#fb923c">GFM 3  200 MVA</text>
+    <rect x="16" y="190" width="88" height="30" rx="5" fill="#0f172a" stroke="#fb923c"/>
+    <text x="60" y="209" text-anchor="middle" fill="#fb923c">GFM 4  100 MVA</text>
+  </g>
+  <!-- internal reactance + line to bus L -->
+  <g stroke="#94a3b8" stroke-width="1.5" fill="none">
+    <path d="M104 55 H150"/><rect x="150" y="47" width="30" height="16" fill="#0f172a"/><path d="M180 55 H250"/><rect x="250" y="47" width="30" height="16" fill="#0f172a"/><path d="M280 55 H380"/>
+    <path d="M104 105 H150"/><rect x="150" y="97" width="30" height="16" fill="#0f172a"/><path d="M180 105 H250"/><rect x="250" y="97" width="30" height="16" fill="#0f172a"/><path d="M280 105 H380"/>
+    <path d="M104 155 H150"/><rect x="150" y="147" width="30" height="16" fill="#0f172a"/><path d="M180 155 H250"/><rect x="250" y="147" width="30" height="16" fill="#0f172a"/><path d="M280 155 H380"/>
+    <path d="M104 205 H150"/><rect x="150" y="197" width="30" height="16" fill="#0f172a"/><path d="M180 205 H250"/><rect x="250" y="197" width="30" height="16" fill="#0f172a"/><path d="M280 205 H380"/>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">
+    <text x="165" y="41">0.30</text><text x="265" y="41">0.10</text>
+    <text x="165" y="91">0.35</text><text x="265" y="91">0.12</text>
+    <text x="165" y="141">0.20</text><text x="265" y="141">0.08</text>
+    <text x="165" y="191">0.20</text><text x="265" y="191">0.15</text>
+    <text x="165" y="232" fill="#cbd5e1">internal X (own base)</text>
+    <text x="290" y="232" fill="#cbd5e1">X to bus L (system base)</text>
+  </g>
+  <!-- bus L -->
+  <line x1="380" y1="40" x2="380" y2="220" stroke="#e2e8f0" stroke-width="4"/>
+  <text x="388" y="36" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="12">bus L</text>
+  <path d="M380 130 H430" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M430 120 v20 M430 130 h16" stroke="#94a3b8" stroke-width="1.5" fill="none"/>
+  <path d="M446 118 v24 M452 122 v16 M458 126 v8" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="430" y="162" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">load 630 MW</text>
+  <text x="430" y="176" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">+ 120 Mvar</text>
+  <text x="430" y="190" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">constant impedance</text>
+  <!-- (b) reduced -->
+  <text x="12" y="268" fill="#e2e8f0" font-family="system-ui,sans-serif" font-size="13" font-weight="bold">(b) Kron-reduced: no bus L, every pair connected</text>
+  <g stroke="#94a3b8" stroke-width="1" fill="none" opacity="0.85">
+    <line x1="140" y1="300" x2="330" y2="300"/>
+    <line x1="140" y1="300" x2="140" y2="390"/>
+    <line x1="140" y1="300" x2="330" y2="390"/>
+    <line x1="330" y1="300" x2="140" y2="390"/>
+    <line x1="330" y1="300" x2="330" y2="390"/>
+    <line x1="140" y1="390" x2="330" y2="390"/>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#fb923c" text-anchor="middle">
+    <text x="235" y="294">B₁₂ = 0.2555</text>
+    <text x="104" y="348">B₁₃ =</text><text x="104" y="360">0.3043</text>
+    <text x="205" y="336">B₁₄ = 0.1529</text>
+    <text x="268" y="360">B₂₃ = 0.2011</text>
+    <text x="368" y="348">B₂₄ =</text><text x="368" y="360">0.1010</text>
+    <text x="235" y="406">B₃₄ = 0.1203</text>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="11">
+    <circle cx="140" cy="300" r="14" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
+    <text x="140" y="304" text-anchor="middle" fill="#2dd4bf">1</text>
+    <circle cx="330" cy="300" r="14" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
+    <text x="330" y="304" text-anchor="middle" fill="#2dd4bf">2</text>
+    <circle cx="140" cy="390" r="14" fill="#0f172a" stroke="#fb923c" stroke-width="2"/>
+    <text x="140" y="394" text-anchor="middle" fill="#fb923c">3</text>
+    <circle cx="330" cy="390" r="14" fill="#0f172a" stroke="#fb923c" stroke-width="2"/>
+    <text x="330" y="394" text-anchor="middle" fill="#fb923c">4</text>
+  </g>
+  <text x="420" y="300" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">Each branch also carries</text>
+  <text x="420" y="314" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">a conductance G_ij:</text>
+  <text x="420" y="330" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">G₁₂ 0.0465  G₁₃ 0.0553</text>
+  <text x="420" y="344" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">G₁₄ 0.0278  G₂₃ 0.0366</text>
+  <text x="420" y="358" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">G₂₄ 0.0184  G₃₄ 0.0219</text>
+  <text x="420" y="378" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">The load is gone as a node</text>
+  <text x="420" y="392" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">and present as these terms.</text>
+</svg>
+<figcaption><b>Fig. 4.1</b> — Test system TS4 before and after Kron reduction, with every
+reactance marked. Panel (a) is the radial system as built: four units, each behind its own
+internal reactance and a connecting reactance, feeding one constant-impedance load at bus
+L. Panel (b) is the reduced equivalent of (4.1): bus L is gone, and every pair of internal
+nodes is joined directly. Reduction removes the load bus and the radial structure; it keeps
+the power transfer exactly, and it turns the real power of the load into the six transfer
+conductances <var>G</var><sub><var>ij</var></sub> and the four self-conductances
+<var>G</var><sub><var>ii</var></sub> listed in §4.1.3. The figure illustrates
+Definition 4.1 and Model 4.2 (R34). Numbers computed for TS4 in §4.1.3.</figcaption>
+</figure>
+
+<!-- ============================================================ 4.2 -->
+<h2 id="s4-2">4.2 The mixed grid in state-space form</h2>
+
+<div class="localnot">
+<strong>Local notation for §4.2.</strong>
+<ul>
+<li><var>K</var><sub><var>ij</var></sub> — element (<var>i</var>, <var>j</var>) of the
+synchronizing matrix, ∂<var>P</var><sub>e,<var>i</var></sub>/∂δ<sub><var>j</var></sub>
+evaluated at the equilibrium, in pu/rad. It is the multi-unit generalisation of
+<var>K</var><sub>s</sub> from <a href="ch1.html#lem-1-6">R06</a>.</li>
+<li><var>c</var> — converter share: the fraction of the total 1000 MVA of rating that sits
+on grid-forming converters, dimensionless.</li>
+<li><strong>K</strong> — the <var>n</var>&nbsp;×&nbsp;<var>n</var> matrix of the
+<var>K</var><sub><var>ij</var></sub>; <strong>K</strong><sub>D</sub> — the diagonal
+matrix of damping coefficients on the system base; <strong>M</strong> — the diagonal
+matrix of 2<var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>/<var>S</var><sub>sys</sub>;
+<strong>I</strong><sub><var>n</var></sub> — the <var>n</var>&nbsp;×&nbsp;<var>n</var>
+identity matrix.</li>
+<li><var>v</var><sub><var>ki</var></sub>, <var>w</var><sub><var>ik</var></sub> — entry
+<var>k</var> of the right eigenvector of mode <var>i</var>, and entry <var>k</var> of the
+left eigenvector of mode <var>i</var>.</li>
+<li>A prefixed Δ on a state, as in Δδ<sub><var>i</var></sub>, marks a small
+deviation of that state from its equilibrium value. The speed state is already a deviation,
+so its small deviation is written ΔΔω<sub><var>i</var></sub>.</li>
+<li>Δω<sub>COI</sub> — centre-of-inertia speed deviation,
+(ω<sub>COI</sub> − ω<sub>0</sub>)/ω<sub>0</sub>, dimensionless. By (4.5) it equals
+Σ<sub><var>i</var></sub> <var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>
+Δω<sub><var>i</var></sub> / <var>E</var><sub>kin,sys</sub>. Used in Theorem 4.5.</li>
+</ul>
+</div>
+
+<p>Every unit in TS4 obeys the same two equations. That is the point of <a href="ch3.html#thm-3-7">R32</a>: a machine
+obeys them because it has a rotor, and a grid-forming converter because its control law was
+built to. The two equations, for unit <var>i</var> on the system base, are <a href="ch1.html#model-1-4">R04</a> unit by
+unit.</p>
+
+<div class="eq"><div class="body">
+dδ<sub><var>i</var></sub>/d<var>t</var> = ω<sub>0</sub> Δω<sub><var>i</var></sub>,
+&nbsp;&nbsp;
+2 <var>H</var><sub><var>i</var></sub>
+(<var>S</var><sub><var>i</var></sub>/<var>S</var><sub>sys</sub>)
+dΔω<sub><var>i</var></sub>/d<var>t</var> =
+<var>P</var><sub>m,<var>i</var></sub> − <var>P</var><sub>e,<var>i</var></sub> −
+<var>K</var><sub>D,<var>i</var></sub>
+(<var>S</var><sub><var>i</var></sub>/<var>S</var><sub>sys</sub>)
+Δω<sub><var>i</var></sub>
+</div><div class="num">(4.3)</div></div>
+
+<p>The factor
+<var>S</var><sub><var>i</var></sub>/<var>S</var><sub>sys</sub> converts <var>H</var> and
+<var>K</var><sub>D</sub> from the unit's own base to the system base. A 400 MVA machine with
+<var>H</var> = 4.0 s has 4.0 × 400/1000 = 1.600 s on the 1000 MVA base, and
+<var>K</var><sub>D</sub> = 2 pu becomes 0.800 pu. Omitting the conversion overstates that
+unit's contribution to <var>E</var><sub>kin,sys</sub> by the factor
+<var>S</var><sub>sys</sub>/<var>S</var><sub><var>i</var></sub>, which is 2.5 here.</p>
+
+<h3>4.2.1 System stored energy and the centre of inertia</h3>
+
+<div class="def" id="def-4-3" data-rid="R34">
+<span class="rhead">Definition 4.3 — System stored energy, system inertia constant, centre
+of inertia <span class="status">stated here</span><span class="rid">R34, part 2</span></span>
+<p>For <var>n</var> units with inertia constants <var>H</var><sub><var>i</var></sub> and
+ratings <var>S</var><sub><var>i</var></sub>:</p>
+<div class="eq"><div class="body">
+<var>E</var><sub>kin,sys</sub> = Σ<sub><var>i</var>=1</sub><sup><var>n</var></sup>
+<var>H</var><sub><var>i</var></sub> <var>S</var><sub><var>i</var></sub>,
+&nbsp;&nbsp;
+<var>H</var><sub>sys</sub> = <var>E</var><sub>kin,sys</sub> / <var>S</var><sub>sys</sub>
+</div><div class="num">(4.4)</div></div>
+<p>The centre-of-inertia angle and frequency are the inertia-weighted means of the unit
+angles and speed deviations:</p>
+<div class="eq"><div class="body">
+δ<sub>COI</sub> = (Σ<sub><var>i</var></sub> <var>H</var><sub><var>i</var></sub>
+<var>S</var><sub><var>i</var></sub> δ<sub><var>i</var></sub>) /
+<var>E</var><sub>kin,sys</sub>,
+&nbsp;&nbsp;
+ω<sub>COI</sub> = ω<sub>0</sub>(1 + (Σ<sub><var>i</var></sub>
+<var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>
+Δω<sub><var>i</var></sub>) / <var>E</var><sub>kin,sys</sub>)
+</div><div class="num">(4.5)</div></div>
+<p>Three points of care. <var>E</var><sub>kin,sys</sub> in (4.4) is a sum of energies and
+does not depend on the base; <var>H</var><sub>sys</sub> does. A unit contributes in proportion
+to <var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>, so a large machine
+with modest <var>H</var> can outweigh a small one with large <var>H</var>. A grid-forming
+converter enters through <var>H</var><sub>eq</sub>, and <a href="ch3.html#cor-3-8">R33</a> bounds what that entry is worth by
+<var>E</var><sub>res</sub> and <var>I</var><sub>max</sub>; the sum does not know those bounds,
+and §4.5 makes that gap concrete.</p>
+<p>Status: definition, stated here; the centre-of-inertia construction is standard
+<span class="cite">[S05, Machowski, Bialek and Bumby 2008, <em>Power System Dynamics:
+Stability and Control</em>, 2nd ed., centre-of-inertia reference — verify]</span>.</p>
+</div>
+
+<h3>4.2.2 Linearisation and the state matrix</h3>
+
+<div class="model" id="model-4-4" data-rid="R34">
+<span class="rhead">Model 4.4 — Small-signal state space of the mixed grid
+<span class="status">proved here</span><span class="rid">R34, part 2</span></span>
+<p>Take the state vector <strong>x</strong> = [Δδ<sub>1</sub> … Δδ<sub><var>n</var></sub>,
+ΔΔω<sub>1</sub> … ΔΔω<sub><var>n</var></sub>]<sup>T</sup>, where the prefixed Δ marks a
+small deviation from the equilibrium of §4.1.3. Differentiate (4.2) at the equilibrium to
+get the synchronizing matrix</p>
+<div class="eq"><div class="body">
+<var>K</var><sub><var>ij</var></sub> =
+∂<var>P</var><sub>e,<var>i</var></sub>/∂δ<sub><var>j</var></sub>
+&nbsp;evaluated at (δ<sub>1,0</sub> … δ<sub><var>n</var>,0</sub>)
+</div><div class="num">(4.6)</div></div>
+<p>Linearising (4.3) then gives d<strong>x</strong>/d<var>t</var> = <strong>A x</strong> +
+<strong>B u</strong> with the block state matrix</p>
+<div class="eq"><div class="body">
+<strong>A</strong> = [ <strong>0</strong> &nbsp; ω<sub>0</sub><strong>I</strong><sub><var>n</var></sub> ;
+−<strong>M</strong><sup>−1</sup><strong>K</strong> &nbsp;
+−<strong>M</strong><sup>−1</sup><strong>K</strong><sub>D</sub> ],
+&nbsp;&nbsp;
+<strong>M</strong> = diag(2<var>H</var><sub><var>i</var></sub>
+<var>S</var><sub><var>i</var></sub>/<var>S</var><sub>sys</sub>)
+</div><div class="num">(4.7)</div></div>
+<p>The input <strong>u</strong> = [Δ<var>P</var><sub>m,1</sub> … Δ<var>P</var><sub>m,<var>n</var></sub>]<sup>T</sup>
+holds the mechanical or commanded power deviations on the system base, and
+<strong>B</strong> = [<strong>0</strong> ; <strong>M</strong><sup>−1</sup>]. The output
+<strong>y</strong> = <strong>C x</strong> + <strong>D u</strong> selects whatever is
+measured; for frequency work <strong>C</strong> picks the speed states and
+<strong>D</strong> = <strong>0</strong>. Eigenvalues λ<sub><var>i</var></sub> =
+σ<sub><var>i</var></sub> + jω<sub>d,<var>i</var></sub> of <strong>A</strong> give the modes.
+The damping ratio is ζ<sub><var>i</var></sub> = −σ<sub><var>i</var></sub> /
+√(σ<sub><var>i</var></sub>² + ω<sub>d,<var>i</var></sub>²). Scale the right and left
+eigenvectors of <strong>A</strong> so that Σ<sub><var>k</var></sub>
+<var>v</var><sub><var>ki</var></sub><var>w</var><sub><var>ik</var></sub> = 1 for each mode.
+The participation factor <var>p</var><sub><var>ki</var></sub> =
+|<var>v</var><sub><var>ki</var></sub><var>w</var><sub><var>ik</var></sub>| then sums to 1
+over <var>k</var>, and it says how much state <var>k</var> takes part in mode <var>i</var>.
+That is what labels a mode "machine" or "converter".</p>
+<p><strong>Assumptions.</strong> Everything Model 4.2 assumes, plus: deviations small enough
+that (4.2) is linear in them; constant <var>P</var><sub>m</sub>; constant
+<var>H</var><sub>eq</sub> and <var>K</var><sub>D,eq</sub>, which by <a href="ch3.html#thm-3-7">R32</a> holds near the
+operating point only; and no current limiting. The last fails first in a large disturbance,
+and §4.6 names it as an open problem (R40).</p>
+</div>
+
+<p>One eigenvalue of <strong>A</strong> is always zero, for a structural reason: (4.2)
+depends on angle differences only, so adding the same constant to every
+δ<sub><var>i</var></sub> changes nothing. That zero mode is the free rotation of the whole
+system, and it is why frequency stability is read against a reference such as
+δ<sub>COI</sub>.</p>
+
+<h3>4.2.3 TS4 at the base case</h3>
+
+<p>Applying (4.6) to TS4 at the equilibrium of §4.1.3 gives the synchronizing matrix, in
+pu/rad:</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>∂<var>P</var><sub>e,<var>i</var></sub>/∂δ<sub><var>j</var></sub></th>
+<th class="num"><var>j</var> = 1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th></tr></thead>
+<tbody>
+<tr><td><var>i</var> = 1</td><td class="num">+0.7804</td><td class="num">−0.2921</td><td class="num">−0.3251</td><td class="num">−0.1633</td></tr>
+<tr><td>2</td><td class="num">−0.2945</td><td class="num">+0.6194</td><td class="num">−0.2163</td><td class="num">−0.1086</td></tr>
+<tr><td>3</td><td class="num">−0.3416</td><td class="num">−0.2254</td><td class="num">+0.6950</td><td class="num">−0.1280</td></tr>
+<tr><td>4</td><td class="num">−0.1716</td><td class="num">−0.1132</td><td class="num">−0.1280</td><td class="num">+0.4128</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Every diagonal entry is positive and every off-diagonal entry is negative: each unit
+pulls back towards its neighbours. That is the multi-unit form of <a href="ch1.html#lem-1-6">R06</a>, which gives
+<var>K</var><sub>s</sub> &gt; 0 for |δ<sub>0</sub>| &lt; 90°. The matrix is not quite
+symmetric, because the conductances <var>G</var><sub><var>ij</var></sub> break the symmetry a
+lossless network would have.</p>
+
+<h3>4.2.4 Sweeping the converter share</h3>
+
+<p>The question that matters for the purchase decision is not what TS4 does at one
+operating point. It is what happens as machines are replaced by converters. The sweep
+is defined by the six rules below. The rules are a choice of this case, not a result.
+<em>Assumed for this case:</em></p>
+<ol>
+<li>Total rating stays at 1000 MVA. A converter share <var>c</var> puts
+1000<var>c</var> MVA on units 3 and 4, split 2:1 as in the base case, and
+1000(1 − <var>c</var>) MVA on units 1 and 2, split 4:3.</li>
+<li>Total dispatch stays at 630 MW. Each unit's dispatch starts as its rating times its
+base-case per-unit dispatch. One common factor then scales all four so that they sum to
+630 MW. A unit's per-unit dispatch therefore changes with <var>c</var>. At
+<var>c</var> = 0.20 the unscaled sum is 648.6 MW and the factor is 630/648.6 = 0.9713.
+Unit 1 then runs at 0.75 × 0.9713 = 0.7285 pu instead of 0.75 pu.</li>
+<li>Each unit keeps its <var>H</var>, its <var>K</var><sub>D</sub> and its internal
+reactance in per unit on its own base.</li>
+<li>Each unit's reactive injection stays proportional to its rating, as in §4.1.3, so
+the four sum to 120 Mvar.</li>
+<li>The connecting reactances on the system base do not change.</li>
+<li>A unit of zero rating is removed from the model.</li>
+</ol>
+<p>The base case is <var>c</var> = 0.30, where the factor in rule 2 is 1.</p>
+
+<p>System stored energy follows directly. Machines contribute
+1000(1 − <var>c</var>)(4 × 4/7 + 3 × 3/7) = 1000(1 − <var>c</var>) × 25/7 =
+3571.4(1 − <var>c</var>) MVA·s. Converters contribute 2.0 × 1000<var>c</var> =
+2000<var>c</var> MVA·s. Adding them:
+<var>E</var><sub>kin,sys</sub>(<var>c</var>) = 3571.4 − 1571.4<var>c</var> MVA·s. At
+<var>c</var> = 0.30 this is 3571.4 − 471.4 = 3100.0 MVA·s, which matches §4.1.3.</p>
+
+<div class="tw">
+<table>
+<thead><tr><th class="num">converter share <var>c</var></th>
+<th class="num"><var>E</var><sub>kin,sys</sub> (MVA·s)</th>
+<th class="num"><var>H</var><sub>sys</sub> (s)</th>
+<th class="num">least-damped oscillatory ζ</th>
+<th>modes present</th></tr></thead>
+<tbody>
+<tr><td class="num">0 %</td><td class="num">3571.4</td><td class="num">3.571</td><td class="num">0.0134</td><td>1 pair (2 units)</td></tr>
+<tr><td class="num">20 %</td><td class="num">3257.1</td><td class="num">3.257</td><td class="num">0.0136</td><td>3 pairs</td></tr>
+<tr><td class="num">40 %</td><td class="num">2942.9</td><td class="num">2.943</td><td class="num">0.0141</td><td>3 pairs</td></tr>
+<tr><td class="num">60 %</td><td class="num">2628.6</td><td class="num">2.629</td><td class="num">0.0152</td><td>3 pairs</td></tr>
+<tr><td class="num">80 %</td><td class="num">2314.3</td><td class="num">2.314</td><td class="num">0.0187</td><td>3 pairs</td></tr>
+<tr><td class="num">100 %</td><td class="num">2000.0</td><td class="num">2.000</td><td class="num">0.1393</td><td>1 pair (2 units)</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Two things move in opposite directions, and reading only one gives the wrong conclusion.
+<strong>System stored energy falls by 44 %</strong>, from 3571.4 to 2000.0 MVA·s, because the
+converters carry <var>H</var><sub>eq</sub> = 2.0 s against the machines' 4.0 s and 3.0 s.
+<strong>The least-damped oscillatory mode gets better</strong>, from ζ = 0.0134 to 0.0187
+while machines are still present. The reason is <var>K</var><sub>D,eq</sub> = 20 pu on the converters against
+<var>K</var><sub>D</sub> = 2 pu on the machines, which is the droop equivalence of <a href="ch3.html#thm-3-3">R26</a>:
+a 5 % droop gain gives <var>K</var><sub>D,eq</sub> = 1/<var>m</var><sub>p</sub> = 20 pu.
+The converters damp the machine mode that they do not replace.</p>
+
+<p>A third mode changes the reading. At <var>c</var> = 20 % a mode sits at
+λ = −2.2151 + j17.3463 s<sup>−1</sup> with ζ = 0.1267 and its largest participation on
+converter 3. By <var>c</var> = 80 % the same branch of the locus has moved to
+λ = −0.7671 + j12.9359 s<sup>−1</sup> with ζ = 0.0592, and its largest participation has
+moved to machine 2. So one mode's damping falls by a factor of 2.1 as the converter share rises, while the
+least-damped mode's improves. Beyond 80 % the same branch keeps falling: ζ = 0.0458 at
+85 %, 0.0319 at 90 % and 0.0206 at 95 %. It crosses ζ = 0.05 between <var>c</var> = 80 %
+and 85 %. It is never the least-damped mode, because the machine mode sits below it at
+every step. "Converter penetration damps the system" and "converter
+penetration undamps the system" are both false as general statements: the modes disagree.</p>
+
+<figure id="fig-4-2">
+<svg viewBox="0 0 640 420" role="img" aria-label="Eigenvalues of test system TS4 as the converter share rises from 0 to 100 percent">
+  <rect x="0" y="0" width="640" height="420" fill="#1e293b"/>
+  <!-- axes -->
+  <line x1="70" y1="350" x2="620" y2="350" stroke="#94a3b8" stroke-width="1"/>
+  <line x1="532.9" y1="40" x2="532.9" y2="356" stroke="#94a3b8" stroke-width="1"/>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">
+    <text x="70" y="366">−3</text><text x="224.3" y="366">−2</text>
+    <text x="378.6" y="366">−1</text><text x="532.9" y="366">0</text>
+    <text x="330" y="384" fill="#cbd5e1" font-size="11">real part σ (s⁻¹)</text>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="end">
+    <text x="64" y="354">0</text><text x="64" y="280">5</text>
+    <text x="64" y="206">10</text><text x="64" y="132">15</text><text x="64" y="58">20</text>
+  </g>
+  <text x="16" y="34" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">damped ω_d (rad/s)</text>
+  <g stroke="#334155" stroke-width="0.7">
+    <line x1="70" y1="276.2" x2="620" y2="276.2"/>
+    <line x1="70" y1="202.4" x2="620" y2="202.4"/>
+    <line x1="70" y1="128.6" x2="620" y2="128.6"/>
+    <line x1="70" y1="54.8" x2="620" y2="54.8"/>
+  </g>
+  <!-- constant zeta rays -->
+  <line x1="532.9" y1="350" x2="370.65" y2="40" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="4 3"/>
+  <line x1="532.9" y1="350" x2="207.22" y2="40" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="4 3"/>
+  <text x="374" y="52" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">ζ = 0.05</text>
+  <text x="196" y="52" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10" text-anchor="end">ζ = 0.10</text>
+  <!-- machine-dominated modes: teal circles -->
+  <g fill="#2dd4bf">
+    <circle cx="509.44" cy="183.07" r="4.5"/>
+    <circle cx="508.77" cy="180.88" r="4.5"/>
+    <circle cx="507.62" cy="178.66" r="4.5"/>
+    <circle cx="505.28" cy="176.49" r="4.5"/>
+    <circle cx="498.68" cy="174.90" r="4.5"/>
+    <circle cx="414.50" cy="159.04" r="4.5"/>
+  </g>
+  <!-- converter-dominated modes: orange squares -->
+  <g fill="#fb923c">
+    <rect x="186.6" y="89.4" width="9" height="9"/>
+    <rect x="142.6" y="59.0" width="9" height="9"/>
+    <rect x="142.7" y="65.6" width="9" height="9"/>
+    <rect x="242.5" y="117.2" width="9" height="9"/>
+    <rect x="142.7" y="71.8" width="9" height="9"/>
+    <rect x="314.7" y="138.6" width="9" height="9"/>
+    <rect x="142.6" y="77.7" width="9" height="9"/>
+    <rect x="142.6" y="83.1" width="9" height="9"/>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="9" fill="#cbd5e1">
+    <text x="516" y="172">c = 0…80 %</text>
+    <text x="516" y="184">machine mode</text>
+    <text x="516" y="196">ζ 0.0134→0.0187</text>
+    <text x="404" y="152" text-anchor="end">80 %</text>
+    <text x="310" y="132" text-anchor="end">60 %</text>
+    <text x="238" y="112" text-anchor="end">40 %</text>
+    <text x="182" y="86" text-anchor="end">20 %</text>
+    <text x="138" y="56" text-anchor="end">20 %</text>
+    <text x="138" y="96" text-anchor="end">40…100 %</text>
+  </g>
+  <!-- E_kin_sys strip -->
+  <rect x="70" y="392" width="550" height="22" fill="#0f172a" stroke="#334155"/>
+  <g font-family="system-ui,sans-serif" font-size="9.5" fill="#cbd5e1">
+    <text x="78" y="407">E_kin,sys (MVA·s):  c=0 → 3571.4   20 % → 3257.1   40 % → 2942.9   60 % → 2628.6   80 % → 2314.3   100 % → 2000.0</text>
+  </g>
+</svg>
+<figcaption><b>Fig. 4.2</b> — Eigenvalues of TS4 in the upper half plane as the converter
+share <var>c</var> rises from 0 % to 100 % in 20 % steps. Complex conjugates are not drawn.
+Teal circles are modes whose largest speed-state participation is a synchronous machine;
+orange squares are modes whose largest participation is a converter. Dashed rays are lines
+of constant damping ratio. The cluster near σ = −0.2 s<sup>−1</sup> is the machine mode: it
+barely moves, and its damping ratio rises from 0.0134 to 0.0187. The orange mode at
+σ = −2.5 s<sup>−1</sup> is the converter mode set by <var>K</var><sub>D,eq</sub> = 20 pu.
+The mode travelling from (−2.2151, 17.3463) at 20 % to (−0.7671, 12.9359) at 80 % is the
+one that loses damping, from ζ = 0.1267 to ζ = 0.0592. The strip below the axis prints
+<var>E</var><sub>kin,sys</sub> at each step; it falls by 44 % across the sweep while the
+least-damped mode improves. At <var>c</var> = 0 and <var>c</var> = 100 % only two units
+exist, so only one conjugate pair does. The figure illustrates Model 4.4 (R34). Numbers
+computed for TS4 in §4.2.4.</figcaption>
+</figure>
+
+<p>Fig. 4.2 also shows what Model 4.4 cannot tell the operator. Every mode is stable at
+every share, and nothing in the eigenvalues says the system is short of stored energy. The
+next two sections answer that with a different tool.</p>
+
+<!-- ============================================================ 4.3 -->
+<h2 id="s4-3">4.3 Rate of change of frequency</h2>
+
+<p>A generator trips. One instant earlier, generation matched demand; one instant later it
+is short by Δ<var>P</var>. No governor and no converter control has responded yet. Only
+stored energy can supply the missing power in that instant, so the frequency falls at a rate
+that measures how much stored energy there is.</p>
+
+<div class="thm" id="thm-4-5" data-rid="R35">
+<span class="rhead">Theorem 4.5 — Initial rate of change of frequency
+<span class="status">proved here</span><span class="rid">R35</span></span>
+<p>Let <var>n</var> units obey (4.3) and stay connected through a disturbance. Let
+<var>E</var><sub>kin,sys</sub> be their stored energy from (4.4), in MJ, counting those
+<var>n</var> units only and not any unit that trips. At <var>t</var> = 0 an infeed of
+Δ<var>P</var> MW is lost as a step. Assume:</p>
+<ol>
+<li>no load damping and no primary response inside the first instant, so every
+<var>P</var><sub>m,<var>i</var></sub> is unchanged at <var>t</var> = 0<sup>+</sup>;</li>
+<li>no angle δ<sub><var>i</var></sub> changes at <var>t</var> = 0<sup>+</sup>;</li>
+<li>the total electrical load is unchanged at <var>t</var> = 0<sup>+</sup>, so the
+<var>n</var> units together supply the whole pre-event load.</li>
+</ol>
+<p>Let Δω<sub>COI</sub> = (ω<sub>COI</sub> − ω<sub>0</sub>)/ω<sub>0</sub> be the
+centre-of-inertia speed deviation declared in the §4.2 local notation panel. By (4.5) it
+equals Σ<sub><var>i</var></sub> <var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>
+Δω<sub><var>i</var></sub> / <var>E</var><sub>kin,sys</sub>. Then the centre-of-inertia
+frequency falls at</p>
+<div class="eq"><div class="body">
+RoCoF<sub>0</sub> = −
+<span class="frac"><span class="n"><var>f</var><sub>0</sub> Δ<var>P</var></span><span class="d">2 <var>E</var><sub>kin,sys</sub></span></span>
+&nbsp;Hz/s
+</div><div class="num">(4.8)</div></div>
+<p>The chapter quotes the magnitude
+<var>f</var><sub>0</sub>Δ<var>P</var>/(2<var>E</var><sub>kin,sys</sub>) when the direction is
+clear from the sentence.</p>
+<div class="proof">
+<p class="proof-h">Proof.</p>
+<p>Multiply each unit's speed equation in (4.3) by <var>S</var><sub>sys</sub> and sum over
+the <var>n</var> connected units:</p>
+<p>Σ<sub><var>i</var></sub> 2<var>H</var><sub><var>i</var></sub><var>S</var><sub><var>i</var></sub>
+dΔω<sub><var>i</var></sub>/d<var>t</var> = Σ<sub><var>i</var></sub>
+(<var>P</var><sub>m,<var>i</var></sub> − <var>P</var><sub>e,<var>i</var></sub>)<var>S</var><sub>sys</sub>
+− Σ<sub><var>i</var></sub> <var>K</var><sub>D,<var>i</var></sub><var>S</var><sub><var>i</var></sub>
+Δω<sub><var>i</var></sub>.</p>
+<p>At <var>t</var> = 0<sup>+</sup> every Δω<sub><var>i</var></sub> is still zero, so the
+damping sum is zero. By the definition of Δω<sub>COI</sub>, the left side is
+2<var>E</var><sub>kin,sys</sub> dΔω<sub>COI</sub>/d<var>t</var>. On the right, assumption 1
+holds every <var>P</var><sub>m,<var>i</var></sub> at its pre-event value, so
+Σ<sub><var>i</var></sub> <var>P</var><sub>m,<var>i</var></sub><var>S</var><sub>sys</sub> is
+the pre-event output of the <var>n</var> units. That output is the pre-event load minus
+Δ<var>P</var>, because the lost infeed supplied Δ<var>P</var> of that load. By assumption
+3 and the algebraic network of Model 4.2, the <var>n</var> units' electrical outputs sum
+to the whole pre-event load at <var>t</var> = 0<sup>+</sup>. The sum of mechanical
+minus electrical power is therefore −Δ<var>P</var> in MW. Hence</p>
+<p>2<var>E</var><sub>kin,sys</sub> dΔω<sub>COI</sub>/d<var>t</var> = −Δ<var>P</var>.</p>
+<p>Frequency in hertz is <var>f</var> = <var>f</var><sub>0</sub>(1 + Δω<sub>COI</sub>), so
+d<var>f</var>/d<var>t</var> = <var>f</var><sub>0</sub> dΔω<sub>COI</sub>/d<var>t</var>.
+Substituting gives (4.8). ∎</p>
+</div>
+<p><strong>Where the hypotheses bind.</strong> Assumption 3 is not exact for the
+constant-impedance load of Model 4.2. The bus voltages move at the instant of the trip,
+and the load power moves with them to first order in the voltage change. This theorem
+neglects that change. Assumption 2 fails after the first swing, which is why (4.8) is an
+initial rate and not a trajectory; Theorem 4.6 supplies the trajectory. If the tripped
+unit's stored energy is counted in <var>E</var><sub>kin,sys</sub> by mistake, (4.8)
+understates the rate by the ratio of the two energies.</p>
+</div>
+
+<p>Three readings of (4.8) matter.</p>
+
+<p><strong>One.</strong> RoCoF<sub>0</sub> is proportional to
+1/<var>E</var><sub>kin,sys</sub> with no control parameter in it: no governor, no droop gain,
+no filter cutoff. That is why it measures system strength; it reports stored energy and
+nothing else.</p>
+
+<p><strong>Two.</strong> RoCoF<sub>0</sub> is a centre-of-inertia quantity. Equation (4.8) is
+exact for ω<sub>COI</sub> and not for any single bus. Immediately after the loss, the units
+electrically closest to the lost infeed supply most of the missing power and slow fastest. A
+local measurement can therefore read a rate higher than (4.8) until the angles have
+redistributed the deficit. A relay measures a bus, not the centre of inertia, so the
+planner's number and the relay's number differ.</p>
+
+<p><strong>Three.</strong> RoCoF is also a protection setting, and here two published figures
+circulate that must never be merged.</p>
+
+<div class="note">
+<p><strong>Two rate-of-change-of-frequency figures, kept separate.</strong></p>
+<ul>
+<li>The ENTSO-E withstand guidance is reported as <strong>2 Hz/s measured over 500 ms</strong>
+<span class="cite">[S15, ENTSO-E 2018, <em>Rate of Change of Frequency (RoCoF) Withstand
+Capability — Guidance document for national implementation</em>, withstand requirement —
+verify]</span>. This is a capability a unit must survive.</li>
+<li>The <strong>1 Hz/s</strong> figure is the rate-of-change-of-frequency standard adopted
+in Ireland under the DS3 programme
+<span class="cite">[S16, EirGrid and SONI, DS3 programme documentation,
+rate-of-change-of-frequency standard — verify, including which document and which
+year]</span>. It is a system operating limit and a relay setting. This book's source
+list has no entry for the corresponding Great Britain loss-of-mains setting, so no Great
+Britain value is printed here.</li>
+</ul>
+<p>These are different quantities with different purposes. This book never writes
+"ENTSO-E 1 Hz/s". Where §4.5 uses 1 Hz/s, it uses it as a design input of that case and
+attributes it to S16.</p>
+</div>
+
+<p>The two uses pull the same number in opposite directions. A lower relay threshold
+disconnects embedded generation sooner during a genuine system event, which makes the event
+worse. A higher threshold permits less stored energy, and widens the window in which an
+island goes undetected. Exercise 4.1 asks for that argument in full.</p>
+
+<p>TS4 makes the sensitivity concrete. Take a 100 MW loss. At the base case,
+RoCoF<sub>0</sub> = 50 × 100 / (2 × 3100) = 5000/6200 = 0.8065 Hz/s. At
+<var>c</var> = 100 %, <var>E</var><sub>kin,sys</sub> = 2000 MVA·s and
+RoCoF<sub>0</sub> = 50 × 100 / (2 × 2000) = 5000/4000 = 1.2500 Hz/s. The same loss on the
+same rating produces a rate 1.55 times higher, purely because
+<var>E</var><sub>kin,sys</sub> fell from 3100 to 2000 MVA·s.</p>
+
+<!-- ============================================================ 4.4 -->
+<h2 id="s4-4">4.4 The frequency nadir</h2>
+
+<div class="localnot">
+<strong>Local notation for §4.4.</strong>
+<ul>
+<li>Δ<var>f</var>(<var>t</var>) — frequency deviation <var>f</var>(<var>t</var>) −
+<var>f</var><sub>0</sub>, in hertz, as a function of time. The book table defines only its
+value at the nadir, Δ<var>f</var><sub>nadir</sub>.</li>
+<li>τ — the time constant 2<var>E</var><sub>kin,sys</sub>/(<var>f</var><sub>0</sub>
+<var>D</var><sub>load</sub>), in seconds. Used only in the load-damping extension and in
+Exercise 4.3.</li>
+</ul>
+</div>
+
+<p>RoCoF<sub>0</sub> is the slope at one instant. The depth of the fall is set by how fast
+the response arrives, and the simplest useful model of that is a linear ramp.</p>
+
+<div class="thm" id="thm-4-6" data-rid="R36">
+<span class="rhead">Theorem 4.6 — Frequency nadir under a linear primary-response ramp
+<span class="status">proved here</span><span class="rid">R36</span></span>
+<p>Take the aggregated system of Theorem 4.5. At <var>t</var> = 0 an infeed of
+Δ<var>P</var> MW is lost as a step. Primary response <var>R</var><sub>p</sub> is delivered
+as a linear ramp that starts at <var>t</var> = 0 and reaches its full value at
+<var>t</var> = <var>T</var>. Assume <var>R</var><sub>p</sub> = Δ<var>P</var> and no load
+damping. Then the frequency deviation is</p>
+<div class="eq"><div class="body">
+Δ<var>f</var>(<var>t</var>) = −
+<span class="frac"><span class="n"><var>f</var><sub>0</sub> Δ<var>P</var></span><span class="d">2 <var>E</var><sub>kin,sys</sub></span></span>
+( <var>t</var> − <var>t</var>²/(2<var>T</var>) )
+&nbsp; for 0 ≤ <var>t</var> ≤ <var>T</var>
+</div><div class="num">(4.9)</div></div>
+<p>and the nadir is reached at <var>t</var> = <var>T</var> with</p>
+<div class="eq"><div class="body">
+Δ<var>f</var><sub>nadir</sub> = −
+<span class="frac"><span class="n"><var>f</var><sub>0</sub> Δ<var>P</var> <var>T</var></span><span class="d">4 <var>E</var><sub>kin,sys</sub></span></span>
+</div><div class="num">(4.10)</div></div>
+<div class="proof">
+<p class="proof-h">Proof.</p>
+<p>The aggregated speed equation from the proof of Theorem 4.5, written in hertz, is</p>
+<p>(2<var>E</var><sub>kin,sys</sub>/<var>f</var><sub>0</sub>) dΔ<var>f</var>/d<var>t</var>
+= −Δ<var>P</var> + <var>R</var><sub>p</sub> <var>t</var>/<var>T</var>, for
+0 ≤ <var>t</var> ≤ <var>T</var>.</p>
+<p>Put <var>R</var><sub>p</sub> = Δ<var>P</var> and integrate once from 0 to <var>t</var>
+with Δ<var>f</var>(0) = 0. That gives (4.9). Differentiate (4.9): the slope is zero when
+1 − <var>t</var>/<var>T</var> = 0, that is at <var>t</var> = <var>T</var>. The slope is
+negative before <var>T</var> and zero after it, so <var>t</var> = <var>T</var> is the
+minimum. Substituting <var>t</var> = <var>T</var> into (4.9) gives
+−(<var>f</var><sub>0</sub>Δ<var>P</var>/(2<var>E</var><sub>kin,sys</sub>))(<var>T</var> −
+<var>T</var>/2) = −<var>f</var><sub>0</sub>Δ<var>P</var><var>T</var>/(4<var>E</var><sub>kin,sys</sub>),
+which is (4.10). The factor 4 is 2 × 2: one 2 from the swing equation, one 2 from the
+triangular area of the ramp. ∎</p>
+</div>
+<p>Status: proved here. The low-order frequency-response model this simplifies is standard
+<span class="cite">[S13, Anderson and Mirheydar 1990, "A Low-Order System Frequency Response
+Model", <em>IEEE Trans. Power Systems</em> 5(3), 720–729, nadir model and its assumptions —
+verify]</span>.</p>
+</div>
+
+<div class="rem" id="rem-4-1">
+<span class="rhead">Remark 4.1 — When the response does not match the loss</span>
+<p>Keep the ramp but let <var>R</var><sub>p</sub> ≠ Δ<var>P</var>. The slope of Δ<var>f</var>
+is zero when <var>R</var><sub>p</sub><var>t</var>/<var>T</var> = Δ<var>P</var>. If
+<var>R</var><sub>p</sub> ≥ Δ<var>P</var>, the nadir is at <var>t</var>* =
+<var>T</var>Δ<var>P</var>/<var>R</var><sub>p</sub> ≤ <var>T</var>, with
+Δ<var>f</var><sub>nadir</sub> =
+−<var>f</var><sub>0</sub>Δ<var>P</var>²<var>T</var>/(4<var>E</var><sub>kin,sys</sub><var>R</var><sub>p</sub>).
+More response arrives sooner and the nadir is shallower by the factor
+Δ<var>P</var>/<var>R</var><sub>p</sub>. If <var>R</var><sub>p</sub> &lt; Δ<var>P</var>, the
+slope never reaches zero. After <var>t</var> = <var>T</var> the frequency keeps falling at
+the constant rate
+<var>f</var><sub>0</sub>(Δ<var>P</var> − <var>R</var><sub>p</sub>)/(2<var>E</var><sub>kin,sys</sub>).
+There is no nadir until something else acts. For Example 4.1 with
+<var>R</var><sub>p</sub> = 1500 MW, <var>t</var>* = 6.667 s and
+Δ<var>f</var><sub>nadir</sub> = −0.4167 Hz. A Runge-Kutta run returns −0.416667 Hz at
+6.6667 s.</p>
+</div>
+
+<h3>4.4.1 What the assumptions do to the answer</h3>
+
+<p>A reader may meet the claim that (4.10) is conservative, that is, that it overstates the
+depth. The formula alone does not support that claim. Two of its assumptions push in
+opposite directions.</p>
+
+<ul>
+<li><strong>No load damping makes the computed nadir too deep.</strong> Real demand falls as
+frequency falls. That is a real power term, −<var>D</var><sub>load</sub>Δ<var>f</var>, on
+the right of the aggregated equation, and it opposes the deviation. Omitting it removes help
+that exists.</li>
+<li><strong>A ramp that starts at <var>t</var> = 0 makes the computed nadir too shallow.</strong>
+Real primary response has a deadband, a measurement delay and a governor time constant
+(Terms panel) <span class="cite">[S13, Anderson and Mirheydar 1990, "A Low-Order System
+Frequency Response Model", <em>IEEE Trans. Power Systems</em> 5(3), 720–729, governor
+model — verify]</span>. It does not start at the instant of the loss. Omitting that delay
+supplies help sooner than it arrives.</li>
+<li><strong>A ramp is not a governor.</strong> A real response is closer to a first-order
+lag than to a straight line.</li>
+<li><strong>No current limiting.</strong> If any converter hits
+<var>I</var><sub>max</sub> the model of <a href="ch3.html#cor-3-8">R33</a> no longer describes it, and (4.10) does not know.
+This is the assumption that breaks in a large event.</li>
+</ul>
+
+<p>The net direction is therefore not decidable from the formula alone. Equation (4.10) is
+a screening formula whose two largest errors have opposite signs, not a bound.</p>
+
+<h3>4.4.2 Load damping as a named extension</h3>
+
+<p>Adding load damping gives
+(2<var>E</var><sub>kin,sys</sub>/<var>f</var><sub>0</sub>) dΔ<var>f</var>/d<var>t</var>
+= −Δ<var>P</var> + Δ<var>P</var><var>t</var>/<var>T</var> −
+<var>D</var><sub>load</sub>Δ<var>f</var>. The equation is first order with time constant
+τ = 2<var>E</var><sub>kin,sys</sub>/(<var>f</var><sub>0</sub><var>D</var><sub>load</sub>),
+and the group that decides whether damping matters is <var>T</var>/τ =
+<var>D</var><sub>load</sub><var>T</var><var>f</var><sub>0</sub>/(2<var>E</var><sub>kin,sys</sub>),
+with <var>D</var><sub>load</sub> in MW/Hz, <var>T</var> in s, <var>f</var><sub>0</sub> in Hz
+and <var>E</var><sub>kin,sys</sub> in MJ. Units: (MW/Hz)(s)(Hz)/MJ = MW·s/MJ = 1. For
+<var>T</var>/τ ≪ 1 the damping term is negligible; for <var>T</var>/τ ≫ 1 it,
+not the ramp, sets the depth. Exercise 4.3 works this out.</p>
+
+<h3>4.4.3 Worked case</h3>
+
+<div class="ex" id="ex-4-1" data-rid="R37">
+<span class="rhead">Example 4.1 — The textbook nadir
+<span class="status">computed here</span><span class="rid">R37</span></span>
+<p><strong>Inputs.</strong> A 50 Hz system. <var>E</var><sub>kin,sys</sub> = 200 GVA·s =
+200 000 MJ. This is the stored energy of the units that stay connected after the loss, as
+Theorem 4.5 requires. This figure is an <em>input of this example</em>. It is of the order
+reported for Great Britain in 2019 <span class="cite">[S14, National Grid ESO 2019,
+<em>Technical Report on the events of 9 August 2019</em>, system inertia at the time of the
+event — verify]</span>. This book has not read the value from that report. Treat it as
+<span class="verify">assumed for this case</span>, and verify the figure and its year before
+quoting it elsewhere. Loss of infeed
+Δ<var>P</var> = 1000 MW. Primary response <var>R</var><sub>p</sub> = 1000 MW delivered as a
+linear ramp over <var>T</var> = 10 s. No load damping.</p>
+
+<p><strong>Step 1 — initial rate, from (4.8).</strong></p>
+<p>RoCoF<sub>0</sub> = <var>f</var><sub>0</sub>Δ<var>P</var>/(2<var>E</var><sub>kin,sys</sub>)
+= 50 × 1000 / (2 × 200 000) = 50 000 / 400 000 = <strong>0.125 Hz/s</strong>.</p>
+
+<p><strong>Step 2 — nadir, from (4.10).</strong></p>
+<p>Δ<var>f</var><sub>nadir</sub> = −<var>f</var><sub>0</sub>Δ<var>P</var><var>T</var>/(4<var>E</var><sub>kin,sys</sub>)
+= −50 × 1000 × 10 / (4 × 200 000) = −500 000 / 800 000 = <strong>−0.625 Hz</strong>,
+reached at <var>t</var> = <var>T</var> = 10 s. Hence
+<var>f</var><sub>nadir</sub> = 50 − 0.625 = <strong>49.375 Hz</strong>.</p>
+
+<p><strong>Check.</strong> Integrating the aggregated equation numerically with a
+fourth-order Runge-Kutta step of 1 × 10<sup>−4</sup> s returns a minimum deviation of
+−0.625000 Hz at <var>t</var> = 10.0000 s. The difference from the closed form is
+1.8 × 10<sup>−13</sup> Hz, which is round-off.</p>
+
+<p><strong>Step 3 — how much energy that is.</strong> The stored energy released down to the
+nadir is 2<var>E</var><sub>kin,sys</sub>|Δ<var>f</var>|/<var>f</var><sub>0</sub> =
+2 × 200 000 × 0.625 / 50 = 5000 MJ, which is 2.5 % of the system's stored energy. The
+released energy is 2.5 % of the store. The depth of the nadir is set by the 10 s delivery
+time <var>T</var> in (4.10), not by the size of the store.</p>
+
+<p><strong>Step 4 — halve the inertia.</strong> Take
+<var>E</var><sub>kin,sys</sub> = 100 GVA·s with everything else unchanged.</p>
+<p>RoCoF<sub>0</sub> = 50 × 1000 / (2 × 100 000) = <strong>0.250 Hz/s</strong>.</p>
+<p>Δ<var>f</var><sub>nadir</sub> = −50 × 1000 × 10 / (4 × 100 000) = <strong>−1.250 Hz</strong>,
+so <var>f</var><sub>nadir</sub> = <strong>48.750 Hz</strong>.</p>
+
+<p><strong>Reading.</strong> Both quantities scale as 1/<var>E</var><sub>kin,sys</sub>, so
+halving stored energy doubles the initial rate and doubles the depth. The halved-inertia
+nadir of 48.750 Hz sits 0.050 Hz below 48.8 Hz. That is the frequency at which Great
+Britain's low-frequency demand disconnection acted on 9 August 2019
+<span class="cite">[S14, National Grid ESO 2019, <em>Technical Report on the events of
+9 August 2019</em>, event summary — verify]</span>. §4.5 restates it with the event's
+two other figures as Citation 4.7. That is a scale check, not a claim about the event,
+which had a different loss, system and response.</p>
+</div>
+
+<figure id="fig-4-3">
+<svg viewBox="0 0 640 400" role="img" aria-label="Frequency against time for Example 4.1 at four values of system stored energy">
+  <rect x="0" y="0" width="640" height="400" fill="#1e293b"/>
+  <g stroke="#334155" stroke-width="0.7">
+    <line x1="70" y1="222.5" x2="610" y2="222.5"/>
+    <line x1="70" y1="135.0" x2="610" y2="135.0"/>
+    <line x1="70" y1="47.5" x2="610" y2="47.5"/>
+    <line x1="205" y1="30" x2="205" y2="310"/>
+    <line x1="340" y1="30" x2="340" y2="310"/>
+    <line x1="475" y1="30" x2="475" y2="310"/>
+  </g>
+  <line x1="70" y1="310" x2="610" y2="310" stroke="#94a3b8"/>
+  <line x1="70" y1="30" x2="70" y2="310" stroke="#94a3b8"/>
+  <!-- 48.8 Hz line -->
+  <line x1="70" y1="152.5" x2="610" y2="152.5" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="606" y="147" fill="#fb923c" font-family="system-ui,sans-serif" font-size="10" text-anchor="end">48.8 Hz — GB low-frequency demand disconnection setting in 2019 [S14 — verify]</text>
+  <!-- curves -->
+  <polyline fill="none" stroke="#2dd4bf" stroke-width="2" points="70.0,47.5 83.5,51.1 97.0,54.4 110.5,57.6 124.0,60.6 137.5,63.5 151.0,66.1 164.5,68.6 178.0,70.8 191.5,72.9 205.0,74.8 218.5,76.6 232.0,78.1 245.5,79.5 259.0,80.7 272.5,81.7 286.0,82.5 299.5,83.1 313.0,83.6 326.5,83.9 340.0,84.0 610.0,84.0"/>
+  <polyline fill="none" stroke="#2dd4bf" stroke-width="2" opacity="0.72" points="70.0,47.5 83.5,52.8 97.0,57.9 110.5,62.7 124.0,67.2 137.5,71.4 151.0,75.4 164.5,79.1 178.0,82.5 191.5,85.6 205.0,88.5 218.5,91.1 232.0,93.4 245.5,95.5 259.0,97.3 272.5,98.8 286.0,100.0 299.5,101.0 313.0,101.6 326.5,102.1 340.0,102.2 610.0,102.2"/>
+  <polyline fill="none" stroke="#fb923c" stroke-width="2" opacity="0.8" points="70.0,47.5 83.5,58.2 97.0,68.3 110.5,77.9 124.0,86.9 137.5,95.4 151.0,103.3 164.5,110.7 178.0,117.5 191.5,123.8 205.0,129.5 218.5,134.7 232.0,139.4 245.5,143.5 259.0,147.0 272.5,150.0 286.0,152.5 299.5,154.4 313.0,155.8 326.5,156.6 340.0,156.9 610.0,156.9"/>
+  <polyline fill="none" stroke="#fb923c" stroke-width="2" points="70.0,47.5 83.5,68.8 97.0,89.1 110.5,108.2 124.0,126.2 137.5,143.2 151.0,159.1 164.5,173.8 178.0,187.5 191.5,200.1 205.0,211.6 218.5,222.0 232.0,231.3 245.5,239.5 259.0,246.6 272.5,252.6 286.0,257.5 299.5,261.3 313.0,264.1 326.5,265.7 340.0,266.2 610.0,266.2"/>
+  <!-- nadir markers -->
+  <g fill="#e2e8f0">
+    <circle cx="340" cy="84.0" r="3.5"/><circle cx="340" cy="102.2" r="3.5"/>
+    <circle cx="340" cy="156.9" r="3.5"/><circle cx="340" cy="266.2" r="3.5"/>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#cbd5e1">
+    <text x="348" y="80">300 GVA·s → 49.583 Hz</text>
+    <text x="348" y="106">200 GVA·s → 49.375 Hz  (Example 4.1)</text>
+    <text x="348" y="170">100 GVA·s → 48.750 Hz</text>
+    <text x="348" y="280">50 GVA·s → 47.500 Hz</text>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">
+    <text x="70" y="326">0</text><text x="205" y="326">5</text><text x="340" y="326">10</text>
+    <text x="475" y="326">15</text><text x="610" y="326">20</text>
+    <text x="340" y="344" fill="#cbd5e1" font-size="11">time t (s), nadir at t = T = 10 s</text>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="end">
+    <text x="64" y="51">50.0</text><text x="64" y="139">49.0</text>
+    <text x="64" y="226">48.0</text><text x="64" y="314">47.0</text>
+  </g>
+  <text x="16" y="24" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">frequency f (Hz)</text>
+  <text x="70" y="378" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">ΔP = 1000 MW loss, R_p = 1000 MW ramped over T = 10 s, no load damping. Curves from (4.9).</text>
+</svg>
+<figcaption><b>Fig. 4.3</b> — Frequency against time for the Example 4.1 disturbance at four
+values of system stored energy: 300, 200, 100 and 50 GVA·s. Each curve is equation (4.9)
+evaluated every 0.5 s and held flat after <var>t</var> = <var>T</var> = 10 s. The filled
+circles mark the nadirs: 49.583, 49.375, 48.750 and 47.500 Hz. The dashed orange line is
+48.8 Hz. That is the frequency at which Great Britain's low-frequency demand disconnection
+acted in 2019 [S14, National Grid ESO 2019, <em>Technical Report on the events of
+9 August 2019</em>, event summary — verify]. §4.5 restates it as Citation 4.7. Halving
+the stored energy doubles the depth every time, so
+the nadir deviation scales as 1/<var>E</var><sub>kin,sys</sub>, which is what (4.10) says.
+The figure illustrates Theorem 4.6 and Example 4.1 (R36, R37).</figcaption>
+</figure>
+
+<!-- ============================================================ 4.5 -->
+<h2 id="s4-5">4.5 A sizing case: replacing a 1.6 GVA synchronous condenser fleet</h2>
+
+<div class="localnot">
+<strong>Local notation for §4.5.</strong>
+<ul>
+<li><var>E</var><sub>kin,fleet</sub> — stored kinetic energy of the condenser fleet, in MJ.
+It is (4.4) applied to that fleet alone.</li>
+<li><var>S</var><sub>gfm</sub> — total rating of the grid-forming fleet that replaces the
+condensers, in MVA.</li>
+<li><var>E</var><sub>released</sub> — stored energy released over a frequency
+excursion, in MJ; <var>P</var><sub>headroom</sub> — instantaneous power delivered at a
+given rate of change of frequency, in MW; <var>P</var><sub>inertial</sub> — the same
+power for one converter, in per unit of its own rating.</li>
+<li>Δ<var>f</var> — here a fixed frequency excursion, not the time function
+Δ<var>f</var>(<var>t</var>) of §4.4.</li>
+</ul>
+</div>
+
+<div class="cit" id="cit-4-7" data-rid="R38">
+<span class="rhead">Citation 4.7 — Great Britain, 9 August 2019
+<span class="status cited">cited, not proved here</span><span class="rid">R38</span></span>
+<p>This book takes three figures from the event report and no others. The frequency nadir
+was <strong>48.8 Hz</strong>. Low-frequency demand disconnection acting at 48.8 Hz shed
+<strong>about 931 MW</strong> of demand. The total infeed loss was <strong>about
+1878 MW</strong>, including embedded generation that disconnected on its own protection
+<span class="cite">[S14, National Grid ESO 2019, <em>Technical Report on the events of
+9 August 2019</em>, 6 September 2019, event summary — verify]</span>.</p>
+<p>No clock time and no individual plant output is quoted here, because the draft stage
+could not open the report; any such figure must be read from S14 first. The structural point
+taken from the event is that the outcome followed from a <em>sequence</em>: a loss, a second
+loss including embedded generation that tripped on its own protection, a nadir, then demand
+disconnection.</p>
+</div>
+
+
+<div class="ex" id="ex-4-2" data-rid="R39">
+<span class="rhead">Example 4.2 — Sizing the grid-forming replacement
+<span class="status">computed here</span><span class="rid">R39</span></span>
+
+<p><strong>The fleet is a design case defined by this book.</strong> It is not a published
+fleet and it is not measured plant. The project brief labels it "1.6 GW"; a synchronous
+condenser is rated in MVA, and this book therefore writes <strong>1.6 GVA</strong>
+throughout. Take 8 condensers of 200 MVA each, and take
+<var>H</var> = 3.5 s for each, including its flywheel. That inertia constant is
+<span class="verify">assumed for this case — verify against a manufacturer figure or a
+standard before quoting it elsewhere</span>. Everything below is arithmetic on those
+assumptions.</p>
+
+<p><strong>Stored energy of the fleet.</strong> By (4.4),
+<var>E</var><sub>kin,fleet</sub> = 8 × 200 × 3.5 = <strong>5600 MVA·s = 5.6 GVA·s =
+5600 MJ</strong>.</p>
+
+<p>Now size a grid-forming fleet against three constraints, separately. They have different
+units. They cannot be added and their maximum is not meaningful, because a megajoule, a
+megawatt and a per-unit current are not comparable quantities.</p>
+
+<h4>Constraint 1 — stored energy</h4>
+<p>Over a frequency excursion of Δ<var>f</var> = 0.8 Hz at
+<var>f</var><sub>0</sub> = 50 Hz, the energy the condensers release is</p>
+<div class="eq"><div class="body">
+<var>E</var><sub>released</sub> = 2 <var>E</var><sub>kin,fleet</sub>
+Δ<var>f</var>/<var>f</var><sub>0</sub>
+= 2 × 5600 × 0.8 / 50 = 8960/50 = <strong>179.2 MJ</strong>
+</div><div class="num">(4.11)</div></div>
+<p>In other units, 179.2 / 3.6 = <strong>49.78 kWh</strong>. Equation (4.11) is the fleet
+form of the energy bound (3.30) of <a href="ch3.html#cor-3-8">R33</a> (Corollary 3.8), with
+<var>E</var><sub>kin,fleet</sub> in place of <var>H</var><sub>eq</sub><var>S</var><sub>base</sub>.
+Equation (4.11) is the linearisation of the exact expression
+<var>E</var><sub>kin,fleet</sub>(1 − (1 − Δ<var>f</var>/<var>f</var><sub>0</sub>)²) =
+5600(1 − 0.984²) = 177.77 MJ. The dropped second-order term is 5600 × 0.016² = 1.43 MJ,
+which is 0.80 % of (4.11). The linearisation is stated, not assumed silently.</p>
+<p>Compare that with the store on the replacement fleet. The fleet rating
+<var>S</var><sub>gfm</sub> = 1120 MVA is the figure that Constraint 2 of this example
+returns. <em>Assumed for this case:</em> a one-hour store, so
+<var>E</var><sub>res</sub> = 1120 MWh = 1120 × 3600 = 4 032 000 MJ = 1.12 GWh. The ratio is
+4 032 000 / 179.2 = <strong>22 500</strong>. Stored energy is not the binding constraint. It
+is short of binding by a factor of 22 500, that is 10<sup>4.35</sup>.</p>
+
+<h4>Constraint 2 — power headroom</h4>
+<p>At a rate of change of frequency of 1 Hz/s, the instantaneous power the condensers
+deliver is</p>
+<div class="eq"><div class="body">
+<var>P</var><sub>headroom</sub> = 2 <var>E</var><sub>kin,fleet</sub>
+RoCoF / <var>f</var><sub>0</sub>
+= 2 × 5600 × 1.0 / 50 = 11200/50 = <strong>224 MW</strong>
+</div><div class="num">(4.12)</div></div>
+<p>The 1 Hz/s here is a design input of this case. It is the figure adopted in Ireland
+under DS3
+<span class="cite">[S16, EirGrid and SONI, DS3 programme documentation,
+rate-of-change-of-frequency standard — verify]</span>. It is <em>not</em> the ENTSO-E withstand
+figure, which is reported as 2 Hz/s over 500 ms
+<span class="cite">[S15, ENTSO-E 2018, <em>Rate of Change of Frequency (RoCoF) Withstand
+Capability — Guidance document for national implementation</em>, withstand requirement
+— verify]</span>. The two are kept apart here as §4.3 requires.</p>
+<p>A converter fleet must hold 224 MW above its dispatch to match that. Convert it to a
+fleet rating. By <a href="ch3.html#cor-3-8">R33</a> (Corollary 3.8, inequality (3.31)), a converter with equivalent
+inertia constant <var>H</var><sub>eq</sub> delivers, in per unit of its own rating,
+2<var>H</var><sub>eq</sub> RoCoF/<var>f</var><sub>0</sub>. For a virtual synchronous
+machine, <a href="ch3.html#thm-3-7">R32</a> gives <var>H</var><sub>eq</sub> = <var>H</var><sub>v</sub>, the chosen
+virtual inertia constant of <a href="ch3.html#model-3-4">R28</a>. So</p>
+<div class="eq"><div class="body">
+<var>P</var><sub>inertial</sub> = 2 <var>H</var><sub>v</sub> RoCoF / <var>f</var><sub>0</sub>
+= 2 × 5.0 × 1.0 / 50 = 10/50 = <strong>0.20 pu</strong>
+</div><div class="num">(4.13)</div></div>
+<p>at <var>H</var><sub>v</sub> = 5.0 s, which is <em>assumed for this case</em>. Hence</p>
+<p><var>S</var><sub>gfm</sub> = 224 / 0.20 = <strong>1120 MVA</strong>.</p>
+<p>A consistency check falls out of this. 1120 MVA at
+<var>H</var><sub>eq</sub> = <var>H</var><sub>v</sub> = 5.0 s carries
+<var>H</var><sub>eq</sub><var>S</var><sub>gfm</sub> = 1120 × 5.0 = 5600 MVA·s of equivalent
+stored energy, which is exactly <var>E</var><sub>kin,fleet</sub>. Plan rule §3.6 item 4
+keeps <var>H</var>, <var>H</var><sub>v</sub> and <var>H</var><sub>eq</sub> apart. The
+equality <var>H</var><sub>eq</sub> = <var>H</var><sub>v</sub> is a result of <a href="ch3.html#thm-3-7">R32</a> for this
+family, not an identification. That is not a coincidence: (4.12) and (4.13) are the same
+relation applied twice, so matching the headroom at one rate of change of frequency is the
+same as matching <var>H</var>×<var>S</var>. The rate 1 Hz/s cancels out.</p>
+
+<h4>Constraint 3 — the current limit</h4>
+<p>224 MW on 1120 MVA is 224/1120 = <strong>0.20 pu</strong> of extra power. <em>Assumed for
+this case:</em> the terminal voltage is 1.0 pu and the power factor is unity, so per-unit
+current equals per-unit power and 0.20 pu of power is 0.20 pu of current. A converter with
+<var>I</var><sub>max</sub> = 1.2 pu running at 1.0 pu of dispatch has 1.2 − 1.0 =
+<strong>0.20 pu</strong> of current left. The margin after the inertial current is therefore
+0.20 − 0.20 = <strong>0.00 pu</strong>.</p>
+<p>Nothing is left. There is no current for voltage support at the same instant and none
+for a fault contribution. A converter running at its limit is no longer described by the
+linear model of <a href="ch3.html#thm-3-7">R32</a>.</p>
+
+<h4>What binds</h4>
+<p>Power headroom binds, and the current limit binds at the same instant because it is the
+headroom divided by the fleet rating. Stored energy does not bind: it is short by a factor of
+22 500. Writing the requirement as "1.6 GW of inertia" answers none of the three.</p>
+
+<p><strong>What this case does not answer.</strong> Whether those converters stay stable
+while saturated at <var>I</var><sub>max</sub>. Model 4.4 assumes no current limiting and <a href="ch3.html#thm-3-7">R32</a>
+holds near the operating point; a large disturbance breaks both. That is the first open
+problem of §4.6.</p>
+</div>
+
+<figure id="fig-4-4">
+<svg viewBox="0 0 640 370" role="img" aria-label="The three sizing constraints of Example 4.2 drawn as three bars on a logarithmic axis">
+  <rect x="0" y="0" width="640" height="370" fill="#1e293b"/>
+  <line x1="120" y1="300" x2="600" y2="300" stroke="#94a3b8"/>
+  <line x1="120" y1="40" x2="120" y2="300" stroke="#94a3b8"/>
+  <g stroke="#334155" stroke-width="0.7">
+    <line x1="120" y1="258.3" x2="600" y2="258.3"/>
+    <line x1="120" y1="216.7" x2="600" y2="216.7"/>
+    <line x1="120" y1="175.0" x2="600" y2="175.0"/>
+    <line x1="120" y1="133.3" x2="600" y2="133.3"/>
+    <line x1="120" y1="50.0" x2="600" y2="50.0"/>
+  </g>
+  <line x1="120" y1="91.7" x2="600" y2="91.7" stroke="#fb923c" stroke-width="1.2" stroke-dasharray="6 4"/>
+  <text x="596" y="86" fill="#fb923c" font-family="system-ui,sans-serif" font-size="10.5" text-anchor="end">ratio = 1: the constraint binds</text>
+  <g font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="end">
+    <text x="114" y="304">10⁻⁵</text><text x="114" y="262">10⁻⁴</text>
+    <text x="114" y="220">10⁻³</text><text x="114" y="179">10⁻²</text>
+    <text x="114" y="137">10⁻¹</text><text x="114" y="95">1</text><text x="114" y="54">10</text>
+  </g>
+  <text x="16" y="26" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">required ÷ available (dimensionless, log scale)</text>
+  <!-- bars -->
+  <rect x="165" y="273.01" width="90" height="26.99" fill="#2dd4bf"/>
+  <rect x="315" y="91.67" width="90" height="208.33" fill="#fb923c"/>
+  <rect x="465" y="91.67" width="90" height="208.33" fill="#fb923c"/>
+  <g font-family="system-ui,sans-serif" font-size="11" fill="#e2e8f0" text-anchor="middle">
+    <text x="210" y="320">stored energy</text>
+    <text x="360" y="320">power headroom</text>
+    <text x="510" y="320">current limit</text>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="9.5" fill="#94a3b8" text-anchor="middle">
+    <text x="210" y="336">179.2 MJ needed</text>
+    <text x="210" y="348">4 032 000 MJ held</text>
+    <text x="210" y="360">ratio 4.44 × 10⁻⁵</text>
+    <text x="360" y="336">224 MW needed</text>
+    <text x="360" y="348">224 MW available</text>
+    <text x="360" y="360">ratio 1.0000</text>
+    <text x="510" y="336">0.20 pu needed</text>
+    <text x="510" y="348">0.20 pu available</text>
+    <text x="510" y="360">ratio 1.0000</text>
+  </g>
+  <text x="210" y="266" fill="#2dd4bf" font-family="system-ui,sans-serif" font-size="10" text-anchor="middle">1 part in 22 500</text>
+</svg>
+<figcaption><b>Fig. 4.4</b> — The three constraints of Example 4.2, each drawn as the ratio
+of what the requirement needs to what the 1120 MVA fleet has, on a logarithmic axis. The
+three quantities are of different kinds — megajoules, megawatts and per-unit current — so
+the bars may be compared with the dashed line at ratio 1, and with nothing else. They cannot
+be added and their maximum has no meaning. Stored energy is short of binding by a factor of
+22 500. Power headroom and the current limit both sit exactly on the line, because the third
+constraint is the second divided by the fleet rating. The figure illustrates Example 4.2
+(R39). Numbers computed in Example 4.2.</figcaption>
+</figure>
+
+<h3>4.5.1 The 2019 event as a scale check</h3>
+
+<p>This section makes two comparisons and refuses a third.</p>
+
+<p><strong>Scale of the fleet.</strong> The condenser fleet holds 5600 MJ against the
+200 000 MJ of the Example 4.1 system, that is 2.80 % of it. This replacement decision covers
+2.8 % of that system's inertia, not all of it.</p>
+
+<p><strong>Scale of the deviation.</strong> Example 4.1 at half inertia gave a nadir of
+48.750 Hz from a 1000 MW loss with a 10 s ramp. Citation 4.7 reports 48.8 Hz from a total loss
+of about 1878 MW. The two are within 0.05 Hz, which says Theorem 4.6 is of the right order for
+a system of this size, and nothing more.</p>
+
+<p><strong>What is refused.</strong> This book does not use Theorem 4.6 to reproduce the
+2019 event. It does not know that event's stored energy, response volume or delivery time,
+and Citation 4.7 lists the only three figures taken from the report. Treating the agreement
+as a validation would need those inputs.</p>
+
+<figure id="fig-4-5">
+<svg viewBox="0 0 640 260" role="img" aria-label="Sequence of the Great Britain 9 August 2019 event as reported">
+  <rect x="0" y="0" width="640" height="260" fill="#1e293b"/>
+  <line x1="40" y1="150" x2="600" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+  <polygon points="600,150 590,146 590,154" fill="#94a3b8"/>
+  <text x="560" y="172" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">sequence →</text>
+  <text x="40" y="172" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="10">no clock times are quoted: not read from S14</text>
+  <g font-family="system-ui,sans-serif" font-size="10.5">
+    <circle cx="110" cy="150" r="7" fill="#fb923c"/>
+    <line x1="110" y1="143" x2="110" y2="96" stroke="#334155"/>
+    <rect x="46" y="48" width="128" height="48" rx="5" fill="#0f172a" stroke="#334155"/>
+    <text x="110" y="66" text-anchor="middle" fill="#e2e8f0">loss 1</text>
+    <text x="110" y="82" text-anchor="middle" fill="#94a3b8">transmission-connected</text>
+    <text x="40" y="186" fill="#fb923c" font-family="system-ui,sans-serif" font-size="10">order of the losses as drawn: not read from S14 — verify</text>
+
+    <circle cx="255" cy="150" r="7" fill="#fb923c"/>
+    <line x1="255" y1="157" x2="255" y2="196" stroke="#334155"/>
+    <rect x="186" y="196" width="138" height="48" rx="5" fill="#0f172a" stroke="#334155"/>
+    <text x="255" y="214" text-anchor="middle" fill="#e2e8f0">further loss + embedded</text>
+    <text x="255" y="230" text-anchor="middle" fill="#2dd4bf">total ≈ 1878 MW</text>
+
+    <circle cx="395" cy="150" r="7" fill="#2dd4bf"/>
+    <line x1="395" y1="143" x2="395" y2="96" stroke="#334155"/>
+    <rect x="331" y="48" width="128" height="48" rx="5" fill="#0f172a" stroke="#334155"/>
+    <text x="395" y="66" text-anchor="middle" fill="#e2e8f0">nadir</text>
+    <text x="395" y="82" text-anchor="middle" fill="#2dd4bf">48.8 Hz</text>
+
+    <circle cx="520" cy="150" r="7" fill="#fb923c"/>
+    <line x1="520" y1="157" x2="520" y2="196" stroke="#334155"/>
+    <rect x="452" y="196" width="140" height="48" rx="5" fill="#0f172a" stroke="#334155"/>
+    <text x="522" y="214" text-anchor="middle" fill="#e2e8f0">demand disconnection</text>
+    <text x="522" y="230" text-anchor="middle" fill="#2dd4bf">≈ 931 MW shed at 48.8 Hz</text>
+  </g>
+  <text x="40" y="26" fill="#cbd5e1" font-family="system-ui,sans-serif" font-size="11">Every value: [S14, National Grid ESO 2019, Technical Report on the events of 9 August 2019, event summary — verify]</text>
+</svg>
+<figcaption><b>Fig. 4.5</b> — The reported sequence of the Great Britain event of 9 August
+2019: a first loss, a further loss compounded by embedded generation disconnecting on its
+own protection, a nadir at 48.8 Hz, and low-frequency demand disconnection shedding about
+931 MW at that frequency. The total infeed loss was about 1878 MW. No clock time is drawn,
+because none was read from the source. The order of the losses and of the
+embedded-generation disconnection is drawn as the draft understood it. It was not read
+from S14, so it carries verify like the values. The figure shows that the outcome followed
+from the sequence and not from any one of the three numbers. It illustrates Citation 4.7
+(R38). Every value carries [S14 — verify].</figcaption>
+</figure>
+
+<!-- ============================================================ 4.6 -->
+<h2 id="s4-6">4.6 What remains open</h2>
+
+<div class="cit" id="cit-4-8" data-rid="R40">
+<span class="rhead">Citation 4.8 — Open problems and the standards landscape
+<span class="status cited">cited, not proved here</span><span class="rid">R40</span></span>
+<p>Each item below is a question with a source. None is a prediction, and none carries a
+date.</p>
+</div>
+
+<p><strong>1. What does a grid-forming converter do while it is saturated at
+<var>I</var><sub>max</sub>?</strong> Every model in this book assumes it is not. Model 4.4
+assumes no current limiting; <a href="ch3.html#thm-3-7">R32</a> holds near the operating point; <a href="ch3.html#cor-3-8">R33</a> names
+<var>I</var><sub>max</sub> as a bound but does not describe behaviour beyond it. Example 4.2
+puts a fleet at exactly 0.00 pu of remaining current. The question is what the angle dynamics
+do when the current controller clips, and whether the converter resynchronises when the
+clipping ends. The specification side of this question is written down
+<span class="cite">[S17, National Grid ESO, Grid Code modification GC0137, <em>Minimum
+Specification Required for Provision of GB Grid Forming Capability</em>, current-limit and
+performance requirements — verify]</span>.</p>
+
+<p><strong>2. What fault current does a converter-dominated system produce, and will the
+protection see it?</strong> A synchronous machine delivers 5 to 7 times rated current into
+a close fault, set by its subtransient reactance
+<span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>, Ch. 3 —
+verify]</span>. Chapter 2 prints the same figure beside equation (2.7). A converter
+supplies a current close to <var>I</var><sub>max</sub>, which is 1.2 pu in Example 4.2. The
+question is what that does to the reach and grading of existing protection
+<span class="cite">[S18, IEEE Std 2800-2022, <em>Standard for Interconnection and
+Interoperability of Inverter-Based Resources</em>, fault-ride-through and current-injection
+requirements — verify]</span>.</p>
+
+<p><strong>3. Do the four grid-forming families interoperate?</strong> <a href="ch3.html#thm-3-7">R32</a> shows they agree
+to first order near the operating point. It does not show they agree away from it, and
+Chapter 3 states where they separate. The question is what a fleet of mixed droop, virtual
+synchronous machine, matching and dispatchable virtual oscillator plant does together under
+a large disturbance, when the plant comes from different vendors
+<span class="cite">[S12, Tayyebi, Groß, Anta, Kupzog and Dörfler 2020, "Frequency Stability
+of Synchronous Machines and Grid-Forming Power Converters", <em>IEEE J. Emerging and
+Selected Topics in Power Electronics</em> 8(2), 1004–1018, side-by-side comparison of the
+families — verify]</span>.</p>
+
+<p><strong>4. Can a converter-dominated system be started from black?</strong> A black start
+needs a source that energises a dead network, holds voltage and frequency while load is picked
+up, and survives the inrush. Nothing here addresses inrush. The question is which grid-forming
+families can do it, and under what conditions
+<span class="cite">[S20, ENTSO-E 2017, <em>High Penetration of Power Electronic Interfaced
+Power Sources (HPoPEIPS)</em>, IGD, system-level consequences of converter penetration —
+verify]</span>.</p>
+
+<p><strong>5. Do the manufacturer models match the measured plant?</strong> Every eigenvalue
+in Fig. 4.2 came from parameters taken as given. A real study uses vendor models, often
+black-box. The question is the gap between those models and the plant as measured
+<span class="cite">[S18, IEEE Std 2800-2022, <em>Standard for Interconnection and
+Interoperability of Inverter-Based Resources</em>, model-validation requirements —
+verify]</span>.</p>
+
+<p><strong>6. Is the classification of stability itself still complete?</strong> The 2021
+revision added converter-driven and resonance stability to the three classical classes, which
+is <a href="ch1.html#rem-1-1">R11</a>. The question is whether the frequency-stability arithmetic of Example 4.2 can stand
+without a converter-driven-stability calculation beside it
+<span class="cite">[S03, Hatziargyriou et al. 2021, "Definition and Classification of Power
+System Stability — Revisited and Extended", <em>IEEE Trans. Power Systems</em> 36(4),
+3271–3281, converter-driven and resonance stability classes — verify]</span>.</p>
+
+<h3>4.6.1 What this chapter does not cover</h3>
+
+<p>Four boundaries, stated so that the reader does not carry a result past them.</p>
+
+<ul>
+<li><strong>Nothing below the fundamental-frequency timescale.</strong> Model 4.2 makes the
+network algebraic, so electromagnetic transients, travelling waves and subsynchronous
+resonance are outside it. Fig. 4.2 could not show a converter-driven oscillation set by the
+current controller and the filter, because the model has no state that could carry one.</li>
+<li><strong>No voltage stability.</strong> Internal voltage magnitudes are constant in (4.2),
+and excitation control, flux decay and reactive-power limits are absent.</li>
+<li><strong>No large-signal converter behaviour.</strong> Theorem 4.6 is a linear ramp on an
+aggregated first-order equation, and Example 4.2 stops at the current limit.</li>
+<li><strong>No protection engineering and no market design.</strong> §4.6 states these as
+questions with sources and goes no further.</li>
+</ul>
+
+<!-- ============================================================ exercises -->
+<h2 id="s4-ex">Exercises</h2>
+
+<div class="exercise" id="exr-4-1">
+<span class="rhead">Exercise 4.1 (conceptual)</span>
+<p>Explain why the rate of change of frequency is both a measure of system strength and a
+protection setting, and why those two uses can conflict.</p>
+<details><summary>Answer target</summary>
+<p>By Theorem 4.5, RoCoF<sub>0</sub> = <var>f</var><sub>0</sub>Δ<var>P</var>/(2<var>E</var><sub>kin,sys</sub>)
+contains no control parameter, so it reports stored energy directly: that is the
+system-strength use. The same quantity is the input to loss-of-mains protection on embedded
+generation, which disconnects when it measures a rate above its threshold: that is the
+protection use. The conflict has two directions. Raising the threshold lets the system run on
+less stored energy without spurious disconnection, but widens the window in which a genuine
+islanding event goes undetected. Lowering the threshold detects islanding sooner, but makes
+embedded generation disconnect during a system-wide event and so deepens the very event it
+measured, which is the compounding mechanism in the sequence of Citation 4.7. Add the point
+from §4.3: (4.8) is exact for ω<sub>COI</sub>, while a relay measures one bus, so the two
+uses do not even read the same number.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-4-2">
+<span class="rhead">Exercise 4.2 (derivational)</span>
+<p>Derive Δ<var>f</var><sub>nadir</sub> = −<var>f</var><sub>0</sub>Δ<var>P</var><var>T</var>/(4<var>E</var><sub>kin,sys</sub>)
+from the aggregated swing equation with a linear-ramp response, and state where the factor 4
+comes from.</p>
+<details><summary>Answer target</summary>
+<p>Integrate (2<var>E</var><sub>kin,sys</sub>/<var>f</var><sub>0</sub>)dΔ<var>f</var>/d<var>t</var>
+= −Δ<var>P</var> + Δ<var>P</var><var>t</var>/<var>T</var> from 0 to <var>T</var> with
+Δ<var>f</var>(0) = 0. This gives (4.9). The slope vanishes at <var>t</var> = <var>T</var>,
+and the slope is negative before and zero after, so the nadir is at <var>t</var> =
+<var>T</var>. Substituting gives (4.10). The factor 4 is 2 × 2. One 2 is the 2 in
+2<var>E</var><sub>kin,sys</sub> from the swing equation of <a href="ch1.html#model-1-4">R04</a>. The other 2 is the ½ of the
+triangular area under the ramp, which appears as <var>T</var> − <var>T</var>/2 =
+<var>T</var>/2 in the integration.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-4-3">
+<span class="rhead">Exercise 4.3 (derivational)</span>
+<p>Add load damping <var>D</var><sub>load</sub> in MW/Hz, show that the nadir is shallower,
+and state the limit in which the damping term dominates the ramp.</p>
+<details><summary>Answer target</summary>
+<p>The aggregated equation becomes
+(2<var>E</var><sub>kin,sys</sub>/<var>f</var><sub>0</sub>)dΔ<var>f</var>/d<var>t</var>
+= −Δ<var>P</var> + Δ<var>P</var><var>t</var>/<var>T</var> −
+<var>D</var><sub>load</sub>Δ<var>f</var>. Because Δ<var>f</var> &lt; 0 during the fall, the
+new term is positive and opposes the deviation, so the nadir is shallower than (4.10) for
+every <var>D</var><sub>load</sub> &gt; 0. The equation is first order with time constant
+τ = 2<var>E</var><sub>kin,sys</sub>/(<var>f</var><sub>0</sub><var>D</var><sub>load</sub>),
+and the dimensionless group is <var>T</var>/τ =
+<var>D</var><sub>load</sub><var>T</var><var>f</var><sub>0</sub>/(2<var>E</var><sub>kin,sys</sub>).
+Units: (MW/Hz)(s)(Hz)/MJ = MW·s/MJ = 1, dimensionless, so the grouping is consistent.
+Damping dominates the ramp when <var>T</var>/τ ≫ 1. Numerical check on the Example 4.1
+system, by fourth-order Runge-Kutta with step 1 × 10<sup>−4</sup> s. The three
+<var>D</var><sub>load</sub> values test the grouping only and come from no source.</p>
+
+<div class="tw"><table>
+<thead><tr><th class="num"><var>D</var><sub>load</sub> (MW/Hz)</th><th class="num"><var>T</var>/τ</th><th class="num">nadir deviation (Hz)</th><th class="num">time of nadir (s)</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td class="num">0</td><td class="num">−0.6250</td><td class="num">10.000</td></tr>
+<tr><td class="num">500</td><td class="num">0.6250</td><td class="num">−0.4464</td><td class="num">7.768</td></tr>
+<tr><td class="num">1000</td><td class="num">1.2500</td><td class="num">−0.3513</td><td class="num">6.487</td></tr>
+<tr><td class="num">2000</td><td class="num">2.5000</td><td class="num">−0.2494</td><td class="num">5.011</td></tr>
+</tbody></table></div>
+<p>Against the undamped row, the nadir is both shallower and earlier, and it no longer
+occurs at <var>t</var> = <var>T</var>.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-4-4">
+<span class="rhead">Exercise 4.4 (computational)</span>
+<p>Integrate the Example 4.1 system with <var>T</var> swept over 5, 10, 20 and 30 s, and
+confirm that the nadir depth depends linearly on <var>T</var>.</p>
+<details><summary>Answer target</summary>
+<p>Equation (4.10) predicts −0.3125, −0.625, −1.25 and −1.875 Hz. Integrating the aggregated
+equation with a fourth-order Runge-Kutta step of 1 × 10<sup>−4</sup> s over 3<var>T</var>
+returns −0.312500, −0.625000, −1.250000 and −1.875000 Hz, each at <var>t</var> =
+<var>T</var>. The largest absolute difference from the closed form across the four runs is
+2.8 × 10<sup>−12</sup> Hz, which is round-off at double precision and not a modelling error.
+The dependence is exactly linear, because <var>T</var> enters (4.10) as a first power.
+Report the integration step and the tolerance, as done here; a run that reports only the four
+numbers has not shown that they came from an integration.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-4-5">
+<span class="rhead">Exercise 4.5 (computational)</span>
+<p>For TS4, find the converter share <var>c</var> at which the least-damped mode falls below
+ζ = 0.05, sweeping in 5 % steps.</p>
+<details><summary>Answer target</summary>
+<p>State the parameter set first: TS4 of §4.1.3, the sweep rule of §4.2.4, the equilibrium
+assumptions of §4.1.3, and Model 4.4 with no current limiting. Then report what the sweep
+returns and nothing else. For this parameter set the sweep returns <strong>no
+crossing</strong>. The least-damped oscillatory mode is already below ζ = 0.05 at
+<var>c</var> = 0, where it is 0.0134, and it stays below 0.05 at every step up to
+<var>c</var> = 95 %, where it is 0.0185. Along the way it rises to 0.0138 at 30 %, 0.0145 at
+50 %, 0.0187 at 80 % and 0.0212 at 90 %, then falls back to 0.0185 at 95 %. The mode that
+Fig. 4.2 shows losing damping does cross ζ = 0.05: it is 0.0592 at 80 %, 0.0458 at 85 %,
+0.0319 at 90 % and 0.0206 at 95 %. It is never the least-damped mode, so it does not answer
+the question as asked. Report both. At <var>c</var> = 100 % both machines have been removed
+and the only remaining conjugate pair has ζ = 0.1393, so the reported minimum jumps. The
+correct answer is therefore that the question's premise does not hold for this parameter
+set: the machine mode is lightly damped at every share, and the converters improve it rather
+than degrade it, because <var>K</var><sub>D,eq</sub> = 20 pu against the machines' 2 pu.
+Note also that the state dimension changes at the two endpoints, where two units disappear,
+so the mode count is 1 pair at <var>c</var> = 0 and at <var>c</var> = 100 %, and 3 pairs in
+between. Do not adjust the parameters to manufacture a crossing; report the sweep.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-4-6">
+<span class="rhead">Exercise 4.6 (conceptual)</span>
+<p>Example 4.2 concludes that power headroom binds and stored energy does not. State one
+change to the case that would reverse that conclusion.</p>
+<details><summary>Answer target</summary>
+<p>Any one of the following. (a) A required response duration of minutes instead of seconds.
+A rate-of-change-of-frequency requirement implies a few seconds. The energy term grows with
+duration while the headroom term does not. At a 224 MW draw the 4 032 000 MJ store lasts
+4 032 000/224 = 18 000 s = 5.0 h, so the reversal needs a duration of that order or a much
+smaller store. (b) A converter fleet with no long-duration store, such as photovoltaic
+without a battery. Then <var>E</var><sub>res</sub> is whatever the DC link holds. <a href="ch3.html#ex-3-2">R30</a>
+computes a DC-link store of 14.4 kJ on a 1 MVA base, that is 0.0144 MJ per MVA. The
+one-hour store assumed here holds 3600 MJ per MVA. The ratio is 3600/0.0144 = 250 000. (c) A
+requirement referenced to a deep and sustained frequency excursion rather than to a rate of
+change of frequency, because (4.11) scales with Δ<var>f</var> and with duration while (4.12)
+scales with RoCoF only.</p>
+</details>
+</div>
+
+<hr>
+
+<h2 id="s4-sum">Chapter summary</h2>
+
+<p>Definition 4.1 and Model 4.2 (R34, part 1) reduced the network to its source nodes, and
+Definition 4.3 and Model 4.4 (R34, part 2) assembled machines and converters into one state
+matrix. Fig. 4.2 showed that the eigenvalues of TS4 do not all move one way: stored energy
+fell 44 % while the least-damped mode improved from ζ = 0.0134 to 0.0187 and another
+degraded from ζ = 0.1267 at 20 % to 0.0592 at 80 % and 0.0206 at 95 %. Theorem 4.5 (R35)
+gave RoCoF<sub>0</sub> =
+<var>f</var><sub>0</sub>Δ<var>P</var>/(2<var>E</var><sub>kin,sys</sub>), exact for the centre
+of inertia and not for any single bus. Theorem 4.6 (R36) gave Δ<var>f</var><sub>nadir</sub> =
+−<var>f</var><sub>0</sub>Δ<var>P</var><var>T</var>/(4<var>E</var><sub>kin,sys</sub>).
+Example 4.1 (R37) gave 0.125 Hz/s and 49.375 Hz, doubling to 0.250 Hz/s and 48.750 Hz at
+half the stored energy. Citation 4.7 (R38) recorded the three figures taken from the Great
+Britain event of 9 August 2019. Example 4.2 (R39) sized the replacement of a 1.6 GVA
+condenser fleet: 179.2 MJ needed against 4 032 000 MJ held, 224 MW of headroom against
+224 MW, and 0.20 pu of current against 0.20 pu. Citation 4.8 (R40) listed six open questions,
+the first of which starts where Example 4.2 stops: at the current limit, with nothing in
+reserve.</p>
+
+<p>The reader can now do what plan Outcome 4 asks. Given a mixed fleet, compute
+<var>E</var><sub>kin,sys</sub> by (4.4), the initial rate by (4.8) and the nadir by (4.10).
+Given a replacement decision, write it as three sizing problems in three units by the
+method of Example 4.2, and name the one that binds. Given an eigenvalue plot, read damping
+from the constant-ζ rays and label each mode by its participation factors.</p>
+
+<p class="small">Every number here was recomputed before printing, by
+<code>draft_ch4_check.py</code> in the draft stage's scratchpad. Every citation carries
+<span class="verify">— verify</span>: no source was opened.</p>
+
+</div>
+</body>
+</html>

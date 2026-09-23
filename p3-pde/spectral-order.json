@@ -1,0 +1,47 @@
+{
+  "method": "spectral",
+  "scheme": "Fourier pseudo-spectral, 3/2-rule de-aliasing, integrating-factor RK4 (diffusion exact)",
+  "benchmark": "1D viscous Burgers, Cole-Hopf, nu=0.07, x in [0,2pi] periodic, t_end=0.5",
+  "grids": [
+    64,
+    128,
+    192,
+    256,
+    320,
+    384
+  ],
+  "time_steps": [
+    5000,
+    5000,
+    5000,
+    5000,
+    5000,
+    5000
+  ],
+  "dt": 0.0001,
+  "errors": [
+    0.03755425720142952,
+    0.0014129005850776703,
+    4.9885830133351295e-05,
+    1.659134672886989e-06,
+    5.7498219684240795e-08,
+    2.005274022751657e-09
+  ],
+  "error_norm": "discrete L2: sqrt(dx*sum(err^2)) at t=0.5",
+  "pairwise_orders": [
+    4.732244599845692,
+    8.24648769730517,
+    11.83056275666246,
+    15.067867562964386,
+    18.406892323664007
+  ],
+  "observed_order": 9.157516806862194,
+  "observed_order_fit": "least-squares slope of log(err) vs log(N) on all grids; spectral convergence has no fixed algebraic order, so this slope depends on the grid range (see pairwise_orders, which grow)",
+  "observed_exponential_rate": 0.05243715521245039,
+  "observed_exponential_rate_fit": "least-squares slope c of err ~ C exp(-c N) on all grids",
+  "dt_halving_relative_change_finest": 0.0009241320353630499,
+  "theoretical_order": null,
+  "theoretical_order_note": "spectral: faster than any fixed power of N (exponential in N for this analytic periodic solution); compare observed_exponential_rate, not observed_order",
+  "runtime_s": 12.261158100001921,
+  "pass": true
+}

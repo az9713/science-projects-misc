@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Lesson 4 — Equal-Area Criterion</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --text2: #cbd5e1;
+    --muted: #94a3b8;
+    --orange: #fb923c;
+    --teal: #2dd4bf;
+    --border: #334155;
+    --border-soft: #1e293b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    background: var(--bg);
+    color: var(--text2);
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    font-family: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+    padding: 14px;
+  }
+  .page { max-width: 880px; margin: 0 auto; }
+  h1 {
+    color: var(--text);
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--orange);
+    padding-bottom: 10px;
+  }
+  h2 {
+    color: var(--orange);
+    font-size: 1.15rem;
+    margin-top: 2em;
+    border-left: 4px solid var(--teal);
+    padding-left: 10px;
+  }
+  h3 { color: var(--text); font-size: 1.02rem; }
+  a { color: var(--teal); }
+  .tag {
+    display: inline-block;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.78rem;
+    margin: 2px 4px 2px 0;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 14px 0;
+  }
+  .problem {
+    border-left: 4px solid var(--orange);
+  }
+  .eq {
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 10px 0;
+    overflow-x: auto;
+    font-family: "Cambria Math", Cambria, Georgia, serif;
+    font-size: 1.02rem;
+    color: var(--text);
+  }
+  .eq .lbl {
+    float: right;
+    color: var(--muted);
+    font-family: "Segoe UI", sans-serif;
+    font-size: 0.78rem;
+  }
+  var { font-style: italic; color: var(--text); }
+  code, pre {
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #d1e7e0;
+  }
+  code { padding: 1px 5px; font-size: 0.92em; }
+  pre {
+    padding: 12px;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    display: block;
+    overflow-x: auto;
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th { color: var(--text); background: #172033; }
+  svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  figcaption {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 6px;
+  }
+  details {
+    background: #0b1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+  }
+  summary {
+    color: var(--teal);
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .answer { margin-top: 8px; border-left: 3px solid var(--orange); padding-left: 10px; }
+  .src { color: var(--muted); font-size: 0.85rem; }
+  ol, ul { padding-left: 1.3em; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+  footer { color: var(--muted); font-size: 0.8rem; margin-top: 2.5em; text-align: center; }
+  @media (max-width: 400px) {
+    body { padding: 8px; }
+    .card { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Lesson 4 — Big Faults: the Equal-Area Criterion and a Bisection for
+Clearing Time</h1>
+<div>
+  <span class="tag">Series: single-machine transient stability</span>
+  <span class="tag">Prerequisite: Lesson 2 (SMIB swing model), Lesson 3
+  (energy function)</span>
+</div>
+
+<h2>1. Opening problem</h2>
+<div class="card problem">
+<p>Take the machine from Lesson 2: an inertia constant
+<var>H</var> = 3.5 s, synchronous speed
+<var>&#969;</var><sub>0</sub> = 2&#960;&#183;60 = 376.99 rad/s, internal
+voltage <var>E</var>&prime; = 1.1 pu behind its transient reactance,
+delivering mechanical power <var>P</var><sub>m</sub> = 0.8 pu into an
+infinite bus at <var>V</var><sub>&#8734;</sub> = 1.0 pu. The path is
+the machine's transient reactance plus its step-up transformer,
+<var>X</var>&prime;<sub>d</sub> + <var>X</var><sub>t</sub> = 0.45 pu,
+followed by two parallel lines, so the total pre-fault reactance is
+<var>X</var><sub>pre</sub> = 0.45 + 0.20 = 0.65 pu (the 0.20 pu is two
+0.40 pu lines in parallel).</p>
+<p>A bolted three-phase short circuit lands on line 2 at its
+sending-end bus, the bus that connects the transformer to both lines.
+That bus is now at zero voltage, and every path from the machine to the
+infinite bus goes through it, so no active power reaches the infinite
+bus: the machine's electrical output <var>P</var><sub>e</sub> is
+exactly zero in this model. Protection detects the fault and trips
+line 2, which removes it from service; the machine now delivers through
+<var>X</var>&prime;<sub>d</sub> + <var>X</var><sub>t</sub> and the
+single surviving line, <var>X</var><sub>post</sub> = 0.45 + 0.40 =
+0.85 pu.</p>
+<p><strong>Question.</strong> How many milliseconds does protection
+have, from fault inception, to clear the fault before the machine can
+no longer recover synchronism?</p>
+<p><strong>Answer, computed below:</strong> 170 ms, that is 10.2 cycles
+at 60 Hz. Typical transmission protection clears a fault in 4 to 6
+cycles <span class="src">[unsourced: <code>../p1-textbook/book-plan.md</code>
+Example 1.2 states this range with no S-identifier; check it against S01
+(Kundur 1994) or S04 (Anderson and Fouad 2003) — verify]</span>, so this
+machine has margin: at 5 cycles (83.3 ms), the margin is 170.1 &minus;
+83.3 = 86.8 ms on the two rounded figures, or 86.7 ms from the
+unrounded run (Exercise 4 works this out in full).</p>
+</div>
+
+<h2>2. Learning goals</h2>
+<ol>
+<li>Model a fault as a switch between three networks: pre-fault,
+fault-on, post-fault.</li>
+<li>Derive the equal-area criterion from the energy function of
+Lesson 3.</li>
+<li>Compute the critical clearing angle and the critical clearing time
+in closed form.</li>
+<li>Find the same critical clearing time by bisection over
+simulations, and compare.</li>
+<li>Explain why a small-signal eigenvalue says nothing about this
+question.</li>
+</ol>
+
+<h2>3. Model: three networks, one machine</h2>
+<p>Lesson 2 fixed the swing convention this whole series uses, and
+Lesson 4 keeps it without change:</p>
+<div class="eq"><span class="lbl">swing equation</span>
+2<var>H</var> d(&#916;&#969;)/d<var>t</var> = <var>P</var><sub>m</sub>
+&minus; <var>P</var><sub>e</sub> &minus;
+<var>K</var><sub>D</sub>&#916;&#969;,&nbsp;&nbsp;&nbsp;
+d&#948;/d<var>t</var> = &#969;<sub>0</sub>&#916;&#969;</div>
+<p>Here <var>&#948;</var> is the rotor angle in radians, measured
+against a synchronously rotating reference; <var>&#916;&#969;</var> is
+the per-unit speed deviation from synchronous speed; <var>H</var> is
+the inertia constant in seconds; <var>K</var><sub>D</sub> is a damping
+coefficient in per-unit torque per per-unit speed deviation (never
+written <var>D</var>, to avoid confusion with a damping torque
+coefficient in different units); <var>P</var><sub>m</sub> is
+mechanical power in per unit and <var>P</var><sub>e</sub> is electrical
+power in per unit, both on the machine's own base. The machine is
+classical: constant <var>E</var>&prime; behind constant
+<var>X</var>&prime;<sub>d</sub> (direct-axis transient reactance), with
+<var>&#948;</var> the angle of <var>E</var>&prime; relative to the
+infinite-bus voltage. For a
+single machine against an infinite bus through a pure reactance
+<var>X</var>, the electrical power is
+<var>P</var><sub>e</sub> = <var>P</var><sub>max</sub>
+sin&#948;, with <var>P</var><sub>max</sub> =
+<var>E</var>&prime;<var>V</var><sub>&#8734;</sub> / <var>X</var>.</p>
+<p>This lesson's whole point is that a fault does not change the
+<em>equations</em> above; it changes <var>X</var>, and therefore
+<var>P</var><sub>max</sub>, in three stages:</p>
+<ul>
+<li><strong>Pre-fault</strong>: both lines in service,
+<var>X</var><sub>pre</sub> = 0.65 pu,
+<var>P</var><sub>max,pre</sub> = 1.1&#183;1.0 / 0.65 =
+1.6923 pu. The machine sits at the equilibrium angle where
+<var>P</var><sub>e</sub> = <var>P</var><sub>m</sub>:
+<var>&#948;</var><sub>0</sub> = arcsin(<var>P</var><sub>m</sub> /
+<var>P</var><sub>max,pre</sub>) = arcsin(0.4727) = 0.4924 rad =
+28.2&deg;.</li>
+<li><strong>Fault-on</strong>: a bolted three-phase fault at the
+sending-end bus of the lines puts that bus at zero voltage. The
+network is purely reactive and every machine-to-infinite-bus path
+passes through that bus, so <var>P</var><sub>e</sub> = 0 exactly for
+the whole time the fault persists. This is the strongest assumption in
+the lesson, and Section 7 returns to it.</li>
+<li><strong>Post-fault</strong>: protection has cleared the fault by
+opening the breakers on the faulted line, which stays out of
+service. Only the transformer and the one surviving line carry
+power: <var>X</var><sub>post</sub> = 0.85 pu,
+<var>P</var><sub>max,post</sub> = 1.1&#183;1.0 / 0.85 =
+1.2941 pu. The post-fault stable equilibrium is
+<var>&#948;</var><sub>s,post</sub> = arcsin(0.8 / 1.2941) =
+0.6664 rad = 38.18&deg;.</li>
+</ul>
+<p>Figure 4.1 draws all three <var>P</var><sub>e</sub>(<var>&#948;</var>)
+curves on one axis. Removing a line lowers the curve: the pre-fault
+curve peaks at 1.6923 pu, the post-fault curve at only 1.2941 pu,
+because one 0.40 pu line in place of two in parallel (0.20 pu) raises
+the total reactance from 0.65 pu to 0.85 pu, and
+<var>P</var><sub>max</sub> = <var>E</var>&prime;<var>V</var><sub>&#8734;</sub>
+/ <var>X</var> falls by the ratio 0.65/0.85 = 0.765. The fault-on curve
+is flat on the axis, at zero, because the zero-voltage fault bus lets
+no active power through to the infinite bus for as long as the fault
+lasts.</p>
+
+<figure class="card">
+<svg viewBox="0 0 640 380" role="img"
+aria-label="Power-angle curves for the pre-fault, fault-on and
+post-fault networks">
+<line x1="55" y1="335" x2="615" y2="335" stroke="#334155"/>
+<line x1="55" y1="335" x2="55" y2="25" stroke="#334155"/>
+<text x="620" y="340" fill="#94a3b8" font-size="11">&#948; (deg)</text>
+<text x="10" y="20" fill="#94a3b8" font-size="11">P (pu)</text>
+<text x="45" y="349" fill="#94a3b8" font-size="10"
+text-anchor="end">0</text>
+<text x="335" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">90</text>
+<text x="615" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">180</text>
+<line x1="335" y1="335" x2="335" y2="330" stroke="#334155"/>
+<path d="M 55.0,335.0 L 61.2,324.8 L 67.4,314.7 L 73.7,304.5
+L 79.9,294.4 L 86.1,284.4 L 92.3,274.4 L 98.6,264.5 L 104.8,254.7
+L 111.0,244.9 L 117.2,235.3 L 123.4,225.8 L 129.7,216.5 L 135.9,207.2
+L 142.1,198.2 L 148.3,189.3 L 154.6,180.6 L 160.8,172.0 L 167.0,163.7
+L 173.2,155.6 L 179.4,147.7 L 185.7,140.0 L 191.9,132.5 L 198.1,125.3
+L 204.3,118.4 L 210.6,111.7 L 216.8,105.3 L 223.0,99.2 L 229.2,93.4
+L 235.4,87.8 L 241.7,82.6 L 247.9,77.7 L 254.1,73.0 L 260.3,68.7
+L 266.6,64.8 L 272.8,61.1 L 279.0,57.8 L 285.2,54.8 L 291.4,52.2
+L 297.7,49.9 L 303.9,48.0 L 310.1,46.4 L 316.3,45.1 L 322.6,44.3
+L 328.8,43.7 L 335.0,43.5 L 341.2,43.7 L 347.4,44.3 L 353.7,45.1
+L 359.9,46.4 L 366.1,48.0 L 372.3,49.9 L 378.6,52.2 L 384.8,54.8
+L 391.0,57.8 L 397.2,61.1 L 403.4,64.8 L 409.7,68.7 L 415.9,73.0
+L 422.1,77.7 L 428.3,82.6 L 434.6,87.8 L 440.8,93.4 L 447.0,99.2
+L 453.2,105.3 L 459.4,111.7 L 465.7,118.4 L 471.9,125.3 L 478.1,132.5
+L 484.3,140.0 L 490.6,147.7 L 496.8,155.6 L 503.0,163.7 L 509.2,172.0
+L 515.4,180.6 L 521.7,189.3 L 527.9,198.2 L 534.1,207.2 L 540.3,216.5
+L 546.6,225.8 L 552.8,235.3 L 559.0,244.9 L 565.2,254.7 L 571.4,264.5
+L 577.7,274.4 L 583.9,284.4 L 590.1,294.4 L 596.3,304.5 L 602.6,314.7
+L 608.8,324.8 L 615.0,335.0"
+fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+<path d="M 55.0,335.0 L 61.2,327.2 L 67.4,319.5 L 73.7,311.7
+L 79.9,304.0 L 86.1,296.3 L 92.3,288.7 L 98.6,281.1 L 104.8,273.6
+L 111.0,266.1 L 117.2,258.8 L 123.4,251.5 L 129.7,244.3 L 135.9,237.3
+L 142.1,230.4 L 148.3,223.6 L 154.6,216.9 L 160.8,210.4 L 167.0,204.0
+L 173.2,197.8 L 179.4,191.7 L 185.7,185.9 L 191.9,180.2 L 198.1,174.7
+L 204.3,169.4 L 210.6,164.3 L 216.8,159.4 L 223.0,154.7 L 229.2,150.2
+L 235.4,146.0 L 241.7,142.0 L 247.9,138.2 L 254.1,134.7 L 260.3,131.4
+L 266.6,128.4 L 272.8,125.6 L 279.0,123.0 L 285.2,120.8 L 291.4,118.7
+L 297.7,117.0 L 303.9,115.5 L 310.1,114.3 L 316.3,113.3 L 322.6,112.7
+L 328.8,112.3 L 335.0,112.1 L 341.2,112.3 L 347.4,112.7 L 353.7,113.3
+L 359.9,114.3 L 366.1,115.5 L 372.3,117.0 L 378.6,118.7 L 384.8,120.8
+L 391.0,123.0 L 397.2,125.6 L 403.4,128.4 L 409.7,131.4 L 415.9,134.7
+L 422.1,138.2 L 428.3,142.0 L 434.6,146.0 L 440.8,150.2 L 447.0,154.7
+L 453.2,159.4 L 459.4,164.3 L 465.7,169.4 L 471.9,174.7 L 478.1,180.2
+L 484.3,185.9 L 490.6,191.7 L 496.8,197.8 L 503.0,204.0 L 509.2,210.4
+L 515.4,216.9 L 521.7,223.6 L 527.9,230.4 L 534.1,237.3 L 540.3,244.3
+L 546.6,251.5 L 552.8,258.8 L 559.0,266.1 L 565.2,273.6 L 571.4,281.1
+L 577.7,288.7 L 583.9,296.3 L 590.1,304.0 L 596.3,311.7 L 602.6,319.5
+L 608.8,327.2 L 615.0,335.0"
+fill="none" stroke="#fb923c" stroke-width="2.5"/>
+<line x1="55" y1="335" x2="615" y2="335" stroke="#94a3b8"
+stroke-width="2"/>
+<line x1="142.8" y1="335" x2="142.8" y2="197.2" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<line x1="253.9" y1="335" x2="253.9" y2="134.8" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<line x1="496.2" y1="335" x2="496.2" y2="197.2" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<line x1="55" y1="197.2" x2="615" y2="197.2" stroke="#94a3b8"
+stroke-dasharray="2,4"/>
+<text x="142.8" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;&#8320;</text>
+<text x="253.9" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;cr</text>
+<text x="496.2" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;max</text>
+<text x="600" y="192" fill="#94a3b8" font-size="10"
+text-anchor="end">Pm = 0.8</text>
+<text x="345" y="36" fill="#2dd4bf" font-size="11"
+text-anchor="middle">pre-fault (1.6923)</text>
+<text x="345" y="104" fill="#fb923c" font-size="11"
+text-anchor="middle">post-fault (1.2941)</text>
+<text x="480" y="325" fill="#94a3b8" font-size="11">fault-on
+(0)</text>
+</svg>
+<figcaption><strong>Fig. 4.1.</strong> Power-angle curves for the
+pre-fault network (teal, <var>P</var><sub>max</sub> = 1.6923 pu), the
+fault-on network (grey, flat at zero), and the post-fault network
+(orange, <var>P</var><sub>max</sub> = 1.2941 pu), with
+<var>P</var><sub>m</sub> = 0.8 pu marked and the three angles
+<var>&#948;</var><sub>0</sub> = 28.2&deg;,
+<var>&#948;</var><sub>cr</sub> = 63.9&deg;,
+<var>&#948;</var><sub>max</sub> = 141.8&deg; marked. Losing a line
+visibly lowers the curve the machine has to work against.</figcaption>
+</figure>
+
+<h2>4. Derivation: the equal-area criterion</h2>
+<p>Set <var>K</var><sub>D</sub> = 0 for this derivation — no damping
+during the fast swing following a big fault, an assumption Section 7
+revisits. Multiply the swing equation by
+<var>&#916;&#969;</var> and use
+d&#948;/d<var>t</var> = &#969;<sub>0</sub><var>&#916;&#969;</var> to
+trade the time variable for the angle variable:</p>
+<div class="eq"><span class="lbl">from Lesson 3's energy function</span>
+2<var>H</var> &#916;&#969; d(&#916;&#969;)/d<var>t</var> =
+(<var>P</var><sub>m</sub> &minus;
+<var>P</var><sub>e</sub>)&#916;&#969;
+&nbsp;&#8658;&nbsp;
+<var>H</var> d(&#916;&#969;&#178;)/d<var>t</var> =
+(1/&#969;<sub>0</sub>)(<var>P</var><sub>m</sub> &minus;
+<var>P</var><sub>e</sub>) d&#948;/d<var>t</var></div>
+<p>Integrating both sides over time, from a start where
+<var>&#916;&#969;</var> = 0 at angle <var>&#948;</var><sub>0</sub> to
+any later angle <var>&#948;</var>, gives the energy relation quoted in
+Lesson 3 and used here as the working tool of this lesson:</p>
+<div class="eq"><span class="lbl">energy balance</span>
+<var>H</var>&#969;<sub>0</sub>&#916;&#969;&#178; =
+&#8747;<sub>&#948;&#8320;</sub><sup>&#948;</sup>
+(<var>P</var><sub>m</sub> &minus; <var>P</var><sub>e</sub>)
+d&#948;</div>
+<p>The left side is &#969;<sub>0</sub> times
+<var>H</var>&#916;&#969;&#178;, and <var>H</var>&#916;&#969;&#178; is
+the kinetic energy of the speed deviation in per-unit seconds on the
+machine base (&frac12;<var>J</var>(&#969;<sub>0</sub>&#916;&#969;)&#178;
+divided by the rating, since <var>H</var> =
+&frac12;<var>J</var>&#969;<sub>0</sub>&#178; / rating). The factor
+&#969;<sub>0</sub> appears because the right side is integrated over
+angle in radians. The left side can never be negative. The right side is
+the net area between the mechanical-power line and the electrical
+power curve, swept from <var>&#948;</var><sub>0</sub> to
+<var>&#948;</var>. While the fault is on,
+<var>P</var><sub>e</sub> = 0, so every degree of rotor swing adds
+positive area — the rotor gains kinetic energy monotonically, which is
+exactly why a fault accelerates the machine. Call the area accumulated
+up to the clearing angle <var>&#948;</var><sub>c</sub> the
+<strong>accelerating area</strong>:</p>
+<div class="eq"><span class="lbl">accelerating area</span>
+<var>A</var><sub>acc</sub> =
+&#8747;<sub>&#948;&#8320;</sub><sup>&#948;c</sup>
+<var>P</var><sub>m</sub> d&#948; =
+<var>P</var><sub>m</sub>(<var>&#948;</var><sub>c</sub> &minus;
+<var>&#948;</var><sub>0</sub>)</div>
+<p>The moment protection clears the fault, the network switches to the
+post-fault curve, <var>P</var><sub>e</sub> =
+<var>P</var><sub>max,post</sub> sin<var>&#948;</var>. The post-fault
+curve delivers more than <var>P</var><sub>m</sub> only between
+<var>&#948;</var><sub>s,post</sub> = 38.18&deg; and
+<var>&#948;</var><sub>max</sub> = 141.82&deg; (Figure 4.1 shows the
+orange curve crossing the 0.8 pu line at 38.18&deg;). Between
+<var>&#948;</var><sub>0</sub> = 28.2&deg; and 38.18&deg; it still
+delivers less than <var>P</var><sub>m</sub>. The clearing angles of
+interest here (near 63.9&deg;) lie inside the band, so after clearing
+the machine decelerates. Angle keeps increasing (speed
+is still positive) while area keeps subtracting from the kinetic
+energy already banked. Define the <strong>decelerating area</strong>
+swept from the clearing angle up to some later angle
+<var>&#948;</var>:</p>
+<div class="eq"><span class="lbl">decelerating area</span>
+<var>A</var><sub>dec</sub>(<var>&#948;</var>) =
+&#8747;<sub>&#948;c</sub><sup>&#948;</sup>
+(<var>P</var><sub>max,post</sub> sin&#948; &minus;
+<var>P</var><sub>m</sub>) d&#948;</div>
+<p>The machine's speed deviation returns to zero — the rotor stops
+advancing and starts to swing back — the first time
+<var>A</var><sub>dec</sub> catches up to
+<var>A</var><sub>acc</sub>. The largest decelerating area the
+post-fault curve can ever supply, no matter how far <var>&#948;</var>
+is allowed to run, is the area up to
+<var>&#948;</var><sub>max</sub>, the second angle on the post-fault
+curve where <var>P</var><sub>e</sub> =
+<var>P</var><sub>m</sub> again (the unstable equilibrium of the
+post-fault system):</p>
+<div class="eq"><span class="lbl">far equilibrium on the post-fault
+curve</span>
+<var>&#948;</var><sub>max</sub> = &#960; &minus;
+arcsin(<var>P</var><sub>m</sub> /
+<var>P</var><sub>max,post</sub>) = &#960; &minus; arcsin(0.8 /
+1.2941) = 2.4752 rad = 141.82&deg;</div>
+<p>Beyond <var>&#948;</var><sub>max</sub>, the post-fault curve falls
+below <var>P</var><sub>m</sub> again and every further degree adds
+kinetic energy instead of removing it: the rotor accelerates away and
+never comes back. So the criterion for return is exactly this: the
+clearing angle <var>&#948;</var><sub>c</sub> is small enough that
+<var>A</var><sub>acc</sub> &#8804;
+<var>A</var><sub>dec</sub>(<var>&#948;</var><sub>max</sub>). The
+boundary case, where the machine only just returns — arriving at
+<var>&#948;</var><sub>max</sub> with exactly zero speed deviation left
+— defines the <strong>critical clearing angle</strong>
+<var>&#948;</var><sub>cr</sub>, and the boundary condition is the
+equal-area criterion:</p>
+<div class="eq"><span class="lbl">equal-area criterion</span>
+<var>A</var><sub>acc</sub> =
+<var>A</var><sub>dec</sub>(<var>&#948;</var><sub>max</sub>)</div>
+<p>Substituting the two area formulas at
+<var>&#948;</var><sub>c</sub> = <var>&#948;</var><sub>cr</sub> and
+carrying out both integrals:</p>
+<div class="eq">
+<var>P</var><sub>m</sub>(<var>&#948;</var><sub>cr</sub> &minus;
+<var>&#948;</var><sub>0</sub>) =
+<var>P</var><sub>max,post</sub>[cos<var>&#948;</var><sub>cr</sub>
+&minus; cos<var>&#948;</var><sub>max</sub>] &minus;
+<var>P</var><sub>m</sub>(<var>&#948;</var><sub>max</sub> &minus;
+<var>&#948;</var><sub>cr</sub>)</div>
+<p>Move the term &minus;<var>P</var><sub>m</sub>(<var>&#948;</var><sub>max</sub>
+&minus; <var>&#948;</var><sub>cr</sub>) to the left. The two linear
+terms add to <var>P</var><sub>m</sub>(<var>&#948;</var><sub>max</sub>
+&minus; <var>&#948;</var><sub>0</sub>): the
++<var>P</var><sub>m</sub><var>&#948;</var><sub>cr</sub> and
+&minus;<var>P</var><sub>m</sub><var>&#948;</var><sub>cr</sub> terms
+cancel. The only remaining <var>&#948;</var><sub>cr</sub> dependence is
+cos<var>&#948;</var><sub>cr</sub>, which gives a single equation:</p>
+<div class="eq"><span class="lbl">critical clearing angle, closed
+form</span>
+cos<var>&#948;</var><sub>cr</sub> =
+[<var>P</var><sub>m</sub>(<var>&#948;</var><sub>max</sub> &minus;
+<var>&#948;</var><sub>0</sub>) +
+<var>P</var><sub>max,post</sub>
+cos<var>&#948;</var><sub>max</sub>] /
+<var>P</var><sub>max,post</sub></div>
+<p>Plugging in the numbers already on hand
+(<var>P</var><sub>m</sub> = 0.8, <var>&#948;</var><sub>max</sub> =
+2.4752 rad, <var>&#948;</var><sub>0</sub> = 0.4924 rad,
+<var>P</var><sub>max,post</sub> = 1.2941 pu,
+cos<var>&#948;</var><sub>max</sub> = &minus;0.7860):</p>
+<div class="eq">cos<var>&#948;</var><sub>cr</sub> = 0.4397
+&nbsp;&#8658;&nbsp;
+<var>&#948;</var><sub>cr</sub> = 1.1155 rad = 63.92&deg;</div>
+
+<figure class="card">
+<svg viewBox="0 0 640 380" role="img"
+aria-label="Equal-area criterion: accelerating and decelerating
+areas shaded on the power-angle diagram">
+<line x1="55" y1="335" x2="615" y2="335" stroke="#334155"/>
+<line x1="55" y1="335" x2="55" y2="25" stroke="#334155"/>
+<text x="620" y="340" fill="#94a3b8" font-size="11">&#948; (deg)</text>
+<path d="M 55.0,335.0 L 61.2,327.2 L 67.4,319.5 L 73.7,311.7
+L 79.9,304.0 L 86.1,296.3 L 92.3,288.7 L 98.6,281.1 L 104.8,273.6
+L 111.0,266.1 L 117.2,258.8 L 123.4,251.5 L 129.7,244.3 L 135.9,237.3
+L 142.1,230.4 L 148.3,223.6 L 154.6,216.9 L 160.8,210.4 L 167.0,204.0
+L 173.2,197.8 L 179.4,191.7 L 185.7,185.9 L 191.9,180.2 L 198.1,174.7
+L 204.3,169.4 L 210.6,164.3 L 216.8,159.4 L 223.0,154.7 L 229.2,150.2
+L 235.4,146.0 L 241.7,142.0 L 247.9,138.2 L 254.1,134.7 L 260.3,131.4
+L 266.6,128.4 L 272.8,125.6 L 279.0,123.0 L 285.2,120.8 L 291.4,118.7
+L 297.7,117.0 L 303.9,115.5 L 310.1,114.3 L 316.3,113.3 L 322.6,112.7
+L 328.8,112.3 L 335.0,112.1 L 341.2,112.3 L 347.4,112.7 L 353.7,113.3
+L 359.9,114.3 L 366.1,115.5 L 372.3,117.0 L 378.6,118.7 L 384.8,120.8
+L 391.0,123.0 L 397.2,125.6 L 403.4,128.4 L 409.7,131.4 L 415.9,134.7
+L 422.1,138.2 L 428.3,142.0 L 434.6,146.0 L 440.8,150.2 L 447.0,154.7
+L 453.2,159.4 L 459.4,164.3 L 465.7,169.4 L 471.9,174.7 L 478.1,180.2
+L 484.3,185.9 L 490.6,191.7 L 496.8,197.8"
+fill="none" stroke="#fb923c" stroke-width="2.5"/>
+<path d="M 142.8,335.0 L 142.8,197.2 L 253.9,197.2 L 253.9,335.0 Z"
+fill="#2dd4bf" fill-opacity="0.35" stroke="#2dd4bf"/>
+<path d="M 253.9,134.8 L 260.1,131.5 L 266.3,128.5 L 272.5,125.7
+L 278.7,123.1 L 285.0,120.8 L 291.2,118.8 L 297.4,117.1 L 303.6,115.6
+L 309.9,114.3 L 316.1,113.4 L 322.3,112.7 L 328.5,112.3 L 334.7,112.1
+L 341.0,112.2 L 347.2,112.6 L 353.4,113.3 L 359.6,114.2 L 365.9,115.5
+L 372.1,116.9 L 378.3,118.7 L 384.5,120.7 L 390.7,122.9 L 397.0,125.5
+L 403.2,128.2 L 409.4,131.3 L 415.6,134.5 L 421.9,138.1 L 428.1,141.8
+L 434.3,145.8 L 440.5,150.0 L 446.7,154.5 L 453.0,159.2 L 459.2,164.1
+L 465.4,169.2 L 471.6,174.5 L 477.9,179.9 L 484.1,185.6 L 490.3,191.5
+L 496.2,197.2 L 496.2,197.2 L 253.9,197.2 Z"
+fill="#fb923c" fill-opacity="0.35" stroke="#fb923c"/>
+<line x1="55" y1="197.2" x2="615" y2="197.2" stroke="#94a3b8"
+stroke-dasharray="2,4"/>
+<line x1="55" y1="335" x2="615" y2="335" stroke="#94a3b8"
+stroke-width="2"/>
+<line x1="142.8" y1="335" x2="142.8" y2="197.2" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<line x1="253.9" y1="335" x2="253.9" y2="134.8" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<line x1="496.2" y1="335" x2="496.2" y2="197.2" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<text x="142.8" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;&#8320;</text>
+<text x="253.9" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;cr</text>
+<text x="496.2" y="20" fill="#e2e8f0" font-size="11"
+text-anchor="middle">&#948;max</text>
+<text x="180" y="270" fill="#2dd4bf" font-size="12">A_acc</text>
+<text x="330" y="160" fill="#fb923c" font-size="12">A_dec</text>
+</svg>
+<figcaption><strong>Fig. 4.2.</strong> The equal-area criterion: the
+teal rectangle is <var>A</var><sub>acc</sub> =
+<var>P</var><sub>m</sub>(<var>&#948;</var><sub>cr</sub> &minus;
+<var>&#948;</var><sub>0</sub>) swept during the fault; the orange
+region is <var>A</var><sub>dec</sub>, the largest deceleration the
+post-fault curve can supply before <var>&#948;</var><sub>max</sub>. At
+<var>&#948;</var><sub>cr</sub> = 63.9&deg; the two areas are equal by
+construction — that equality is the definition of the critical
+clearing angle.</figcaption>
+</figure>
+
+<h2>5. Closed-form critical clearing time</h2>
+<p>An angle is not yet a time. To turn
+<var>&#948;</var><sub>cr</sub> into a clearing time, use the fact that
+during the fault <var>P</var><sub>e</sub> = 0 exactly, so the swing
+equation (still <var>K</var><sub>D</sub> = 0) is a constant
+acceleration:</p>
+<div class="eq">2<var>H</var> d(&#916;&#969;)/d<var>t</var> =
+<var>P</var><sub>m</sub>
+&nbsp;&#8658;&nbsp;
+&#916;&#969;(<var>t</var>) = <var>P</var><sub>m</sub><var>t</var> /
+(2<var>H</var>)</div>
+<p>using &#916;&#969;(0) = 0 at fault inception. Substituting into
+d&#948;/d<var>t</var> = &#969;<sub>0</sub>&#916;&#969; and integrating
+once more from <var>&#948;</var>(0) =
+<var>&#948;</var><sub>0</sub>:</p>
+<div class="eq"><span class="lbl">quadratic swing during the
+fault</span>
+<var>&#948;</var>(<var>t</var>) = <var>&#948;</var><sub>0</sub> +
+&#969;<sub>0</sub><var>P</var><sub>m</sub><var>t</var>&#178; /
+(4<var>H</var>)</div>
+<p>Setting <var>&#948;</var>(<var>t</var>) =
+<var>&#948;</var><sub>cr</sub> and solving for <var>t</var> gives the
+<strong>critical clearing time</strong>:</p>
+<div class="eq"><span class="lbl">critical clearing time, closed
+form</span>
+<var>t</var><sub>cr</sub> =
+&#8730;[4<var>H</var>(<var>&#948;</var><sub>cr</sub> &minus;
+<var>&#948;</var><sub>0</sub>) /
+(&#969;<sub>0</sub><var>P</var><sub>m</sub>)]
+= &#8730;[4&#183;3.5&#183;0.6231 / (376.99&#183;0.8)] =
+0.1701 s = 10.2 cycles at 60 Hz</div>
+<p>That is the 170 ms quoted in the opening problem. It is exact for
+this model — a bolted fault, zero damping, one machine against an
+infinite bus — because both the parabola for the fault-on swing and
+the equal-area boundary for the post-fault return are themselves
+exact consequences of the same swing equation, with no approximation
+beyond the modelling assumptions of Section 7. Unrounded, the value is
+0.17008 s.</p>
+
+<h2>6. Code: the same answer by bisection</h2>
+<p><code>lesson4_cct.py</code> checks the closed-form result against a
+direct simulation. A function <code>stable(t_clear)</code> integrates
+the fault-on system (<var>P</var><sub>e</sub> = 0) with fourth-order
+Runge&ndash;Kutta at a fixed step <var>h</var> = 0.5 ms up to
+<var>t</var><sub>clear</sub>, switches the network to the post-fault
+curve, continues to <var>t</var> = 5 s, and returns <code>False</code>
+the moment <var>&#948;</var> passes
+<var>&#948;</var><sub>max</sub>. A bisection then searches
+<var>t</var><sub>clear</sub> &isin; [0.10, 0.25] s for the boundary
+between <code>True</code> (returns) and <code>False</code> (runs
+away), stopping once the bracket is 1 ms wide or narrower. The listing
+below is the actual file, run with <code>python
+lesson4_cct.py</code>; the output beneath it is the real,
+unedited stdout of that run.</p>
+<pre><code>"""Equal-area criterion and bisection for critical clearing time.
+
+Swing convention: 2H d(dw)/dt = P_m - P_e - K_D dw
+                   d(delta)/dt = omega_0 dw
+Stdlib only. Run: python lesson4_cct.py
+"""
+import math
+
+H = 3.5
+OMEGA_0 = 2.0 * math.pi * 60.0
+E_P = 1.1
+V_INF = 1.0
+X_PRE = 0.65
+X_POST = 0.45 + 0.40
+P_M = 0.8
+
+P_MAX_PRE = E_P * V_INF / X_PRE
+P_MAX_POST = E_P * V_INF / X_POST
+
+
+def f(x, p_max, k_d):
+    """State derivative. x = (delta, dw). p_max = 0 during the fault."""
+    delta, dw = x
+    ddelta = OMEGA_0 * dw
+    ddw = (P_M - p_max * math.sin(delta) - k_d * dw) / (2.0 * H)
+    return (ddelta, ddw)
+
+
+def rk4_step(x, p_max, k_d, h):
+    k1 = f(x, p_max, k_d)
+    x2 = (x[0] + 0.5 * h * k1[0], x[1] + 0.5 * h * k1[1])
+    k2 = f(x2, p_max, k_d)
+    x3 = (x[0] + 0.5 * h * k2[0], x[1] + 0.5 * h * k2[1])
+    k3 = f(x3, p_max, k_d)
+    x4 = (x[0] + h * k3[0], x[1] + h * k3[1])
+    k4 = f(x4, p_max, k_d)
+    dd = (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6.0
+    dw = (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6.0
+    return (x[0] + h * dd, x[1] + h * dw)
+
+
+def stable(t_clear, delta0, delta_max, k_d=0.0, h=0.5e-3, t_end=5.0):
+    """True if delta never crosses delta_max after clearing at t_clear."""
+    x = (delta0, 0.0)
+    t = 0.0
+    while t < t_clear - 1e-12:
+        x = rk4_step(x, 0.0, k_d, h)
+        t += h
+    while t < t_end - 1e-12:
+        x = rk4_step(x, P_MAX_POST, k_d, h)
+        t += h
+        if x[0] > delta_max:
+            return False
+    return True
+
+
+def bisect_tcr(delta0, delta_max, k_d=0.0, lo=0.10, hi=0.25, tol=1e-3):
+    """Bisection over t_clear; lo must be stable, hi must be unstable."""
+    assert stable(lo, delta0, delta_max, k_d)
+    assert not stable(hi, delta0, delta_max, k_d)
+    while hi - lo > tol:
+        mid = 0.5 * (lo + hi)
+        if stable(mid, delta0, delta_max, k_d):
+            lo = mid
+        else:
+            hi = mid
+    return lo, hi
+
+# ... main() computes the closed form, runs three bisections
+#     (K_D = 0 at 1 ms and 0.1 ms resolution, and K_D = 2 pu),
+#     and prints the protection-margin arithmetic of Exercise 4.
+</code></pre>
+<p class="src">Full file: <code>lesson4_cct.py</code>, 120 lines
+including <code>main()</code> (omitted above for length; every number
+below is its real printed output).</p>
+<pre><code>=== Equal-area criterion (closed form) ===
+P_max_pre  = 1.6923 pu
+P_max_post = 1.2941 pu
+delta_0    = 0.4924 rad = 28.2115 deg
+delta_max  = 2.4752 rad = 141.8165 deg
+cos(delta_cr) = 0.4397
+delta_cr   = 1.1155 rad = 63.9162 deg
+t_cr       = 0.1701 s = 10.20 cycles at 60 Hz
+
+=== Bisection over simulations (K_D = 0, h = 0.5 ms) ===
+bracket: [0.1697, 0.1703] s, tol 1 ms
+equal-area value t_cr = 0.1701 s falls in the bracket: True
+
+=== Exercise 2: tighter bisection, tol = 0.1 ms ===
+bracket: [0.16995, 0.17002] s, step h = 0.5 ms, tol 0.1 ms
+
+=== Exercise 3: damped case, K_D = 2 pu ===
+bracket: [0.1762, 0.1768] s, tol 1 ms
+longer than the undamped 0.1701 s: True
+
+=== Exercise 4: protection margin ===
+protection clearing (5 cycles) = 0.0833 s = 83.3 ms
+t_cr = 0.1701 s = 170.1 ms
+margin = 86.7 ms</code></pre>
+<p>The bisection bracket [0.1697, 0.1703] s straddles the closed-form
+value 0.1701 s. The two methods agree because both neglect damping:
+the equal-area criterion is derived with <var>K</var><sub>D</sub> = 0,
+and so is this run of the simulation. The resolution used is
+<var>h</var> = 0.5 ms for the RK4 step and a 1 ms bisection tolerance.
+One detail of <code>stable()</code> limits any tighter bisection: the
+fault-on loop takes whole steps while <var>t</var> &lt;
+<var>t</var><sub>clear</sub>, so the network actually switches at
+<var>t</var><sub>clear</sub> rounded <em>up</em> to the next multiple
+of 0.5 ms. Every <var>t</var><sub>clear</sub> in (0.1695, 0.1700] s
+gives the same run (switch at 0.1700 s, stable), and every value in
+(0.1700, 0.1705] s gives the same run (switch at 0.1705 s, unstable).
+The simulated boundary is therefore known only to lie between switching
+at 0.1700 s and at 0.1705 s, a 0.5 ms interval that contains the
+closed-form 0.17008 s. Exercise 2 shows what happens when the bisection
+tolerance goes below the step.</p>
+
+<figure class="card">
+<svg viewBox="0 0 640 380" role="img"
+aria-label="Rotor angle against time for clearing at 0.15 s and
+0.19 s">
+<line x1="55" y1="335" x2="615" y2="335" stroke="#334155"/>
+<line x1="55" y1="335" x2="55" y2="25" stroke="#334155"/>
+<text x="620" y="340" fill="#94a3b8" font-size="11">t (s)</text>
+<text x="10" y="20" fill="#94a3b8" font-size="11">&#948;
+(deg)</text>
+<text x="55" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">0</text>
+<text x="50" y="276" fill="#94a3b8" font-size="10"
+text-anchor="end">28.2&#176;</text>
+<line x1="50" y1="272.7" x2="55" y2="272.7" stroke="#334155"/>
+<text x="175" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">0.15</text>
+<text x="335" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">0.35</text>
+<text x="615" y="349" fill="#94a3b8" font-size="10"
+text-anchor="middle">0.70</text>
+<line x1="55" y1="108.9" x2="615" y2="108.9" stroke="#94a3b8"
+stroke-dasharray="2,4"/>
+<text x="60" y="105" fill="#94a3b8" font-size="10">&#948;max =
+141.8&deg;</text>
+<line x1="191.1" y1="335" x2="191.1" y2="25" stroke="#e2e8f0"
+stroke-dasharray="3,3"/>
+<text x="191.1" y="20" fill="#e2e8f0" font-size="10"
+text-anchor="middle">t_cr &#8776; 0.170 s</text>
+<path d="M 55.0,272.7 L 61.0,272.6 L 67.0,272.3 L 73.0,271.8
+L 79.0,271.1 L 85.0,270.2 L 91.0,269.1 L 97.0,267.8 L 103.0,266.3
+L 109.0,264.6 L 115.0,262.7 L 121.0,260.6 L 127.0,258.3 L 133.0,255.8
+L 139.0,253.1 L 145.0,250.2 L 151.0,247.1 L 157.0,243.8 L 163.0,240.3
+L 169.0,236.6 L 175.0,232.7 L 181.0,228.7 L 187.0,224.8 L 193.0,221.0
+L 199.0,217.3 L 205.0,213.6 L 211.0,210.1 L 217.0,206.7 L 223.0,203.4
+L 229.0,200.2 L 235.0,197.2 L 241.0,194.2 L 247.0,191.4 L 253.0,188.7
+L 259.0,186.1 L 265.0,183.6 L 271.0,181.3 L 277.0,179.1 L 283.0,177.0
+L 289.0,175.0 L 295.0,173.2 L 301.0,171.5 L 307.0,169.9 L 313.0,168.4
+L 319.0,167.0 L 325.0,165.8 L 331.0,164.6 L 337.0,163.6 L 343.0,162.7
+L 349.0,161.9 L 355.0,161.3 L 361.0,160.7 L 367.0,160.2 L 373.0,159.9
+L 379.0,159.7 L 385.0,159.5 L 391.0,159.5 L 397.0,159.6 L 403.0,159.8
+L 409.0,160.1 L 415.0,160.6 L 421.0,161.1 L 427.0,161.8 L 433.0,162.5
+L 439.0,163.4 L 445.0,164.4 L 451.0,165.5 L 457.0,166.7 L 463.0,168.1
+L 469.0,169.5 L 475.0,171.1 L 481.0,172.8 L 487.0,174.6 L 493.0,176.6
+L 499.0,178.6 L 505.0,180.8 L 511.0,183.1 L 517.0,185.5 L 523.0,188.1
+L 529.0,190.8 L 535.0,193.6 L 541.0,196.5 L 547.0,199.5 L 553.0,202.7
+L 559.0,206.0 L 565.0,209.4 L 571.0,212.8 L 577.0,216.4 L 583.0,220.1
+L 589.0,223.9 L 595.0,227.8 L 601.0,231.8 L 607.0,235.8 L 613.0,239.9"
+fill="none" stroke="#2dd4bf" stroke-width="2.5"/>
+<path d="M 55.0,272.7 L 59.8,272.6 L 64.6,272.4 L 69.4,272.1
+L 74.2,271.7 L 79.0,271.1 L 83.8,270.4 L 88.6,269.6 L 93.4,268.6
+L 98.2,267.5 L 103.0,266.3 L 107.8,264.9 L 112.6,263.5 L 117.4,261.9
+L 122.2,260.1 L 127.0,258.3 L 131.8,256.3 L 136.6,254.2 L 141.4,251.9
+L 146.2,249.6 L 151.0,247.1 L 155.8,244.4 L 160.6,241.7 L 165.4,238.8
+L 170.2,235.8 L 175.0,232.7 L 179.8,229.4 L 184.6,226.0 L 189.4,222.5
+L 194.2,218.8 L 199.0,215.0 L 203.8,211.1 L 208.6,207.1 L 213.4,203.1
+L 218.2,199.2 L 223.0,195.3 L 227.8,191.6 L 232.6,187.9 L 237.4,184.2
+L 242.2,180.7 L 247.0,177.3 L 251.8,173.9 L 256.6,170.6 L 261.4,167.3
+L 266.2,164.2 L 271.0,161.1 L 275.8,158.1 L 280.6,155.2 L 285.4,152.3
+L 290.2,149.5 L 295.0,146.8 L 299.8,144.1 L 304.6,141.5 L 309.4,138.9
+L 314.2,136.4 L 319.0,133.9 L 323.8,131.4 L 328.6,129.0 L 333.4,126.7
+L 338.2,124.4 L 343.0,122.0 L 347.8,119.8 L 352.6,117.5 L 357.4,115.3
+L 362.2,113.0 L 367.0,110.8 L 371.8,108.6 L 376.6,106.4 L 381.4,104.2
+L 386.2,101.9 L 391.0,99.7 L 395.8,97.4 L 400.6,95.1 L 405.4,92.8
+L 410.2,90.5 L 415.0,88.1 L 419.8,85.6 L 424.6,83.2 L 429.4,80.6
+L 434.2,78.0 L 439.0,75.3 L 443.8,72.6 L 448.6,69.8 L 453.4,66.8
+L 458.2,63.8 L 463.0,60.7 L 467.8,57.5 L 472.6,54.1 L 477.4,50.7
+L 482.2,47.1 L 487.0,43.3 L 491.8,39.4"
+fill="none" stroke="#fb923c" stroke-width="2.5"/>
+<text x="500" y="240" fill="#2dd4bf" font-size="11">clear at
+0.15 s: returns</text>
+<text x="440" y="55" fill="#fb923c" font-size="11">clear at
+0.19 s: runs away</text>
+</svg>
+<figcaption><strong>Fig. 4.3.</strong> Rotor angle
+<var>&#948;</var>(<var>t</var>) for two clearing times, both computed
+by the RK4 integrator in <code>lesson4_cct.py</code>. Clearing at
+0.15 s (teal, before <var>t</var><sub>cr</sub>) peaks near
+106.7&deg;, well short of <var>&#948;</var><sub>max</sub> = 141.8&deg;,
+and swings back — undamped, so it keeps oscillating rather than
+settling. Clearing at 0.19 s (orange, after
+<var>t</var><sub>cr</sub>) rides straight through
+<var>&#948;</var><sub>max</sub> and keeps climbing: loss of
+synchronism. The boundary between the two behaviours sits at
+<var>t</var><sub>cr</sub> &asymp; 0.170 s, matched by the bisection
+bracket above. The angle axis is linear from &minus;15&deg; at the
+bottom edge; the two marked angles are
+<var>&#948;</var><sub>0</sub> = 28.2&deg; (both curves start there)
+and <var>&#948;</var><sub>max</sub> = 141.8&deg;.</figcaption>
+</figure>
+
+<h2>7. Model limits</h2>
+<div class="card">
+<ul>
+<li><strong>No damping during the swing.</strong>
+<var>K</var><sub>D</sub> = 0 throughout Sections 4 and 5. Exercise 3
+adds <var>K</var><sub>D</sub> = 2 pu back into the simulation and
+finds a longer critical clearing time, 0.1762&ndash;0.1768 s. The
+damping torque <var>K</var><sub>D</sub>&#916;&#969; opposes the
+acceleration during the fault and adds to the deceleration after
+clearing, so a longer fault is needed to reach the stability boundary.
+The closed-form
+derivation of Sections 4&ndash;5 does not extend to
+<var>K</var><sub>D</sub> &ne; 0: the neat cancellation that produced
+the closed-form cos<var>&#948;</var><sub>cr</sub> relies on the energy
+integral being path-independent, which damping breaks.</li>
+<li><strong>A classical machine.</strong>
+<var>E</var>&prime; and <var>X</var>&prime; are held constant; no
+excitation system, no governor, no saturation. Real generators have
+all three, and on a longer time horizon than the first swing they
+change the picture.</li>
+<li><strong>A single machine against an infinite bus.</strong> The
+infinite bus fixes <var>V</var><sub>&#8734;</sub> and its own angle,
+so this whole lesson reduces the network to one algebraic equation,
+<var>P</var><sub>e</sub> = <var>P</var><sub>max</sub>
+sin<var>&#948;</var>. Two real machines swinging against each other
+reduce to the same single-machine form only after their angles are
+combined; more than two machines generally do not reduce at all.</li>
+<li><strong>A bolted fault with <var>P</var><sub>e</sub> = 0
+exactly.</strong> A three-phase short circuit with zero fault
+impedance, located electrically at the machine terminal, is the
+worst case this model can represent; a fault through some nonzero
+impedance, or on a remote bus, leaves
+<var>P</var><sub>e</sub> &gt; 0 during the fault and gives the
+machine a longer critical clearing time than the one computed
+here.</li>
+</ul>
+<p><strong>Multi-machine transient stability needs time-domain
+simulation.</strong> Equal area is exact only for one machine against
+an infinite bus, or for two machines whose swing equations reduce
+algebraically to that same single-angle form. For three or more
+machines with distinct inertias and network couplings, there is no
+single (<var>P</var><sub>m</sub>, <var>P</var><sub>e</sub>,
+<var>&#948;</var>) picture left to draw an area on, so the industry
+practice for a real multi-machine network is exactly the RK4-style
+time simulation this lesson used to check the closed form, not the
+closed form itself.</p>
+<p><strong>Why the Lesson 2 eigenvalues say nothing here.</strong> The
+eigenvalues computed in Lesson 2, &lambda; =
+&minus;0.1429 &plusmn; j8.961 rad/s (<span class="src">Example 1.1 of
+<code>../p1-textbook/book-plan.md</code>, which prints j8.962; the
+damped imaginary part from unrounded <var>K</var><sub>s</sub> is
+8.9607</span>, with <var>K</var><sub>D</sub> = 2 pu), come from linearising the swing
+equation about the pre-fault equilibrium angle
+<var>&#948;</var><sub>0</sub> = 28.2&deg;, where the synchronising
+coefficient is <var>K</var><sub>s</sub> =
+<var>P</var><sub>max,pre</sub>cos<var>&#948;</var><sub>0</sub> =
+1.4913 pu/rad. They describe how the machine responds to an
+infinitesimal nudge away from that one point. The post-fault network
+has its own equilibrium, <var>&#948;</var><sub>s,post</sub> =
+38.18&deg;, with <var>K</var><sub>s,post</sub> =
+1.2941&#183;cos 38.18&deg; = 1.0172 pu/rad; the same formula
+&lambda; = &minus;<var>K</var><sub>D</sub>/(4<var>H</var>) &plusmn;
+j&#8730;[&#969;<sub>0</sub><var>K</var><sub>s</sub>/(2<var>H</var>)
+&minus; (<var>K</var><sub>D</sub>/(4<var>H</var>))&#178;] gives
+&lambda;<sub>post</sub> = &minus;0.1429 &plusmn; j7.400 rad/s. Both
+equilibria are small-signal stable (negative real parts), and neither
+set of eigenvalues says whether the rotor gets from the first
+equilibrium to the second after a fault.
+This lesson's fault does not nudge the rotor by an infinitesimal
+amount: it drives <var>&#948;</var> from 28.2&deg; toward, and past,
+63.9&deg; and potentially all the way to 141.8&deg;, a large excursion
+in which sin<var>&#948;</var> is nowhere close to its linear
+approximation sin<var>&#948;</var><sub>0</sub> +
+cos<var>&#948;</var><sub>0</sub>(<var>&#948;</var> &minus;
+<var>&#948;</var><sub>0</sub>). A small-signal eigenvalue answers "does
+the machine settle after a small nudge"; it has no opinion on "does
+the machine come back after this fault", because that second question
+is decided by the full nonlinear sin<var>&#948;</var> term over a wide
+angular range, which is precisely what the equal-area criterion — and
+the RK4 simulation behind Figure 4.3 — account for and a linearised
+eigenvalue calculation cannot.</p>
+</div>
+
+<h2>8. Exercises</h2>
+
+<div class="card">
+<h3>1. (Derivational) Derive A_acc = A_dec from the energy function
+of Lesson 3.</h3>
+<details>
+<summary>Answer target</summary>
+<div class="answer">
+<p>Start from Lesson 3's energy balance,
+<var>H</var>&#969;<sub>0</sub>&#916;&#969;&#178; =
+&#8747;<sub>&#948;&#8320;</sub><sup>&#948;</sup>(<var>P</var><sub>m</sub>
+&minus; <var>P</var><sub>e</sub>)d&#948;, evaluated between two states
+where &#916;&#969; = 0: the fault inception (&#916;&#969; = 0 at
+<var>&#948;</var><sub>0</sub>) and the return point
+(&#916;&#969; = 0 again, at some angle up to
+<var>&#948;</var><sub>max</sub>). Both left-hand sides are zero, so the
+right-hand side integrated over the whole excursion must be zero too:
+&#8747;<sub>&#948;&#8320;</sub><sup>&#948;max</sup>(<var>P</var><sub>m</sub>
+&minus; <var>P</var><sub>e</sub>)d&#948; = 0. Split that integral at
+the clearing angle <var>&#948;</var><sub>c</sub>, where
+<var>P</var><sub>e</sub> switches from 0 to
+<var>P</var><sub>max,post</sub>sin&#948;: the first piece is exactly
+<var>A</var><sub>acc</sub> (positive, since
+<var>P</var><sub>m</sub> &gt; <var>P</var><sub>e</sub> = 0 there), and
+the second piece is exactly
+&minus;<var>A</var><sub>dec</sub> (negative, since
+<var>P</var><sub>e</sub> &gt; <var>P</var><sub>m</sub> on the
+post-fault curve between <var>&#948;</var><sub>s,post</sub> = 38.18&deg;
+and <var>&#948;</var><sub>max</sub> = 141.82&deg;, and the clearing
+angle 63.9&deg; is inside that band). So
+<var>A</var><sub>acc</sub> &minus;
+<var>A</var><sub>dec</sub> = 0, which is
+<var>A</var><sub>acc</sub> = <var>A</var><sub>dec</sub>.</p>
+</div>
+</details>
+</div>
+
+<div class="card">
+<h3>2. (Computational) Tighten the bisection to 0.1 ms and report the
+bracket.</h3>
+<p><span class="src">Target: report the run's bracket and the step
+used, then explain why the bracket does not contain the closed-form
+0.17008 s.</span></p>
+<details>
+<summary>Answer target</summary>
+<div class="answer">
+<p>Run's bracket: [0.16995, 0.17002] s, with the RK4 step held at
+<var>h</var> = 0.5 ms (only the bisection tolerance changed, to
+0.1 ms). The closed-form 0.17008 s is <em>not</em> inside this bracket:
+its upper end, 0.17002 s, is 0.06 ms short. The reason is the step
+grid, not an error in either method. <code>stable()</code> switches the
+network at <var>t</var><sub>clear</sub> rounded up to a multiple of
+0.5 ms, so the run at 0.16995 s actually clears at 0.1700 s (stable)
+and the run at 0.17002 s actually clears at 0.1705 s (unstable). The
+true information is "the boundary lies between 0.1700 s and 0.1705 s",
+which does contain 0.17008 s. A bisection tolerance below the step
+size <var>h</var> adds no information. To resolve the boundary more
+finely, reduce <var>h</var>: at <var>h</var> = 0.05 ms and a 0.01 ms
+tolerance the bracket is [0.170047, 0.170056] s, whose effective
+switching instants 0.17005 s and 0.17010 s bracket 0.17008 s.</p>
+</div>
+</details>
+</div>
+
+<div class="card">
+<h3>3. (Computational) Add K_D = 2 pu to the simulation and report the
+new critical clearing time.</h3>
+<p><span class="src">Target: report the value the run returns; it is
+longer than 0.170 s because damping removes energy.</span></p>
+<details>
+<summary>Answer target</summary>
+<div class="answer">
+<p>Run's bracket with <var>K</var><sub>D</sub> = 2 pu: [0.1762,
+0.1768] s, about 6 ms longer than the undamped 0.1701 s. Damping
+subtracts <var>K</var><sub>D</sub>&#916;&#969; from the accelerating
+torque during the fault-on swing, so the rotor accumulates less
+kinetic energy for a given clearing time. After clearing, the same
+term adds to the decelerating torque while &#916;&#969; &gt; 0, so
+the post-fault network removes that energy faster. Both effects make a
+longer fault necessary to reach the stability boundary. The effect is
+small because &#916;&#969; is small: at 0.170 s it is
+0.8&#183;0.170/7 = 0.0194 pu, so the damping torque is only about
+2&#183;0.0194 = 0.039 pu against <var>P</var><sub>m</sub> =
+0.8 pu.</p>
+</div>
+</details>
+</div>
+
+<div class="card">
+<h3>4. (Conceptual) Protection clears in 5 cycles. State the time
+margin in milliseconds against t_cr.</h3>
+<p><span class="src">Target: 5/60 = 83.3 ms, margin 170.1 &minus; 83.3
+= 86.8 ms, with the 4 to 6 cycle figure cited [verify].</span></p>
+<details>
+<summary>Answer target</summary>
+<div class="answer">
+<p>5 cycles at 60 Hz = 5/60 s = 0.0833 s = 83.3 ms.
+<var>t</var><sub>cr</sub> = 0.1701 s = 170.1 ms. Rounding both to one
+decimal place and subtracting gives a margin of
+170.1 &minus; 83.3 = 86.8 ms; subtracting the unrounded run values
+gives 86.7 ms (the two differ only by rounding the intermediate
+figures before subtracting). Typical transmission protection clearing
+of 4 to 6 cycles is a published range
+<span class="src">[unsourced: <code>../p1-textbook/book-plan.md</code>
+Example 1.2 states it with no S-identifier; check against S01 or S04 —
+verify]</span>, not a
+value this lesson derives.</p>
+</div>
+</details>
+</div>
+
+<div class="card">
+<h3>5. (Conceptual) Explain why this machine is small-signal stable
+both before the fault and after it is cleared, yet it can still be
+lost.</h3>
+<p><span class="src">Target: eigenvalues describe small deviations
+about an equilibrium; a fault moves the state far from it, into the
+region where the nonlinear sin(delta) decides.</span></p>
+<details>
+<summary>Answer target</summary>
+<div class="answer">
+<p>The Lesson 2 eigenvalues,
+&lambda; = &minus;0.1429 &plusmn; j8.961 rad/s, come from linearising
+<var>P</var><sub>e</sub> = <var>P</var><sub>max</sub>sin&#948; about
+the pre-fault equilibrium <var>&#948;</var><sub>0</sub> = 28.2&deg;
+(<var>K</var><sub>s</sub> = 1.4913 pu/rad, <var>K</var><sub>D</sub> =
+2 pu). Linearising about the post-fault equilibrium
+<var>&#948;</var><sub>s,post</sub> = 38.18&deg;
+(<var>K</var><sub>s,post</sub> = 1.0172 pu/rad) gives
+&lambda;<sub>post</sub> = &minus;0.1429 &plusmn; j7.400 rad/s. Both
+pairs have negative real parts, so both equilibria are small-signal
+stable. Each pair says only how the machine responds to an
+infinitesimally small deviation from its own point. But a big fault does not
+produce an infinitesimal deviation: it drives
+<var>&#948;</var> from 28.2&deg; up through 63.9&deg; and potentially
+to 141.8&deg;, an excursion over which sin&#948; departs sharply from
+its tangent line at <var>&#948;</var><sub>0</sub>. Whether the machine
+returns is decided by the full nonlinear energy balance of Section 4
+— the equal-area criterion — not by the local slope at one point. A
+system can be small-signal stable (decaying eigenvalues) at both its
+pre-fault and post-fault equilibria and still lose synchronism during
+the large excursion that connects them, because the linearisation
+never sees the excursion at all.</p>
+</div>
+</details>
+</div>
+
+<footer>
+Lesson 4 of the single-machine transient stability series. Numbers
+computed by <code>lesson4_cct.py</code> in this folder; published
+typical-value claims carry S-identifiers of
+<code>../p1-textbook/book-plan.md</code> §5.2, marked <code>verify</code>
+where not independently confirmed in this draft.
+</footer>
+
+</div>
+</body>
+</html>

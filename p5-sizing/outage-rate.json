@@ -1,0 +1,63 @@
+{
+  "scenario": "outage-rate",
+  "varied_uncertainty": "forced outage rate (FOR) of one BESS block",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "percentile_method": "sorted samples, linear interpolation between closest ranks (numpy 'linear')",
+  "outputs": {
+    "forced_outage_rate": {
+      "p5": 0.014281019918136205,
+      "p50": 0.03683278604328083,
+      "p95": 0.07611231520479537
+    },
+    "bess_power_mw": {
+      "p5": 1240.0,
+      "p50": 1360.0,
+      "p95": 1480.0
+    },
+    "bess_energy_mwh": {
+      "p5": 1240.0,
+      "p50": 1360.0,
+      "p95": 1480.0
+    },
+    "bess_cost_musd": {
+      "p5": 682.0,
+      "p50": 748.0,
+      "p95": 814.0
+    },
+    "n_blocks": {
+      "p5": 31.0,
+      "p50": 34.0,
+      "p95": 37.0
+    }
+  },
+  "deterministic_reference": {
+    "condenser_fleet_stored_energy_mj": 5600.0,
+    "energy_released_0p8hz_mj": 179.2,
+    "energy_released_0p8hz_mwh": 0.049778,
+    "power_headroom_at_1hz_per_s_mw": 224.0,
+    "converter_inertial_pu_at_hv5": 0.2,
+    "required_available_rating_mva": 1120.0,
+    "bess_power_mw_at_for_zero": 1120.0,
+    "bess_energy_mwh_at_for_zero": 1120.0
+  },
+  "reference_context_not_inputs": {
+    "loss_of_infeed_mw": 1000.0,
+    "system_stored_energy_gva_s": 200.0,
+    "rocof0_hz_per_s": 0.125,
+    "note": "ch4 Example 4.1 event. The 224 MW headroom uses the 1 Hz/s design RoCoF, not this 0.125 Hz/s."
+  },
+  "assumptions": [
+    "Only the block forced outage rate is sampled; all other inputs are fixed at p1-textbook/ch4.html Example 4.2 values.",
+    "FOR ~ Beta(4, 96): mean 0.04, central 90% about 0.013 to 0.077. Assumed, not read from a dataset - verify.",
+    "Block outages are independent Bernoulli(FOR); no common-mode failure (control software, grid connection, site event). Common-mode outages would raise the required rating.",
+    "Sizing criterion: P(available rating >= 1120 MVA) >= 0.999 at the instant of a disturbance. Target assumed - verify.",
+    "Block size 40 MVA, 40 MWh (1120 MVA = 28 blocks). Assumed.",
+    "Required available rating 1120 MVA = 224 MW / 0.20 pu, from 2*5600 MJ*1 Hz/s/50 Hz and H_v = 5.0 s (ch4 eq. 4.12, 4.13).",
+    "Unity power factor and 1.0 pu terminal voltage, so MVA = MW (ch4 Example 4.2, Constraint 3).",
+    "One-hour store per block, so MWh = MW x 1 h (ch4 Example 4.2 assumption). Energy is set by this duration, not by the 179.2 MJ (0.0498 MWh) inertial release, which does not bind.",
+    "Current limit 1.2 pu at 1.0 pu dispatch leaves 0.00 pu margin (ch4 Constraint 3); this model does not add rating for voltage support or fault current.",
+    "Cost = MW x 250 USD/kW + MWh x 300 USD/kWh, fixed. Assumed, not read from a source - verify (e.g. NREL ATB). Excludes O&M, degradation, land, financing.",
+    "Condenser fleet availability is not credited: the target is the full 224 MW headroom, not the condensers' availability-weighted headroom."
+  ]
+}

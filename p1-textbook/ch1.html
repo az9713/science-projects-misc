@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Chapter 1 — The classical picture: machines that swing</title>
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --text:#e2e8f0; --text2:#cbd5e1;
+  --muted:#94a3b8; --accent:#fb923c; --accent2:#2dd4bf;
+  --border:#1e293b; --border2:#334155;
+  --measure:72ch;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; padding:0 16px 96px;
+  background:var(--bg); color:var(--text);
+  font:16px/1.65 Georgia,"Times New Roman",serif;
+  overflow-x:hidden;
+}
+.wrap{max-width:var(--measure); margin:0 auto}
+header.chap{padding:40px 0 8px; border-bottom:1px solid var(--border2)}
+.kicker{font:600 12px/1.4 system-ui,sans-serif; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+h1{font:700 1.85rem/1.25 system-ui,sans-serif; margin:0 0 12px; color:var(--text)}
+h2{font:700 1.3rem/1.3 system-ui,sans-serif; margin:44px 0 10px;
+  color:var(--accent2); scroll-margin-top:16px}
+h3{font:600 1.05rem/1.35 system-ui,sans-serif; margin:28px 0 8px; color:var(--text)}
+p{margin:0 0 14px; color:var(--text2)}
+.lead{color:var(--text); font-size:1.05rem}
+var{font-style:italic; font-family:Georgia,"Times New Roman",serif; color:var(--text)}
+var sub,var sup{font-style:normal}
+sub,sup{font-size:.72em; line-height:0}
+strong{color:var(--text)}
+em{color:var(--text)}
+a{color:var(--accent2)}
+code{font:0.92em/1.4 ui-monospace,Consolas,monospace; color:var(--accent2)}
+
+.eq{margin:16px 0; display:flex; align-items:center; gap:12px;
+  background:var(--card); border:1px solid var(--border2); border-radius:8px;
+  padding:12px 14px}
+.eq .body{flex:1 1 auto; overflow-x:auto; color:var(--text)}
+.eq .num{flex:0 0 auto; color:var(--muted); font:600 .85rem/1 system-ui,sans-serif}
+.eqc{margin:14px 0; background:var(--card); border:1px solid var(--border2);
+  border-radius:8px; padding:12px 14px; overflow-x:auto; color:var(--text)}
+
+.res{background:var(--card); border:1px solid var(--border2);
+  border-left:3px solid var(--accent2); border-radius:8px;
+  padding:14px 16px; margin:22px 0}
+.res.def{border-left-color:var(--accent2)}
+.res.model{border-left-color:var(--accent)}
+.res.lem,.res.thm,.res.cor{border-left-color:var(--accent)}
+.res.ex{border-left-color:var(--accent2)}
+.res.rem{border-left-color:var(--border2)}
+.res .head{font:700 .95rem/1.3 system-ui,sans-serif; color:var(--text);
+  margin:0 0 8px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
+.res .rid{font:600 .72rem/1 system-ui,sans-serif; color:var(--muted);
+  border:1px solid var(--border2); border-radius:4px; padding:3px 6px}
+.status{font:600 .74rem/1.4 system-ui,sans-serif; color:var(--accent);
+  text-transform:uppercase; letter-spacing:.08em}
+.res p:last-child{margin-bottom:0}
+
+.proof{border-top:1px dashed var(--border2); margin-top:12px; padding-top:10px}
+.proof .plabel{font:700 .8rem/1 system-ui,sans-serif; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.08em}
+
+.cite{font-size:.86em; color:var(--muted)}
+.cite em{color:var(--muted)}
+
+.tw{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:16px 0;
+  border:1px solid var(--border2); border-radius:8px; background:var(--card)}
+table{border-collapse:collapse; width:100%; min-width:440px;
+  font:14px/1.45 system-ui,sans-serif; color:var(--text2)}
+th,td{padding:7px 10px; text-align:left; border-bottom:1px solid var(--border2);
+  vertical-align:top}
+th{color:var(--text); font-weight:600; background:var(--bg)}
+tr:last-child td{border-bottom:none}
+td var{font-size:1.02em}
+
+figure{margin:26px 0; background:var(--card); border:1px solid var(--border2);
+  border-radius:8px; padding:12px}
+figure svg{display:block; width:100%; height:auto}
+figcaption{font:13px/1.55 system-ui,sans-serif; color:var(--muted); margin-top:10px}
+figcaption b{color:var(--text2)}
+
+.ax{stroke:var(--border2); stroke-width:1; fill:none}
+.grid{stroke:var(--border2); stroke-opacity:.55; stroke-width:1; fill:none}
+.c1{stroke:var(--accent); stroke-width:2; fill:none}
+.c2{stroke:var(--accent2); stroke-width:2; fill:none}
+.c3{stroke:var(--muted); stroke-width:2.5; fill:none; stroke-dasharray:6 4}
+.c4{stroke:var(--text); stroke-width:1.5; fill:none; stroke-dasharray:3 3}
+.mark{stroke:var(--muted); stroke-width:1; fill:none; stroke-dasharray:3 3}
+.fillA{fill:var(--accent); fill-opacity:.22; stroke:none}
+.fillD{fill:var(--accent2); fill-opacity:.22; stroke:none}
+.pt{fill:var(--accent); stroke:var(--bg); stroke-width:1.5}
+.pt2{fill:var(--accent2); stroke:var(--bg); stroke-width:1.5}
+text{font:12px system-ui,sans-serif; fill:var(--muted)}
+text.lab{fill:var(--text); font-weight:600}
+text.lab2{fill:var(--accent2); font-weight:600}
+text.lab3{fill:var(--accent); font-weight:600}
+
+.exercise{background:var(--card); border:1px solid var(--border2);
+  border-radius:8px; padding:14px 16px; margin:18px 0}
+.exercise .head{font:700 .95rem/1.3 system-ui,sans-serif; color:var(--text);
+  margin:0 0 8px}
+.exercise .tag{font:600 .72rem/1 system-ui,sans-serif; color:var(--accent2);
+  text-transform:uppercase; letter-spacing:.08em; margin-left:6px}
+details{margin-top:10px; border-top:1px dashed var(--border2); padding-top:8px}
+summary{cursor:pointer; color:var(--accent); font:600 .85rem/1.4 system-ui,sans-serif}
+details p{margin-top:10px}
+
+.note{background:var(--bg); border:1px solid var(--border2); border-radius:8px;
+  padding:12px 14px; margin:18px 0}
+.note .nh{font:700 .8rem/1 system-ui,sans-serif; color:var(--accent);
+  text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:8px}
+ul,ol{color:var(--text2); padding-left:22px; margin:0 0 14px}
+li{margin:0 0 7px}
+hr{border:none; border-top:1px solid var(--border2); margin:40px 0}
+caption{caption-side:top; padding:8px 10px; text-align:left;
+  font:13px/1.5 system-ui,sans-serif; color:var(--muted)}
+@media (max-width:420px){
+  body{font-size:15px}
+  h1{font-size:1.5rem}
+  .eq{flex-direction:column; align-items:stretch; gap:6px}
+  .eq .num{text-align:right}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="chap">
+  <p class="kicker">Grid-forming inverters and power-system stability · Chapter 1</p>
+  <h1>The classical picture: machines that swing</h1>
+  <p class="lead">A grid holds its frequency because steel rotors store kinetic energy and
+  release it without being asked. This chapter derives that picture in the smallest setting that contains it: one machine against a stiff grid. It ends with two
+  numbers, a natural frequency and a damping ratio, and with the observation that every
+  term that produced them needs a rotor.</p>
+</header>
+
+<h2 id="s1-1">1.1 The problem: why frequency is a shared variable</h2>
+
+<p>Switch on a kettle in Manchester and a turbine shaft in Yorkshire slows down. The
+statement is literal, not a figure of speech, and the mechanism is the subject of this
+chapter.</p>
+
+<p>An alternating-current grid carries power at one frequency. In the classical grid this
+chapter describes, that power comes from <strong>synchronous generators</strong>. A
+synchronous generator is a rotating
+machine whose rotor carries a magnetic field, set up by a direct current in a field
+winding. Its stationary winding, the stator, produces an alternating voltage as that field
+sweeps past it. The voltage frequency is fixed by the rotor speed and by the number of
+magnetic poles on the rotor; Definition&nbsp;1.2 gives the relation. In steady state every
+such machine on the grid turns at the one speed that produces the grid frequency. That is
+what <em>synchronous</em> means. The lock is not a control law. It is a physical restoring
+torque. If one rotor advances in angle against the rest of the system, the electrical power
+it exports rises. That loads the shaft and pulls the rotor back; §1.4 derives this as
+equation (1.8). If it falls behind, its export drops, which unloads the shaft and lets it
+catch up. The machines are coupled like masses on springs, and §1.5 makes the spring
+constant exact.</p>
+
+<p>The network itself holds no usable energy store. The electric and magnetic fields of its
+lines and transformers exchange energy every half cycle. They hold no net reserve on the
+timescale of this chapter, tenths of a second to seconds. At every instant, generation equals
+demand plus losses. Suppose demand rises and no governor has yet responded. (The governor is the controller that
+adjusts the mechanical power of a turbine when its speed changes. It acts within seconds;
+§1.3 lists it among the omissions of the swing equation.) The extra energy must then come
+from somewhere in the next few hundred milliseconds. The one store of the required size is the kinetic energy of the spinning masses. A
+200&nbsp;MVA machine with the inertia constant of Example&nbsp;1.1 holds 700&nbsp;MJ, enough
+to supply its full rating for 3.5&nbsp;s (Definition&nbsp;1.3). Drawing on that store slows them down.
+Because the machines are locked together, they all slow together, and the system frequency
+falls. Frequency is therefore not a local measurement. It is a system-wide accounting
+variable that reports the running balance of power.</p>
+
+<p>That observation drives the whole chapter. It means one scalar, the frequency, tells an
+operator whether the system is in balance. It means the rate at which frequency moves
+measures how much kinetic energy is spinning. And it means that protecting the system
+against a sudden loss of generation is a question about two things. The first is stored
+energy. The second is how far a rotor angle can swing before the restoring torque runs
+out.</p>
+
+<p>Two distinct questions follow, and this chapter answers both.</p>
+
+<ol>
+  <li><strong>Small disturbances.</strong> After a load step of one per cent, does the angle
+  return to its equilibrium, and how does it get there? This is a question about the
+  eigenvalues of a linearised model. §1.5 answers it.</li>
+  <li><strong>Large disturbances.</strong> After a short circuit that removes the electrical
+  load from a machine entirely for a fraction of a second, does the angle come back at all?
+  Linearisation is useless here, because the angle moves through tens of degrees. §1.6
+  answers it by an energy argument.</li>
+</ol>
+
+<p>The reason to build this picture carefully, in a book about inverters, is that all of it
+follows from one mechanical fact. A rotor is an integrator whose input is the difference
+between mechanical power in and electrical power out. Remove the rotor and every result in
+this chapter must be re-derived or abandoned. Chapter&nbsp;2 shows which ones are abandoned.
+Chapter&nbsp;3 shows which ones a control law can rebuild, and at what cost. So the two
+numbers computed in Example&nbsp;1.1, and the critical clearing time computed in
+Example&nbsp;1.2, are the yardstick for the rest of the book.</p>
+
+<p>A table of every symbol used in this chapter, with the section that defines it, stands
+before the Exercises.</p>
+
+<h2 id="s1-2">1.2 Per unit and base quantities</h2>
+
+<p>A transmission system contains transformers, and a transformer changes the numerical
+value of every voltage, current and impedance that passes through it. Writing the network
+equations in volts and amperes therefore adds turns ratios to every line. Those ratios carry
+no physical content. The per-unit system removes them.</p>
+
+<div class="res def" id="def-1-1" data-rid="R01">
+  <p class="head">Definition 1.1 (per unit and base quantities) <span class="rid">R01</span></p>
+  <p><span class="status">Definition — stated here</span></p>
+  <p>Choose two independent base quantities for a part of the network: a three-phase base
+  apparent power <var>S<sub>base</sub></var> in VA, and a line-to-line base voltage
+  <var>V<sub>base</sub></var> in V. Derive the other two:</p>
+  <div class="eq"><div class="body"><var>I<sub>base</sub></var> = <var>S<sub>base</sub></var> / (√3 <var>V<sub>base</sub></var>)&nbsp;&nbsp;and&nbsp;&nbsp;<var>Z<sub>base</sub></var> = <var>V<sub>base</sub></var><sup>2</sup> / <var>S<sub>base</sub></var>.</div><div class="num">(1.1)</div></div>
+  <p>The per-unit value of any quantity <var>q</var> is
+  <var>q</var>/<var>q<sub>base</sub></var>, a dimensionless number written with the tag pu.
+  Time is <em>not</em> normalised in this book; it stays in seconds. Angular frequency uses
+  the base <var>ω<sub>base</sub></var> = <var>ω<sub>0</sub></var> = 2π<var>f<sub>0</sub></var>,
+  where <var>f<sub>0</sub></var> is the rated system frequency. Every example in this
+  chapter uses <var>f<sub>0</sub></var> = 60&nbsp;Hz, so
+  <var>ω<sub>0</sub></var> = 2π × 60 = 376.9911&nbsp;rad/s.</p>
+</div>
+
+<h3>Why per unit removes the turns ratio</h3>
+
+<p>Take an ideal two-winding transformer with <var>N<sub>1</sub></var> turns on the primary
+and <var>N<sub>2</sub></var> turns on the secondary. An impedance <var>Z<sub>2</sub></var>
+in ohms connected on the secondary side, seen from the primary side, has the value</p>
+
+<div class="eqc"><var>Z<sub>1</sub></var> = (<var>N<sub>1</sub></var>/<var>N<sub>2</sub></var>)<sup>2</sup> <var>Z<sub>2</sub></var>.</div>
+
+<p>Now pick one <var>S<sub>base</sub></var> for the whole circuit. Choose the base voltages in
+the ratio of the turns: <var>V<sub>base</sub></var> on the primary
+and (<var>N<sub>2</sub></var>/<var>N<sub>1</sub></var>)<var>V<sub>base</sub></var> on the
+secondary. By (1.1) the base impedance on the secondary side is then
+(<var>N<sub>2</sub></var>/<var>N<sub>1</sub></var>)<sup>2</sup> times the base impedance on
+the primary side. Divide each of the two impedances above by its own base:</p>
+
+<div class="eqc"><var>Z<sub>1</sub></var> / <var>Z<sub>base</sub></var>
+= (<var>N<sub>1</sub></var>/<var>N<sub>2</sub></var>)<sup>2</sup> <var>Z<sub>2</sub></var> / <var>Z<sub>base</sub></var>
+= <var>Z<sub>2</sub></var> / [ (<var>N<sub>2</sub></var>/<var>N<sub>1</sub></var>)<sup>2</sup> <var>Z<sub>base</sub></var> ].</div>
+
+<p>The two per-unit impedances are equal. The turns ratio has cancelled. In per unit the
+ideal transformer becomes a short circuit, and a network of transformers, lines and machines
+becomes one connected circuit with no ratios in it.</p>
+
+<p>Two further conveniences follow, and both are used without comment for the rest of the
+book. First, the √3 of a three-phase system disappears: a balanced three-phase power is
+<var>S<sub>base</sub></var> times its per-unit value, with no factor. Second, machine parameters in per unit on the machine's own rating fall in narrow numerical
+ranges, whatever the machine size. A per-unit number therefore carries engineering meaning
+that an ohm does not. A transient reactance near 0.3&nbsp;pu and an inertia constant between
+2&nbsp;s and 8&nbsp;s are typical of large turbo-generators
+<span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+Ch.&nbsp;3 — verify]</span>.</p>
+
+<p>One warning. A per-unit value is meaningless without its base. A reactance of 0.2&nbsp;pu
+on a 100&nbsp;MVA base and a reactance of 0.2&nbsp;pu on a 500&nbsp;MVA base differ by a
+factor of five as impedances. Every per-unit number in this book states its base, or takes
+the base of the unit it belongs to.</p>
+
+<h2 id="s1-3">1.3 The swing equation</h2>
+
+<p>This section derives the equation that governs every result in the chapter. The
+derivation starts at Newton's second law for rotation and ends with a two-state model in
+per unit.</p>
+
+<h3>The rotor angle and the speed deviation</h3>
+
+<div class="res def" id="def-1-2" data-rid="R02">
+  <p class="head">Definition 1.2 (rotor angle and per-unit speed deviation) <span class="rid">R02</span></p>
+  <p><span class="status">Definition — stated here</span></p>
+  <p>Let <var>ω<sub>m</sub></var> be the mechanical angular speed of the rotor in rad/s. A
+  machine with <var>p</var> magnetic poles produces an electrical angular frequency</p>
+  <div class="eqc"><var>ω</var> = (<var>p</var>/2) <var>ω<sub>m</sub></var>.</div>
+  <p>Define the <strong>per-unit speed deviation</strong> as the single symbol</p>
+  <div class="eq"><div class="body"><var>Δω</var> = (<var>ω</var> − <var>ω<sub>0</sub></var>) / <var>ω<sub>0</sub></var>.</div><div class="num">(1.2)</div></div>
+  <p>Define the <strong>rotor angle</strong> <var>δ</var> as the electrical angle of the
+  rotor measured against a reference frame that rotates at exactly
+  <var>ω<sub>0</sub></var>. The rotor angle therefore moves only when the machine is off
+  rated speed, and</p>
+  <div class="eq"><div class="body">d<var>δ</var>/d<var>t</var> = <var>ω</var> − <var>ω<sub>0</sub></var> = <var>ω<sub>0</sub></var> <var>Δω</var>.</div><div class="num">(1.3)</div></div>
+  <p>A machine running exactly at rated speed holds <var>δ</var> constant at whatever value
+  it had. The angle is a position, not a rate. That is what makes it the state variable of
+  the system.</p>
+</div>
+
+<h3>The inertia constant</h3>
+
+<div class="res def" id="def-1-3" data-rid="R03">
+  <p class="head">Definition 1.3 (inertia constant and stored energy) <span class="rid">R03</span></p>
+  <p><span class="status">Definition — stated here</span></p>
+    <p>A rotor of moment of inertia <var>J</var> turning at rated mechanical speed stores
+  kinetic energy. By Definition&nbsp;1.2 the rated mechanical speed of a machine with
+  <var>p</var> poles is 2<var>ω<sub>0</sub></var>/<var>p</var>, so</p>
+  <div class="eq"><div class="body"><var>E<sub>kin</sub></var> = ½ <var>J</var> (2<var>ω<sub>0</sub></var>/<var>p</var>)<sup>2</sup>.</div><div class="num">(1.4)</div></div>
+  <p><var>E<sub>kin</sub></var> is a constant of the machine, evaluated at rated speed. It is
+  not the instantaneous kinetic energy, which varies with <var>ω<sub>m</sub></var>.</p>
+  <p>The <strong>inertia constant</strong> is that energy normalised by the machine
+  rating:</p>
+  <div class="eq"><div class="body"><var>H</var> = <var>E<sub>kin</sub></var> / <var>S<sub>base</sub></var>,&nbsp;&nbsp;so&nbsp;&nbsp;<var>E<sub>kin</sub></var> = <var>H</var> <var>S<sub>base</sub></var>.</div><div class="num">(1.5)</div></div>
+  <p>Its unit is joule per volt-ampere, which is the second. That is not an accident of
+  algebra; it has a direct reading. <var>H</var> is the time for which the machine could
+  supply its own rated power from its stored kinetic energy alone, before the rotor stopped.
+  Large turbo-generators have <var>H</var> between 2&nbsp;s and 8&nbsp;s
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;3 — verify]</span>. Exercise&nbsp;2 computes 0.444&nbsp;s for a generator rotor alone, which is 22&nbsp;% of the
+  2&nbsp;s lower end. The turbine stages carry the remainder.</p>
+</div>
+
+<h3>From Newton to the swing equation</h3>
+
+<p>Newton's second law for a rotating shaft states that the net torque equals the moment of
+inertia times the angular acceleration:</p>
+
+<div class="eq"><div class="body"><var>J</var> d<var>ω<sub>m</sub></var>/d<var>t</var> = <var>T<sub>m</sub></var> − <var>T<sub>e</sub></var>,</div><div class="num">(1.6)</div></div>
+
+<p>where <var>T<sub>m</sub></var> is the mechanical torque applied by the turbine and
+<var>T<sub>e</sub></var> is the electrical torque opposing it. Three steps convert (1.6)
+into the working form.</p>
+
+<p><strong>Step 1 — multiply by speed to get power.</strong> Multiply both sides by
+<var>ω<sub>m</sub></var>. The right-hand side becomes
+<var>ω<sub>m</sub></var>(<var>T<sub>m</sub></var> − <var>T<sub>e</sub></var>), which is
+mechanical power minus electrical power. Here the first approximation enters. Power equals torque times speed exactly. Take the torque base as <var>S<sub>base</sub></var>
+divided by the rated mechanical speed 2<var>ω<sub>0</sub></var>/<var>p</var>. Then per-unit
+torque equals per-unit power exactly at rated speed, and differs from it by the factor
+1 + <var>Δω</var> off rated speed. In every case in this book the speed deviation is a few parts in
+a thousand, so we set <var>T<sub>m</sub></var> = <var>P<sub>m</sub></var> and
+<var>T<sub>e</sub></var> = <var>P<sub>e</sub></var> in per unit.
+<strong>Assumption:</strong> |<var>Δω</var>| ≪ 1, so that <var>ω<sub>m</sub></var> may be
+replaced by its rated value wherever it multiplies a torque.</p>
+
+<p><strong>Step 2 — normalise by the rating.</strong> Divide by
+<var>S<sub>base</sub></var>. The coefficient on the left is
+<var>J</var><var>ω<sub>m</sub></var>/<var>S<sub>base</sub></var>. Under the assumption of
+Step&nbsp;1, replace the <var>ω<sub>m</sub></var> in it by the rated value
+2<var>ω<sub>0</sub></var>/<var>p</var>. By (1.4),
+<var>J</var> = 2<var>E<sub>kin</sub></var>/(2<var>ω<sub>0</sub></var>/<var>p</var>)<sup>2</sup>,
+so the coefficient becomes
+2<var>E<sub>kin</sub></var>/[(2<var>ω<sub>0</sub></var>/<var>p</var>) <var>S<sub>base</sub></var>]
+= 2<var>H</var>/(2<var>ω<sub>0</sub></var>/<var>p</var>) by (1.5). The left side is then
+2<var>H</var> times the time derivative of
+<var>ω<sub>m</sub></var>/(2<var>ω<sub>0</sub></var>/<var>p</var>) = <var>ω</var>/<var>ω<sub>0</sub></var>
+= 1 + <var>Δω</var>, whose derivative is d<var>Δω</var>/d<var>t</var> by (1.2). The pole
+factor <var>p</var>/2 has cancelled between mechanical and electrical speed.</p>
+
+<p><strong>Step 3 — add the damping term.</strong> Real machines dissipate power in damper windings. These are short-circuited conductors on
+the rotor; current flows in them only when the rotor speed differs from the speed of the
+stator field.
+Real load also falls when frequency falls. The classical model represents
+both by one torque proportional to the speed deviation, with coefficient
+<var>K<sub>D</sub></var>.</p>
+
+<div class="res model" id="model-1-4" data-rid="R04">
+  <p class="head">Model 1.4 (the swing equation, per unit) <span class="rid">R04</span></p>
+  <p><span class="status">Derived here from (1.6)</span></p>
+  <div class="eq"><div class="body">2<var>H</var> d<var>Δω</var>/d<var>t</var> = <var>P<sub>m</sub></var> − <var>P<sub>e</sub></var> − <var>K<sub>D</sub></var> <var>Δω</var>,&nbsp;&nbsp;&nbsp;&nbsp;d<var>δ</var>/d<var>t</var> = <var>ω<sub>0</sub></var> <var>Δω</var>.</div><div class="num">(1.7)</div></div>
+  <p><strong>Assumptions.</strong> (i) |<var>Δω</var>| ≪ 1, so per-unit torque equals
+  per-unit power. (ii) <var>H</var> is constant; the rotor does not change shape.
+  (iii) Damping is linear in the speed deviation. (iv) <var>P<sub>m</sub></var> is an
+  external input; governor dynamics are not modelled.</p>
+  <p><strong>Omissions, named.</strong> Turbine and governor response, which acts on a
+  timescale of seconds and is therefore absent from the sub-second events of §1.6. Shaft
+  torsional modes, which are reported above 5&nbsp;Hz
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;15 — verify]</span>. Any speed dependence of <var>H</var>.</p>
+  <p><strong>Reading.</strong> The rotor is an integrator. Its input is the power imbalance
+  <var>P<sub>m</sub></var> − <var>P<sub>e</sub></var>. Its output is a speed deviation,
+  which (1.3) integrates a second time into an angle. Everything in this chapter follows
+  from that double integration and from what <var>P<sub>e</sub></var> depends on.</p>
+</div>
+
+<div class="note">
+<span class="nh">Notation decision: <var>K<sub>D</sub></var>, never <var>D</var></span>
+<p>The damping coefficient of (1.7) is written <var>K<sub>D</sub></var> throughout this
+book. The bare symbol <var>D</var> is reserved for the state-space feedthrough matrix of
+Chapter&nbsp;4, and <var>D<sub>load</sub></var> for load damping in MW/Hz. Virtual and
+equivalent damping in Chapter&nbsp;3 are written <var>K<sub>D,v</sub></var> and
+<var>K<sub>D,eq</sub></var>, never <var>D<sub>v</sub></var> or
+<var>D<sub>eq</sub></var>.</p>
+</div>
+
+<div class="note">
+<span class="nh">The convention that is excluded</span>
+<p>A second convention for (1.7) is common. It writes the inertia coefficient as
+<var>M</var> = 2<var>H</var>/<var>ω<sub>0</sub></var> and lets the damping act on a speed
+deviation in rad/s rather than in per unit:</p>
+<div class="eqc"><var>M</var> d<var>ω</var>/d<var>t</var> = <var>P<sub>m</sub></var> − <var>P<sub>e</sub></var> − <var>K′<sub>D</sub></var>(<var>ω</var> − <var>ω<sub>0</sub></var>).</div>
+<p>This book <strong>does not use that form</strong>. The two forms are not
+interchangeable. The two speed deviations differ by the factor
+<var>ω<sub>0</sub></var> = 376.9911&nbsp;s<sup>−1</sup>, so mixing them changes the computed
+damping ratio by exactly that factor. Exercise&nbsp;3 carries the mixture through Example&nbsp;1.1 and obtains a damping ratio
+(the symbol <var>ζ</var>, defined in §1.5) of 6.01 instead of 0.01594. A machine whose
+swing decays by the factor e in 7.0&nbsp;s is then reported as overdamped, with no
+oscillation at all. From here on, <strong>every</strong> equation uses (1.7)
+with <var>Δω</var> in per unit.</p>
+</div>
+
+<h2 id="s1-4">1.4 The classical machine against an infinite bus</h2>
+
+<p>The swing equation is not yet closed, because <var>P<sub>e</sub></var> is not yet a
+function of the state. This section supplies that function under four assumptions, listed in Model&nbsp;1.5. They
+are the fewest that make <var>P<sub>e</sub></var> a function of <var>δ</var> alone.</p>
+
+<p>Two modelling choices do the work. The first is the <strong>infinite bus</strong>: a node
+whose voltage magnitude <var>V<sub>inf</sub></var> and frequency are fixed, whatever current
+is drawn from it. It is a Thevenin source of zero impedance. It idealises a machine whose own swing does not measurably move the system voltage or
+frequency. Chapter&nbsp;4 replaces it with a network of finite size. The second
+is the <strong>classical machine model</strong>.</p>
+
+<div class="res model" id="model-1-5" data-rid="R05">
+  <p class="head">Model 1.5 (classical machine: constant emf behind transient reactance) <span class="rid">R05</span></p>
+  <p><span class="status">Derived here; its omissions are listed below and repaid in §1.6.1</span></p>
+    <p>Represent the machine as a voltage source of <strong>constant</strong> magnitude
+  <var>E′</var> behind a reactance <var>X′<sub>d</sub></var>. Here <var>E′</var> is the
+  internal voltage that the rotor field induces in the stator winding. The prime marks it
+  as the value fixed by the field flux in the first second after a disturbance. The
+  reactance <var>X′<sub>d</sub></var> is the <strong>transient reactance</strong>. It is the
+  reactance the machine presents between that internal voltage and its terminals on the
+  same timescale, before the field flux has changed. The qualifier <em>direct-axis</em>
+  names the rotor axis that lies along the field winding. Under assumption (iii) below the
+  two rotor axes have equal reactance, so the qualifier carries no content in this chapter.
+  The symbol keeps it because it is standard. Typical values lie near 0.3&nbsp;pu on the
+  machine base <span class="cite">[S01, Kundur 1994, <em>Power System Stability and
+  Control</em>, Ch.&nbsp;3 — verify]</span>. The angle of that source is the rotor angle
+  <var>δ</var> of Definition&nbsp;1.2. Let
+  <var>X</var> be the total reactance from the source to the infinite bus, that is
+  <var>X′<sub>d</sub></var> plus the transformer reactance <var>X<sub>t</sub></var> plus the
+  reactance of the transmission path. That path is built from transmission lines, each of
+  reactance <var>X<sub>L</sub></var>. Then the active power delivered to the bus is</p>
+  <div class="eq"><div class="body"><var>P<sub>e</sub></var> = (<var>E′</var> <var>V<sub>inf</sub></var> / <var>X</var>) sin <var>δ</var> = <var>P<sub>max</sub></var> sin <var>δ</var>.</div><div class="num">(1.8)</div></div>
+  <p><strong>Assumptions.</strong> (i) The path between the source and the bus is purely
+  reactive; resistance is zero. (ii) <var>E′</var> is constant over the time of interest.
+  (iii) The rotor is cylindrical (a round rotor), so the reactance the machine presents does
+  not depend on the rotor position.
+  (iv) Quantities are balanced and at fundamental frequency.</p>
+  <p><strong>Omissions, named.</strong> <em>Flux decay:</em> the field flux linkage actually
+  falls on a time constant reported in the range of seconds
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;3 — verify]</span>, so <var>E′</var> holds constant only for about the first
+  second. <em>Excitation control:</em> an automatic voltage regulator acts on
+  <var>E′</var> and changes both damping and synchronizing torque. <em>Saliency:</em> a rotor with projecting poles, as in hydro machines, presents a reactance
+  that varies with rotor position. It adds a term in sin&nbsp;2<var>δ</var> to (1.8). <em>Stator
+  resistance:</em> including it adds a small cosine term and a small loss. Each omission is
+  repaid by the classification of §1.6.1 and by the source cited there
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;3 and Ch.&nbsp;12 — verify]</span>.</p>
+</div>
+
+<p>The derivation of (1.8) is four lines of phasor circuit theory. Take the infinite-bus
+voltage as the phase reference, <var>V<sub>inf</sub></var>∠0, and the internal voltage as
+<var>E′</var>∠<var>δ</var> = <var>E′</var>(cos <var>δ</var> + <var>j</var> sin <var>δ</var>).
+The two sources are joined by the reactance <var>X</var>, whose impedance is
+<var>j</var><var>X</var>. The current <var>I</var> from the machine toward the bus is</p>
+<div class="eqc"><var>I</var> = (<var>E′</var>∠<var>δ</var> − <var>V<sub>inf</sub></var>∠0) / (<var>j</var><var>X</var>).</div>
+<p>The complex power <var>S</var> delivered to the bus is
+<var>S</var> = <var>V<sub>inf</sub></var> <var>I</var>*, where the asterisk denotes the
+complex conjugate. Substitute <var>I</var> and use 1/(−<var>j</var>) = <var>j</var>:</p>
+<div class="eqc"><var>S</var> = <var>j</var><var>V<sub>inf</sub></var> (<var>E′</var> cos <var>δ</var> − <var>j</var><var>E′</var> sin <var>δ</var> − <var>V<sub>inf</sub></var>) / <var>X</var>.</div>
+<p>Multiply out. The real part is <var>P<sub>e</sub></var> =
+(<var>E′</var><var>V<sub>inf</sub></var>/<var>X</var>) sin <var>δ</var>, which is (1.8). The
+imaginary part is the reactive power
+(<var>E′</var><var>V<sub>inf</sub></var> cos <var>δ</var> − <var>V<sub>inf</sub></var><sup>2</sup>)/<var>X</var>,
+which this chapter does not use. In per unit <var>S</var> = <var>V<sub>inf</sub></var><var>I</var>* carries
+no factor 3, by the first convenience of §1.2.</p>
+
+<p>Equation (1.8) is the whole electrical side of the classical picture, and it has three
+properties worth naming before they are used.</p>
+
+<ol>
+<li>It is <strong>bounded</strong>. No angle delivers more than
+<var>P<sub>max</sub></var> = <var>E′</var><var>V<sub>inf</sub></var>/<var>X</var>. A machine
+asked for more than that has no equilibrium at all.</li>
+<li>It is <strong>non-monotonic</strong>. Beyond <var>δ</var> = 90° the power falls as the
+angle rises. This is the source of every stability limit in the chapter.</li>
+<li>It <strong>depends on the network</strong>. Tripping a line raises <var>X</var> and
+lowers <var>P<sub>max</sub></var>. Fig.&nbsp;1.1 shows exactly that.</li>
+</ol>
+
+<p>Take a mechanical power <var>P<sub>m</sub></var> &lt; <var>P<sub>max</sub></var>. The
+<strong>equilibrium angle</strong> <var>δ<sub>0</sub></var> is the angle at which electrical
+output equals mechanical input: <var>P<sub>max</sub></var> sin <var>δ<sub>0</sub></var> =
+<var>P<sub>m</sub></var>. There are two solutions in (0,&nbsp;π), one below 90° and one
+above; §1.5 shows why only the first is usable. Fig.&nbsp;1.1 marks
+<var>δ<sub>0</sub></var> for the pre-fault and post-fault networks of Example&nbsp;1.2.</p>
+
+<figure id="fig-1-1">
+<svg viewBox="0 0 560 340" role="img" aria-label="Power-angle curves before the fault, during the fault, and after the faulted line is tripped.">
+  <line class="ax" x1="60" y1="290" x2="545" y2="290"/>
+  <line class="ax" x1="60" y1="20" x2="60" y2="295"/>
+  <line class="grid" x1="60" y1="215" x2="540" y2="215"/>
+  <line class="grid" x1="60" y1="140" x2="540" y2="140"/>
+  <line class="grid" x1="60" y1="65" x2="540" y2="65"/>
+  <text x="52" y="294" text-anchor="end">0</text>
+  <text x="52" y="219" text-anchor="end">0.5</text>
+  <text x="52" y="144" text-anchor="end">1.0</text>
+  <text x="52" y="69" text-anchor="end">1.5</text>
+  <text x="14" y="130" transform="rotate(-90 14 130)" class="lab">P (pu)</text>
+  <text x="60" y="310" text-anchor="middle">0</text>
+  <text x="180" y="310" text-anchor="middle">45</text>
+  <text x="300" y="310" text-anchor="middle">90</text>
+  <text x="420" y="310" text-anchor="middle">135</text>
+  <text x="540" y="310" text-anchor="middle">180</text>
+  <text x="300" y="332" text-anchor="middle" class="lab">rotor angle δ (degrees)</text>
+  <path class="c1" d="M 60.0,290.0 L 66.7,278.9 L 73.3,267.9 L 80.0,256.9 L 86.7,245.9 L 93.3,235.1 L 100.0,224.3 L 106.7,213.7 L 113.3,203.2 L 120.0,192.9 L 126.7,182.7 L 133.3,172.8 L 140.0,163.1 L 146.7,153.6 L 153.3,144.4 L 160.0,135.5 L 166.7,126.8 L 173.3,118.5 L 180.0,110.5 L 186.7,102.8 L 193.3,95.5 L 200.0,88.6 L 206.7,82.1 L 213.3,75.9 L 220.0,70.2 L 226.7,64.8 L 233.3,59.9 L 240.0,55.5 L 246.7,51.5 L 253.3,47.9 L 260.0,44.8 L 266.7,42.2 L 273.3,40.0 L 280.0,38.3 L 286.7,37.1 L 293.3,36.4 L 300.0,36.2 L 306.7,36.4 L 313.3,37.1 L 320.0,38.3 L 326.7,40.0 L 333.3,42.2 L 340.0,44.8 L 346.7,47.9 L 353.3,51.5 L 360.0,55.5 L 366.7,59.9 L 373.3,64.8 L 380.0,70.2 L 386.7,75.9 L 393.3,82.1 L 400.0,88.6 L 406.7,95.5 L 413.3,102.8 L 420.0,110.5 L 426.7,118.5 L 433.3,126.8 L 440.0,135.5 L 446.7,144.4 L 453.3,153.6 L 460.0,163.1 L 466.7,172.8 L 473.3,182.7 L 480.0,192.9 L 486.7,203.2 L 493.3,213.7 L 500.0,224.3 L 506.7,235.1 L 513.3,245.9 L 520.0,256.9 L 526.7,267.9 L 533.3,278.9 L 540.0,290.0"/>
+  <path class="c2" d="M 60.0,290.0 L 66.7,281.5 L 73.3,273.1 L 80.0,264.7 L 86.7,256.3 L 93.3,248.0 L 100.0,239.8 L 106.7,231.6 L 113.3,223.6 L 120.0,215.7 L 126.7,208.0 L 133.3,200.4 L 140.0,192.9 L 146.7,185.7 L 153.3,178.7 L 160.0,171.8 L 166.7,165.2 L 173.3,158.9 L 180.0,152.7 L 186.7,146.9 L 193.3,141.3 L 200.0,136.0 L 206.7,131.0 L 213.3,126.3 L 220.0,121.9 L 226.7,117.8 L 233.3,114.1 L 240.0,110.7 L 246.7,107.6 L 253.3,104.9 L 260.0,102.5 L 266.7,100.5 L 273.3,98.8 L 280.0,97.5 L 286.7,96.6 L 293.3,96.1 L 300.0,95.9 L 306.7,96.1 L 313.3,96.6 L 320.0,97.5 L 326.7,98.8 L 333.3,100.5 L 340.0,102.5 L 346.7,104.9 L 353.3,107.6 L 360.0,110.7 L 366.7,114.1 L 373.3,117.8 L 380.0,121.9 L 386.7,126.3 L 393.3,131.0 L 400.0,136.0 L 406.7,141.3 L 413.3,146.9 L 420.0,152.7 L 426.7,158.9 L 433.3,165.2 L 440.0,171.8 L 446.7,178.7 L 453.3,185.7 L 460.0,192.9 L 466.7,200.4 L 473.3,208.0 L 480.0,215.7 L 486.7,223.6 L 493.3,231.6 L 500.0,239.8 L 506.7,248.0 L 513.3,256.3 L 520.0,264.7 L 526.7,273.1 L 533.3,281.5 L 540.0,290.0"/>
+  <line class="c3" x1="60" y1="290" x2="540" y2="290"/>
+  <line class="c4" x1="60" y1="170" x2="540" y2="170"/>
+  <text x="538" y="163" text-anchor="end" class="lab">P_m = 0.8 pu</text>
+  <text x="196" y="46" class="lab3">pre-fault, P_max = 1.6923</text>
+  <text x="300" y="86" text-anchor="middle" class="lab2">post-fault, P_max = 1.2941</text>
+  <text x="196" y="283">fault-on, P_e = 0</text>
+  <circle class="pt" cx="135.2" cy="170" r="4.5"/>
+  <circle class="pt2" cx="161.8" cy="170" r="4.5"/>
+  <circle class="pt2" cx="438.2" cy="170" r="4.5"/>
+  <line class="mark" x1="135.2" y1="170" x2="135.2" y2="290"/>
+  <line class="mark" x1="438.2" y1="170" x2="438.2" y2="290"/>
+  <text x="128" y="152" text-anchor="end" class="lab3">28.21°</text>
+  <text x="170" y="196" class="lab2">38.18°</text>
+  <text x="432" y="152" text-anchor="end" class="lab2">141.82°</text>
+</svg>
+<figcaption><b>Fig. 1.1 — The power-angle curve moves when the network changes.</b>
+Equation&nbsp;(1.8) plotted for the three networks of Example&nbsp;1.2, all with
+<var>E′</var> = 1.1&nbsp;pu and <var>V<sub>inf</sub></var> = 1.0&nbsp;pu. Orange: before the
+fault, <var>X</var> = 0.65&nbsp;pu, <var>P<sub>max,pre</sub></var> = 1.6923&nbsp;pu. Grey
+dashes along the axis: during the three-phase fault, <var>P<sub>e</sub></var> = 0. Teal:
+after line&nbsp;2 is tripped, <var>X</var> = 0.85&nbsp;pu,
+<var>P<sub>max,post</sub></var> = 1.2941&nbsp;pu. The white dashed line is
+<var>P<sub>m</sub></var> = 0.8&nbsp;pu. Marked: the pre-fault equilibrium at 28.21°, the
+post-fault equilibrium at 38.18°, and the far intersection of the post-fault curve with
+<var>P<sub>m</sub></var> at 141.82°. §1.6 names that angle <var>δ<sub>max</sub></var>;
+beyond it the post-fault curve lies below <var>P<sub>m</sub></var> again. The fault-on curve never meets
+<var>P<sub>m</sub></var>, so while the fault is on the rotor can only accelerate.
+Illustrates Model&nbsp;1.5 (R05) and sets up Theorem&nbsp;1.8 (R09).</figcaption>
+</figure>
+
+<h2 id="s1-5">1.5 Small-signal stability of one machine</h2>
+
+<p>Close the loop. Substitute (1.8) into the swing equation (1.7), and the system becomes
+two coupled first-order equations in the two states <var>δ</var> and <var>Δω</var>:</p>
+
+<div class="eqc">
+d<var>δ</var>/d<var>t</var> = <var>ω<sub>0</sub></var> <var>Δω</var>,&nbsp;&nbsp;&nbsp;&nbsp;
+2<var>H</var> d<var>Δω</var>/d<var>t</var> = <var>P<sub>m</sub></var> − <var>P<sub>max</sub></var> sin <var>δ</var> − <var>K<sub>D</sub></var> <var>Δω</var>.
+</div>
+
+<p>An equilibrium needs both derivatives to be zero, so <var>Δω</var> = 0 and
+<var>P<sub>max</sub></var> sin <var>δ<sub>0</sub></var> = <var>P<sub>m</sub></var>: the
+equilibrium angle <var>δ<sub>0</sub></var> of §1.4. The rest of this section shows why only
+the solution below 90° is usable.</p>
+
+<h3>The synchronizing torque coefficient</h3>
+
+<div class="res lem" id="lem-1-6" data-rid="R06">
+  <p class="head">Lemma 1.6 (synchronizing torque coefficient) <span class="rid">R06</span></p>
+  <p><span class="status">Proved here</span></p>
+  <p>Define the <strong>synchronizing torque coefficient</strong> as the slope of the
+  power-angle curve at the equilibrium:</p>
+  <div class="eq"><div class="body"><var>K<sub>s</sub></var> = d<var>P<sub>e</sub></var>/d<var>δ</var> at <var>δ<sub>0</sub></var> = (<var>E′</var> <var>V<sub>inf</sub></var> / <var>X</var>) cos <var>δ<sub>0</sub></var>.</div><div class="num">(1.9)</div></div>
+  <p>Then <var>K<sub>s</sub></var> &gt; 0 exactly when |<var>δ<sub>0</sub></var>| &lt; 90°.</p>
+  <div class="proof"><span class="plabel">Proof</span>
+  <p>Differentiate (1.8) with respect to <var>δ</var>. The derivative of
+  <var>P<sub>max</sub></var> sin <var>δ</var> is <var>P<sub>max</sub></var> cos
+  <var>δ</var>. Evaluate at <var>δ<sub>0</sub></var> to obtain (1.9). Now
+  <var>P<sub>max</sub></var> = <var>E′</var><var>V<sub>inf</sub></var>/<var>X</var> is
+  positive for a positive reactance and positive voltages. So the sign of
+  <var>K<sub>s</sub></var> is the sign of cos <var>δ<sub>0</sub></var>, which is positive
+  exactly on (−90°,&nbsp;90°). ∎</p></div>
+  <p><strong>Reading.</strong> <var>K<sub>s</sub></var> is a spring constant, in units of
+  power per radian. Push the rotor forward by one radian and the network pulls it back with
+  an extra <var>K<sub>s</sub></var> per unit of load. Past 90° the spring reverses sign:
+  pushing the rotor forward <em>reduces</em> its export, which accelerates it further. That
+  is a runaway, not an oscillation.</p>
+</div>
+
+<h3>The two numbers</h3>
+
+<div class="res thm" id="thm-1-7" data-rid="R07">
+  <p class="head">Theorem 1.7 (small-signal single-machine infinite-bus result) <span class="rid">R07</span></p>
+  <p><span class="status">Proved here — the central result of Chapter&nbsp;1</span></p>
+  <p>Linearise (1.7) with (1.8) about an equilibrium (<var>δ<sub>0</sub></var>, 0). Write
+  Δ<var>δ</var> for the perturbation of the angle and <var>Δω</var> for the speed
+  deviation. Then the swing mode has undamped natural frequency and damping ratio</p>
+  <div class="eq"><div class="body"><var>ω<sub>n</sub></var> = √( <var>K<sub>s</sub></var> <var>ω<sub>0</sub></var> / (2<var>H</var>) ),&nbsp;&nbsp;&nbsp;&nbsp;<var>ζ</var> = <var>K<sub>D</sub></var> / (4 <var>H</var> <var>ω<sub>n</sub></var>),</div><div class="num">(1.10)</div></div>
+  <p>and the equilibrium is asymptotically stable exactly when <var>K<sub>s</sub></var> &gt; 0
+  and <var>K<sub>D</sub></var> &gt; 0.</p>
+  <div class="proof"><span class="plabel">Proof</span>
+  <p>The only non-linear term is <var>P<sub>max</sub></var> sin <var>δ</var>. Its
+  first-order expansion about <var>δ<sub>0</sub></var> is
+  <var>P<sub>max</sub></var> sin <var>δ<sub>0</sub></var> +
+  <var>P<sub>max</sub></var> cos <var>δ<sub>0</sub></var> Δ<var>δ</var>, that is
+  <var>P<sub>m</sub></var> + <var>K<sub>s</sub></var> Δ<var>δ</var>, using the equilibrium
+  condition and (1.9). Substitute and cancel <var>P<sub>m</sub></var>:</p>
+  <div class="eqc">2<var>H</var> d<var>Δω</var>/d<var>t</var> = −<var>K<sub>s</sub></var> Δ<var>δ</var> − <var>K<sub>D</sub></var> <var>Δω</var>,&nbsp;&nbsp;&nbsp;&nbsp;dΔ<var>δ</var>/d<var>t</var> = <var>ω<sub>0</sub></var> <var>Δω</var>.</div>
+  <p>Eliminate <var>Δω</var>. Differentiate the second equation once and substitute the
+  first:</p>
+  <div class="eqc">d<sup>2</sup>Δ<var>δ</var>/d<var>t</var><sup>2</sup> + (<var>K<sub>D</sub></var>/(2<var>H</var>)) dΔ<var>δ</var>/d<var>t</var> + (<var>K<sub>s</sub></var> <var>ω<sub>0</sub></var>/(2<var>H</var>)) Δ<var>δ</var> = 0.</div>
+  <p>The characteristic polynomial is</p>
+  <div class="eq"><div class="body"><var>λ</var><sup>2</sup> + (<var>K<sub>D</sub></var>/(2<var>H</var>)) <var>λ</var> + <var>K<sub>s</sub></var> <var>ω<sub>0</sub></var>/(2<var>H</var>) = 0.</div><div class="num">(1.11)</div></div>
+  <p>Compare with the standard second-order form
+  <var>λ</var><sup>2</sup> + 2<var>ζ</var><var>ω<sub>n</sub></var><var>λ</var> +
+  <var>ω<sub>n</sub></var><sup>2</sup> = 0. Matching the constant term gives
+  <var>ω<sub>n</sub></var><sup>2</sup> =
+  <var>K<sub>s</sub></var><var>ω<sub>0</sub></var>/(2<var>H</var>), which is the first half
+  of (1.10). Matching the linear term gives
+  2<var>ζ</var><var>ω<sub>n</sub></var> = <var>K<sub>D</sub></var>/(2<var>H</var>), so
+  <var>ζ</var> = <var>K<sub>D</sub></var>/(4<var>H</var><var>ω<sub>n</sub></var>), which is
+  the second half.</p>
+  <p>For the stability claim, call the equilibrium <em>asymptotically stable</em> when every
+  solution that starts near it returns to it as <var>t</var> grows without bound. For a
+  linear second-order system that holds exactly when both roots of (1.11) have negative real
+  part. By the Routh–Hurwitz condition for a monic quadratic, both roots have negative real
+  part exactly when both of the remaining coefficients are positive. Here <var>H</var> &gt; 0
+  and <var>ω<sub>0</sub></var> &gt; 0 always, so the two conditions reduce to
+  <var>K<sub>D</sub></var> &gt; 0 and <var>K<sub>s</sub></var> &gt; 0. ∎</p></div>
+  <p><strong>Boundary cases, stated because they matter later.</strong> If
+  <var>K<sub>D</sub></var> = 0 the roots are ±<var>j</var><var>ω<sub>n</sub></var>: purely
+  imaginary. The angle then oscillates forever at <var>ω<sub>n</sub></var>, neither growing
+  nor decaying. That is <em>marginal</em> stability, not asymptotic stability, and §1.6 uses
+  exactly this undamped case. If <var>K<sub>s</sub></var> &lt; 0 the constant term of (1.11)
+  is negative. The product of the two roots is then negative, so one root is real and
+  positive. The angle runs away.</p>
+  <p><strong>Reading.</strong> The machine is a mass, a spring and a dashpot. To see the
+  three constants, write the linearised pair with Δ<var>δ</var> as the position. From
+  dΔ<var>δ</var>/d<var>t</var> = <var>ω<sub>0</sub></var><var>Δω</var>, the speed deviation
+  is <var>Δω</var> = (1/<var>ω<sub>0</sub></var>) dΔ<var>δ</var>/d<var>t</var>. Substitute
+  it into the first equation of the proof:</p>
+  <div class="eqc">(2<var>H</var>/<var>ω<sub>0</sub></var>) d<sup>2</sup>Δ<var>δ</var>/d<var>t</var><sup>2</sup> + (<var>K<sub>D</sub></var>/<var>ω<sub>0</sub></var>) dΔ<var>δ</var>/d<var>t</var> + <var>K<sub>s</sub></var> Δ<var>δ</var> = 0.</div>
+  <p>The mass is 2<var>H</var>/<var>ω<sub>0</sub></var>, the dashpot is
+  <var>K<sub>D</sub></var>/<var>ω<sub>0</sub></var>, and the spring is <var>K<sub>s</sub></var>.
+  Check against (1.10): (dashpot)<sup>2</sup>/(mass × spring) =
+  <var>K<sub>D</sub></var><sup>2</sup>/(2<var>H</var><var>ω<sub>0</sub></var><var>K<sub>s</sub></var>)
+  = 4<var>ζ</var><sup>2</sup>. Do not read the dashpot as <var>K<sub>D</sub></var> alone.
+  That pairs a per-unit damping coefficient with a position in radians, which is the
+  convention mixture excluded in §1.3. Both numbers in (1.10) are inherited from hardware:
+  <var>H</var> from the steel, <var>K<sub>s</sub></var> from the network reactance and the
+  operating angle. Neither is chosen by a control engineer. Chapter&nbsp;3 asks what happens
+  when both become settings in a firmware file.</p>
+</div>
+
+<div class="res ex" id="ex-1-1" data-rid="R08">
+  <p class="head">Example 1.1 — a 60&nbsp;Hz machine against an infinite bus <span class="rid">R08</span></p>
+  <p><span class="status">Computed here; every digit is reproduced by the chapter's own arithmetic</span></p>
+  <p><strong>Data.</strong> <var>f<sub>0</sub></var> = 60&nbsp;Hz, so
+  <var>ω<sub>0</sub></var> = 2π × 60 = 376.9911&nbsp;rad/s. <var>H</var> = 3.5&nbsp;s.
+  <var>K<sub>D</sub></var> = 2&nbsp;pu. <var>E′</var> = 1.1&nbsp;pu.
+  <var>V<sub>inf</sub></var> = 1.0&nbsp;pu. <var>P<sub>m</sub></var> = 0.8&nbsp;pu.
+  Network: <var>X′<sub>d</sub></var> + <var>X<sub>t</sub></var> = 0.45&nbsp;pu, then two
+  parallel transmission lines of <var>X<sub>L</sub></var> = 0.40&nbsp;pu each. All values on
+  the machine base.</p>
+  <p><strong>Step 1 — total reactance.</strong> Two equal reactances in parallel give half
+  of one: 0.40/2 = 0.20&nbsp;pu. So</p>
+  <div class="eqc"><var>X</var> = 0.45 + 0.20 = 0.65&nbsp;pu,&nbsp;&nbsp;&nbsp;&nbsp;<var>P<sub>max,pre</sub></var> = <var>E′</var><var>V<sub>inf</sub></var>/<var>X</var> = 1.1 × 1.0 / 0.65 = 1.6923&nbsp;pu.</div>
+  <p><strong>Step 2 — equilibrium angle.</strong> Set
+  <var>P<sub>e</sub></var> = <var>P<sub>m</sub></var> in (1.8):</p>
+  <div class="eqc">sin <var>δ<sub>0</sub></var> = <var>P<sub>m</sub></var> <var>X</var> / (<var>E′</var><var>V<sub>inf</sub></var>) = 0.8 × 0.65 / 1.1 = 0.52 / 1.1 = 0.472727,<br>
+  <var>δ<sub>0</sub></var> = arcsin(0.472727) = 0.492383&nbsp;rad = 28.211°,&nbsp;&nbsp;cos <var>δ<sub>0</sub></var> = 0.881209.</div>
+  <p><strong>Step 3 — synchronizing torque coefficient</strong>, from (1.9):</p>
+  <div class="eqc"><var>K<sub>s</sub></var> = 1.692308 × 0.881209 = 1.4913&nbsp;pu/rad.</div>
+  <p><strong>Step 4 — natural frequency</strong>, from (1.10):</p>
+  <div class="eqc"><var>K<sub>s</sub></var><var>ω<sub>0</sub></var>/(2<var>H</var>) = 1.491276 × 376.9911 / 7 = 562.198 / 7 = 80.3140&nbsp;s<sup>−2</sup>,<br>
+  <var>ω<sub>n</sub></var> = √80.3140 = 8.9618&nbsp;rad/s = 8.9618 / (2π) = 1.4263&nbsp;Hz.</div>
+  <p><strong>Step 5 — damping ratio</strong>, from (1.10):</p>
+  <div class="eqc"><var>ζ</var> = 2 / (4 × 3.5 × 8.9618) = 2 / 125.465 = 0.015941.</div>
+  <p><strong>Step 6 — eigenvalues.</strong> The roots of (1.11) are
+  −<var>ζ</var><var>ω<sub>n</sub></var> ±
+  <var>j</var><var>ω<sub>n</sub></var>√(1 − <var>ζ</var><sup>2</sup>):</p>
+  <div class="eqc">−0.015941 × 8.9618 = −0.142857&nbsp;s<sup>−1</sup>, which equals −<var>K<sub>D</sub></var>/(4<var>H</var>) = −2/14 exactly;<br>
+  8.9618 × √(1 − 0.000254) = 8.9607&nbsp;rad/s;<br>
+  <var>λ</var> = −0.1429 ± <var>j</var>8.9607&nbsp;s<sup>−1</sup>.</div>
+  <p><strong>Interpretation.</strong> The oscillation period is
+  2π/8.9607 = 0.7012&nbsp;s. The amplitude decays with time constant
+  1/0.142857 = 7.000&nbsp;s, so the disturbance falls to 36.8&nbsp;% of its
+  initial amplitude after 7.000&nbsp;s, which is 9.98 periods. The frequency, 1.43&nbsp;Hz, sits inside the 0.7&nbsp;Hz
+  to 2&nbsp;Hz band reported for local plant modes
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;12 — verify]</span>. The damping ratio is 0.015941, that is 1.6&nbsp;% of critical damping. After a load step this mode is still at 36.8&nbsp;% of its initial amplitude ten swings
+  later. Power system stabilisers exist to raise that damping. They add a supplementary signal
+  to the excitation system whose purpose is to increase the damping of this mode
+  <span class="cite">[S01, Kundur 1994, <em>Power System Stability and Control</em>,
+  Ch.&nbsp;12 — verify]</span>.</p>
+</div>
+
+<figure id="fig-1-2">
+<svg viewBox="0 0 560 330" role="img" aria-label="Eigenvalues of Example 1.1 in the complex plane as the damping coefficient is swept over four values.">
+  <line class="ax" x1="40" y1="155" x2="545" y2="155"/>
+  <line class="ax" x1="471.4" y1="20" x2="471.4" y2="292"/>
+  <line class="grid" x1="40" y1="34" x2="545" y2="34"/>
+  <line class="grid" x1="40" y1="276" x2="545" y2="276"/>
+  <line class="grid" x1="334.3" y1="20" x2="334.3" y2="292"/>
+  <line class="grid" x1="197.1" y1="20" x2="197.1" y2="292"/>
+  <line class="grid" x1="60" y1="20" x2="60" y2="292"/>
+  <text x="471.4" y="310" text-anchor="middle">0</text>
+  <text x="334.3" y="310" text-anchor="middle">−1</text>
+  <text x="197.1" y="310" text-anchor="middle">−2</text>
+  <text x="60" y="310" text-anchor="middle">−3</text>
+  <text x="300" y="328" text-anchor="middle" class="lab">real part of λ (s⁻¹)</text>
+  <text x="482" y="38">+8.96</text>
+  <text x="482" y="280">−8.96</text>
+  <text x="482" y="151">0</text>
+  <text x="16" y="160" transform="rotate(-90 16 160)" class="lab">imaginary part (rad/s)</text>
+  <path class="c4" d="M 471.4,34.0 L 456.1,34.0 L 440.7,34.1 L 425.3,34.1 L 410.0,34.2 L 394.6,34.3 L 379.2,34.4 L 363.9,34.5 L 348.5,34.6 L 333.2,34.8 L 317.8,35.0 L 302.4,35.2 L 287.1,35.4 L 271.7,35.6 L 256.3,35.9 L 241.0,36.2 L 225.6,36.5 L 210.3,36.8 L 194.9,37.1 L 179.5,37.5 L 164.2,37.9 L 148.8,38.3 L 133.4,38.7 L 118.1,39.1 L 102.7,39.6 L 87.4,40.1 L 72.0,40.6"/>
+  <path class="c4" d="M 471.4,276.0 L 456.1,276.0 L 440.7,275.9 L 425.3,275.9 L 410.0,275.8 L 394.6,275.7 L 379.2,275.6 L 363.9,275.5 L 348.5,275.4 L 333.2,275.2 L 317.8,275.0 L 302.4,274.8 L 287.1,274.6 L 271.7,274.4 L 256.3,274.1 L 241.0,273.8 L 225.6,273.5 L 210.3,273.2 L 194.9,272.9 L 179.5,272.5 L 164.2,272.1 L 148.8,271.7 L 133.4,271.3 L 118.1,270.9 L 102.7,270.4 L 87.4,269.9 L 72.0,269.4"/>
+  <circle class="pt2" cx="471.4" cy="34.0" r="4.5"/><circle class="pt2" cx="471.4" cy="276.0" r="4.5"/>
+  <circle class="pt" cx="451.8" cy="34.0" r="4.5"/><circle class="pt" cx="451.8" cy="276.0" r="4.5"/>
+  <circle class="pt" cx="373.5" cy="34.4" r="4.5"/><circle class="pt" cx="373.5" cy="275.6" r="4.5"/>
+  <circle class="pt" cx="177.6" cy="37.5" r="4.5"/><circle class="pt" cx="177.6" cy="272.5" r="4.5"/>
+  <text x="468" y="20" text-anchor="end" class="lab2">K_D = 0</text>
+  <text x="452" y="60" text-anchor="middle" class="lab3">2</text>
+  <text x="373.5" y="60" text-anchor="middle" class="lab3">10</text>
+  <text x="177.6" y="62" text-anchor="middle" class="lab3">30</text>
+  <text x="96" y="118" class="lab">|λ| = ω_n = 8.9618 s⁻¹</text>
+  <line class="mark" x1="120" y1="110" x2="100" y2="48"/>
+</svg>
+<figcaption><b>Fig. 1.2 — Damping moves the pair to the left; it does not move the natural
+frequency.</b> Eigenvalues of Example&nbsp;1.1 computed from (1.11) with
+<var>H</var> = 3.5&nbsp;s and <var>K<sub>s</sub></var> = 1.4913&nbsp;pu/rad held fixed, and
+<var>K<sub>D</sub></var> swept over 0, 2, 10 and 30&nbsp;pu. The pairs are
+0 ± <var>j</var>8.9618, −0.1429 ± <var>j</var>8.9607, −0.7143 ± <var>j</var>8.9333 and
+−2.1429 ± <var>j</var>8.7018&nbsp;s<sup>−1</sup>, with
+<var>ζ</var> = 0, 0.01594, 0.07970 and 0.23911. Every pair has the same magnitude,
+|<var>λ</var>| = <var>ω<sub>n</sub></var> = 8.9618&nbsp;s<sup>−1</sup>, so the locus is a
+circle of that radius. The white dashed arc is that circle. It looks nearly flat because one unit on the horizontal axis spans 10.2 times the length of one unit on the vertical axis. The teal pair at
+<var>K<sub>D</sub></var> = 0 sits on the imaginary axis: marginally stable, not
+asymptotically stable, as Theorem&nbsp;1.7 states. Illustrates Theorem&nbsp;1.7 (R07) and
+Example&nbsp;1.1 (R08).</figcaption>
+</figure>
+
+<h2 id="s1-6">1.6 Large-signal stability: the equal-area criterion</h2>
+
+<p>A short circuit on the transmission system is not a small disturbance. While the fault is
+on, the machine's electrical export collapses, the angle moves through tens of degrees, and
+the linearisation of §1.5 is void. The question changes from "how does it come back" to
+"does it come back at all". Protection engineers need the answer as a time: how long may a
+circuit breaker take to clear the fault before the machine is lost? That time is the
+<strong>critical clearing time</strong> <var>t<sub>cr</sub></var>.</p>
+
+<p>The tool is an energy argument. It comes out of one integration of the undamped swing
+equation.</p>
+
+<div class="res thm" id="thm-1-8" data-rid="R09">
+  <p class="head">Theorem 1.8 (equal-area criterion) <span class="rid">R09</span></p>
+  <p><span class="status">Proved here; the standard treatment is [S04, Anderson and Fouad 2003, <em>Power System Control and Stability</em>, 2nd ed., Ch.&nbsp;2 — verify]</span></p>
+  <p>Take (1.7) with <var>K<sub>D</sub></var> = 0 and constant <var>P<sub>m</sub></var>.
+  Suppose the machine starts at the equilibrium <var>δ<sub>0</sub></var> at synchronous
+  speed, so <var>Δω</var> = 0. Suppose a fault holds <var>P<sub>e</sub></var> = 0 from
+  <var>δ<sub>0</sub></var> up to a clearing angle, and that after clearing
+  <var>P<sub>e</sub></var> = <var>P<sub>max,post</sub></var> sin <var>δ</var>. Write
+  <var>δ<sub>max</sub></var> = π − arcsin(<var>P<sub>m</sub></var>/<var>P<sub>max,post</sub></var>)
+  for the far intersection of the post-fault curve with <var>P<sub>m</sub></var>. Then the
+  rotor first stops swinging at the angle <var>δ</var> at which</p>
+  <div class="eq"><div class="body">∫ from <var>δ<sub>0</sub></var> to <var>δ</var> of (<var>P<sub>m</sub></var> − <var>P<sub>e</sub></var>) d<var>δ</var> = 0.</div><div class="num">(1.12)</div></div>
+  <p>Split that integral at the clearing angle. Call <var>A<sub>acc</sub></var> the integral
+  of <var>P<sub>m</sub></var> − <var>P<sub>e</sub></var> over the angles where that
+  difference is positive: the rotor gains kinetic energy there. Call
+  <var>A<sub>dec</sub></var> the integral of <var>P<sub>e</sub></var> − <var>P<sub>m</sub></var>
+  over the angles after clearing where that difference is positive, up to
+  <var>δ<sub>max</sub></var>. The rotor loses kinetic energy there. When the clearing angle
+  lies above the post-fault equilibrium arcsin(<var>P<sub>m</sub></var>/<var>P<sub>max,post</sub></var>),
+  <var>A<sub>acc</sub></var> is the rectangle of height <var>P<sub>m</sub></var> between
+  <var>δ<sub>0</sub></var> and the clearing angle. Example&nbsp;1.2 is such a case. The
+  machine keeps synchronism exactly when <var>A<sub>dec</sub></var> ≥ <var>A<sub>acc</sub></var>.
+  The critical clearing angle <var>δ<sub>cr</sub></var> is the clearing angle at which the two
+  areas are equal. It satisfies (1.13).</p>
+  <div class="proof"><span class="plabel">Proof</span>
+  <p>With <var>K<sub>D</sub></var> = 0, (1.7) reads
+  2<var>H</var> d<var>Δω</var>/d<var>t</var> = <var>P<sub>m</sub></var> −
+  <var>P<sub>e</sub></var>. Multiply both sides by
+  d<var>δ</var>/d<var>t</var> = <var>ω<sub>0</sub></var><var>Δω</var>:</p>
+  <div class="eqc">2<var>H</var> <var>ω<sub>0</sub></var> <var>Δω</var> d<var>Δω</var>/d<var>t</var> = (<var>P<sub>m</sub></var> − <var>P<sub>e</sub></var>) d<var>δ</var>/d<var>t</var>.</div>
+  <p>The left side is <var>H</var><var>ω<sub>0</sub></var>
+  d(<var>Δω</var><sup>2</sup>)/d<var>t</var>. Integrate both sides in time from the start of the disturbance to the instant the angle
+  reaches <var>δ</var>. On the right, change the variable of integration from <var>t</var>
+  to <var>δ</var>. The change is valid because d<var>δ</var>/d<var>t</var> =
+  <var>ω<sub>0</sub></var><var>Δω</var> &gt; 0 until the rotor first stops, so
+  <var>δ</var>(<var>t</var>) is strictly increasing on that interval:</p>
+  <div class="eqc"><var>H</var><var>ω<sub>0</sub></var> [<var>Δω</var><sup>2</sup>] = ∫ from <var>δ<sub>0</sub></var> to <var>δ</var> of (<var>P<sub>m</sub></var> − <var>P<sub>e</sub></var>) d<var>δ</var>.</div>
+  <p>The left side is proportional to the kinetic energy the rotor has gained. The machine
+  starts at rest, so <var>Δω</var> = 0 there, and it stops swinging when <var>Δω</var>
+  returns to zero. The left side is therefore zero at both ends, which is (1.12).</p>
+  <p>Now let the fault be on from <var>δ<sub>0</sub></var> to the clearing angle, and be
+  cleared from there onward. While the fault is on, <var>P<sub>e</sub></var> = 0, so the
+  integrand is <var>P<sub>m</sub></var> &gt; 0 and the integral accumulates a positive area:
+  that is <var>A<sub>acc</sub></var>. After clearing, <var>P<sub>e</sub></var> follows the
+  post-fault curve, which exceeds <var>P<sub>m</sub></var> between the post-fault
+  equilibrium and <var>δ<sub>max</sub></var>. There the integrand is negative and the
+  integral subtracts: that is <var>A<sub>dec</sub></var>. Condition (1.12) is therefore
+  <var>A<sub>acc</sub></var> = <var>A<sub>dec</sub></var>.</p>
+  <p>Beyond <var>δ<sub>max</sub></var>, the far intersection of the post-fault curve with
+  <var>P<sub>m</sub></var>, the integrand turns positive again and no further deceleration
+  is available. If the rotor is still moving forward at <var>δ<sub>max</sub></var>, it
+  accelerates from there without bound. The critical case is therefore the one in which the
+  rotor arrives at <var>δ<sub>max</sub></var> with exactly zero speed. Write (1.12) out
+  between <var>δ<sub>0</sub></var> and <var>δ<sub>max</sub></var>, with
+  <var>P<sub>e</sub></var> = 0 during the fault and
+  <var>P<sub>e</sub></var> = <var>P<sub>max,post</sub></var> sin <var>δ</var> after it, and
+  solve for the clearing angle:</p>
+  <div class="eq"><div class="body">cos <var>δ<sub>cr</sub></var> = [ <var>P<sub>m</sub></var>(<var>δ<sub>max</sub></var> − <var>δ<sub>0</sub></var>) + <var>P<sub>max,post</sub></var> cos <var>δ<sub>max</sub></var> ] / <var>P<sub>max,post</sub></var>. ∎</div><div class="num">(1.13)</div></div>
+  </div>
+  <p><strong>Assumptions.</strong> (i) No damping. (ii) <var>P<sub>m</sub></var> constant:
+  the governor does not act inside the swing. (iii) <var>E′</var> constant, as in
+  Model&nbsp;1.5. (iv) One machine against an infinite bus, so there is a single angle to
+  integrate. The criterion does not extend to three or more machines without further
+  argument. (v) <var>P<sub>e</sub></var> = 0 while the fault is on. A fault at a bus further
+  from the machine leaves a reduced power-angle curve in place during the fault. Equation
+  (1.12) still holds, because it holds for any <var>P<sub>e</sub></var>(<var>δ</var>).
+  Equation (1.13) then gains the extra term −(1/<var>P<sub>max,post</sub></var>) × (integral
+  of the fault-on power from <var>δ<sub>0</sub></var> to <var>δ<sub>cr</sub></var>).
+  Re-derive it from (1.12).</p>
+  <p><strong>Why neglecting damping is the safe direction.</strong> Damping removes energy
+  from the swing. A machine that survives with no damping survives with damping. The
+  criterion therefore returns a conservative clearing time, and Exercise&nbsp;4 checks that
+  a numerical integration with no damping reproduces it.</p>
+</div>
+
+<p>Once <var>δ<sub>cr</sub></var> is known, the clearing <em>time</em> follows from the
+fault-on motion alone. While the fault is on, <var>P<sub>e</sub></var> = 0, so (1.7) with
+<var>K<sub>D</sub></var> = 0 has a constant right-hand side and the angle follows a parabola
+in time. Integrating
+d<sup>2</sup><var>δ</var>/d<var>t</var><sup>2</sup> =
+<var>ω<sub>0</sub></var><var>P<sub>m</sub></var>/(2<var>H</var>) twice from rest gives
+<var>δ</var> = <var>δ<sub>0</sub></var> +
+<var>ω<sub>0</sub></var><var>P<sub>m</sub></var><var>t</var><sup>2</sup>/(4<var>H</var>),
+which inverts to</p>
+
+<div class="eq"><div class="body"><var>t<sub>cr</sub></var> = √( 4<var>H</var>(<var>δ<sub>cr</sub></var> − <var>δ<sub>0</sub></var>) / (<var>ω<sub>0</sub></var> <var>P<sub>m</sub></var>) ).</div><div class="num">(1.14)</div></div>
+
+<div class="res ex" id="ex-1-2" data-rid="R10">
+  <p class="head">Example 1.2 — critical clearing time for the machine of Example&nbsp;1.1 <span class="rid">R10</span></p>
+  <p><span class="status">Computed here</span></p>
+  <p><strong>Event.</strong> Same machine, same network, same operating point:
+  <var>H</var> = 3.5&nbsp;s, <var>P<sub>m</sub></var> = 0.8&nbsp;pu,
+  <var>δ<sub>0</sub></var> = 0.492383&nbsp;rad = 28.211°,
+  <var>f<sub>0</sub></var> = 60&nbsp;Hz. A three-phase fault occurs at the sending-end bus
+  of line&nbsp;2. It holds the voltage of that bus at zero. The path from <var>E′</var> to that bus is a pure
+  reactance, so no active power leaves the machine. <var>P<sub>e</sub></var> = 0 while the
+  fault is on. The fault is cleared by tripping line&nbsp;2, which leaves one line
+  in service. Damping is neglected.</p>
+  <p><strong>Step 1 — the three power-angle curves.</strong></p>
+  <div class="eqc">pre-fault: <var>X</var> = 0.45 + 0.20 = 0.65&nbsp;pu, <var>P<sub>max,pre</sub></var> = 1.1 / 0.65 = 1.6923&nbsp;pu;<br>
+  fault-on: <var>P<sub>e</sub></var> = 0;<br>
+  post-fault: <var>X</var> = 0.45 + 0.40 = 0.85&nbsp;pu, <var>P<sub>max,post</sub></var> = 1.1 / 0.85 = 1.2941&nbsp;pu.</div>
+  <p><strong>Step 2 — the far intersection.</strong> The post-fault curve crosses
+  <var>P<sub>m</sub></var> twice. The near crossing is
+  arcsin(0.8 / 1.294118) = arcsin(0.618182) = 0.666427&nbsp;rad = 38.183°. The far crossing
+  is</p>
+  <div class="eqc"><var>δ<sub>max</sub></var> = π − 0.666427 = 2.475165&nbsp;rad = 141.817°.</div>
+  <p><strong>Step 3 — critical clearing angle</strong>, from (1.13):</p>
+  <div class="eqc"><var>P<sub>m</sub></var>(<var>δ<sub>max</sub></var> − <var>δ<sub>0</sub></var>) = 0.8 × (2.475165 − 0.492383) = 0.8 × 1.982782 = 1.586226;<br>
+  cos <var>δ<sub>max</sub></var> = cos(2.475165) = −0.786035, so <var>P<sub>max,post</sub></var> cos <var>δ<sub>max</sub></var> = 1.294118 × (−0.786035) = −1.017222;<br>
+  numerator = 1.586226 − 1.017222 = 0.569004;<br>
+  cos <var>δ<sub>cr</sub></var> = 0.569004 / 1.294118 = 0.439685;<br>
+  <var>δ<sub>cr</sub></var> = arccos(0.439685) = 1.115549&nbsp;rad = 63.916°.</div>
+  <p><strong>Step 4 — area check.</strong> With
+  <var>δ<sub>cr</sub></var> − <var>δ<sub>0</sub></var> = 1.115549 − 0.492383 = 0.623166&nbsp;rad,</p>
+  <div class="eqc"><var>A<sub>acc</sub></var> = <var>P<sub>m</sub></var>(<var>δ<sub>cr</sub></var> − <var>δ<sub>0</sub></var>) = 0.8 × 0.623166 = 0.498533&nbsp;pu&nbsp;rad;<br>
+  <var>A<sub>dec</sub></var> = <var>P<sub>max,post</sub></var>(cos <var>δ<sub>cr</sub></var> − cos <var>δ<sub>max</sub></var>) − <var>P<sub>m</sub></var>(<var>δ<sub>max</sub></var> − <var>δ<sub>cr</sub></var>)<br>
+  = 1.294118 × (0.439685 + 0.786035) − 0.8 × 1.359616 = 1.586226 − 1.087693 = 0.498533&nbsp;pu&nbsp;rad.</div>
+  <p>The two areas agree to six digits, as (1.12) requires.</p>
+  <p><strong>Step 5 — critical clearing time</strong>, from (1.14):</p>
+  <div class="eqc">4<var>H</var>(<var>δ<sub>cr</sub></var> − <var>δ<sub>0</sub></var>) = 14 × 0.623166 = 8.724324;<br>
+  <var>ω<sub>0</sub></var><var>P<sub>m</sub></var> = 376.9911 × 0.8 = 301.5929;<br>
+  <var>t<sub>cr</sub></var> = √(8.724324 / 301.5929) = √0.0289275 = 0.170081&nbsp;s.</div>
+  <p>At 60&nbsp;Hz one cycle is 1/60 = 0.016667&nbsp;s, so
+  0.170081 × 60 = 10.205&nbsp;cycles.</p>
+  <p><strong>Interpretation.</strong> Transmission protection with a modern relay and
+  circuit breaker clears a three-phase fault in about 4 to 6 cycles
+  <span class="cite">[S04, Anderson and Fouad 2003, <em>Power System Control and
+  Stability</em>, 2nd ed., Ch.&nbsp;2 — verify]</span>. This machine therefore has 10.2&nbsp;cycles
+  against 6, a ratio of 1.7. A slower breaker, a heavier pre-fault loading, or a network
+  with a larger <var>X</var> would consume that ratio. Note
+  also that <var>t<sub>cr</sub></var> scales as √<var>H</var> in (1.14). Half the inertia
+  gives 0.7071 of the clearing time. That is 0.1203&nbsp;s, or 7.2&nbsp;cycles, against the
+  4 to 6 cycles a breaker needs.</p>
+</div>
+
+<figure id="fig-1-3">
+<svg viewBox="0 0 560 340" role="img" aria-label="The accelerating and decelerating areas of Example 1.2, shaded on the power-angle plane.">
+  <path class="fillA" d="M 135.2,170 L 230.4,170 L 230.4,290 L 135.2,290 Z"/>
+  <polygon class="fillD" points="230.4,170.0 230.4,115.7 235.8,112.8 241.1,110.1 246.4,107.7 251.8,105.5 257.1,103.5 262.4,101.7 267.8,100.2 273.1,98.9 278.4,97.8 283.8,97.0 289.1,96.4 294.4,96.0 299.8,95.9 305.1,96.0 310.4,96.3 315.8,96.9 321.1,97.7 326.4,98.8 331.8,100.1 337.1,101.6 342.4,103.3 347.8,105.3 353.1,107.5 358.4,109.9 363.8,112.5 369.1,115.4 374.4,118.5 379.8,121.7 385.1,125.2 390.4,128.9 395.8,132.8 401.1,136.9 406.4,141.1 411.8,145.6 417.1,150.2 422.4,155.0 427.8,159.9 433.1,165.0 438.2,170.0"/>
+  <line class="ax" x1="60" y1="290" x2="545" y2="290"/>
+  <line class="ax" x1="60" y1="20" x2="60" y2="295"/>
+  <text x="52" y="294" text-anchor="end">0</text>
+  <text x="52" y="219" text-anchor="end">0.5</text>
+  <text x="52" y="144" text-anchor="end">1.0</text>
+  <text x="52" y="69" text-anchor="end">1.5</text>
+  <text x="14" y="130" transform="rotate(-90 14 130)" class="lab">P (pu)</text>
+  <path class="c2" d="M 60.0,290.0 L 73.3,273.1 L 86.7,256.3 L 100.0,239.8 L 113.3,223.6 L 126.7,208.0 L 140.0,192.9 L 153.3,178.7 L 166.7,165.2 L 180.0,152.7 L 193.3,141.3 L 206.7,131.0 L 220.0,121.9 L 233.3,114.1 L 246.7,107.6 L 260.0,102.5 L 273.3,98.8 L 286.7,96.6 L 300.0,95.9 L 313.3,96.6 L 326.7,98.8 L 340.0,102.5 L 353.3,107.6 L 366.7,114.1 L 380.0,121.9 L 393.3,131.0 L 406.7,141.3 L 420.0,152.7 L 433.3,165.2 L 446.7,178.7 L 460.0,192.9 L 473.3,208.0 L 486.7,223.6 L 500.0,239.8 L 513.3,256.3 L 526.7,273.1 L 540.0,290.0"/>
+  <path class="c1" d="M 60.0,290.0 L 80.0,256.9 L 100.0,224.3 L 120.0,192.9 L 140.0,163.1 L 160.0,135.5 L 180.0,110.5 L 200.0,88.6 L 220.0,70.2 L 240.0,55.5 L 260.0,44.8 L 280.0,38.3 L 300.0,36.2 L 320.0,38.3 L 340.0,44.8 L 360.0,55.5 L 380.0,70.2 L 400.0,88.6 L 420.0,110.5 L 440.0,135.5 L 460.0,163.1 L 480.0,192.9 L 500.0,224.3 L 520.0,256.9 L 540.0,290.0"/>
+  <line class="c3" x1="60" y1="290" x2="240" y2="290"/>
+  <line class="c4" x1="60" y1="170" x2="540" y2="170"/>
+  <text x="538" y="163" text-anchor="end" class="lab">P_m = 0.8</text>
+  <line class="mark" x1="135.2" y1="170" x2="135.2" y2="300"/>
+  <line class="mark" x1="230.4" y1="115.7" x2="230.4" y2="300"/>
+  <line class="mark" x1="438.2" y1="170" x2="438.2" y2="300"/>
+  <text x="135.2" y="314" text-anchor="middle" class="lab">δ₀</text>
+  <text x="135.2" y="330" text-anchor="middle">28.21°</text>
+  <text x="230.4" y="314" text-anchor="middle" class="lab3">δ_cr</text>
+  <text x="230.4" y="330" text-anchor="middle">63.92°</text>
+  <text x="438.2" y="314" text-anchor="middle" class="lab2">δ_max</text>
+  <text x="438.2" y="330" text-anchor="middle">141.82°</text>
+  <text x="183" y="236" text-anchor="middle" class="lab3">A_acc</text>
+  <text x="183" y="252" text-anchor="middle">0.4985</text>
+  <text x="334" y="140" text-anchor="middle" class="lab2">A_dec</text>
+  <text x="334" y="156" text-anchor="middle">0.4985</text>
+  <text x="104" y="66" class="lab3">pre-fault</text>
+  <text x="300" y="86" text-anchor="middle" class="lab2">post-fault</text>
+</svg>
+<figcaption><b>Fig. 1.3 — The critical clearing angle is the angle at which the two areas
+are equal.</b> The same curves as Fig.&nbsp;1.1, with the areas of Theorem&nbsp;1.8 shaded.
+Orange rectangle: the accelerating area, accumulated from
+<var>δ<sub>0</sub></var> = 28.21° to <var>δ<sub>cr</sub></var> = 63.92° while
+<var>P<sub>e</sub></var> = 0. Its height is <var>P<sub>m</sub></var> = 0.8&nbsp;pu and its
+width is 0.623166&nbsp;rad, so <var>A<sub>acc</sub></var> = 0.498533&nbsp;pu&nbsp;rad. Teal
+region: the decelerating area between the post-fault curve and <var>P<sub>m</sub></var>,
+from <var>δ<sub>cr</sub></var> to <var>δ<sub>max</sub></var> = 141.82°, computed in
+Step&nbsp;4 of Example&nbsp;1.2 as
+<var>A<sub>dec</sub></var> = 0.498533&nbsp;pu&nbsp;rad. The two numbers agree to six digits,
+and that equality is what <em>defines</em> <var>δ<sub>cr</sub></var>. Clearing later than
+63.92° makes the orange area larger than any teal area that remains, and the machine is
+lost. Illustrates Theorem&nbsp;1.8 (R09) and Example&nbsp;1.2 (R10).</figcaption>
+</figure>
+
+<figure id="fig-1-4">
+<svg viewBox="0 0 560 360" role="img" aria-label="Rotor angle against time for a fault cleared at 0.15 seconds and at 0.19 seconds.">
+  <line class="grid" x1="60" y1="222.5" x2="545" y2="222.5"/>
+  <line class="grid" x1="60" y1="155" x2="545" y2="155"/>
+  <line class="grid" x1="60" y1="87.5" x2="545" y2="87.5"/>
+  <line class="grid" x1="60" y1="20" x2="545" y2="20"/>
+  <line class="ax" x1="60" y1="290" x2="545" y2="290"/>
+  <line class="ax" x1="60" y1="16" x2="60" y2="320"/>
+  <text x="52" y="294" text-anchor="end">0</text>
+  <text x="52" y="226" text-anchor="end">50</text>
+  <text x="52" y="159" text-anchor="end">100</text>
+  <text x="52" y="91" text-anchor="end">150</text>
+  <text x="52" y="24" text-anchor="end">200</text>
+  <text x="14" y="140" transform="rotate(-90 14 140)" class="lab">δ (degrees)</text>
+  <text x="60" y="336" text-anchor="middle">0</text>
+  <text x="180" y="336" text-anchor="middle">0.3</text>
+  <text x="300" y="336" text-anchor="middle">0.6</text>
+  <text x="420" y="336" text-anchor="middle">0.9</text>
+  <text x="540" y="336" text-anchor="middle">1.2</text>
+  <text x="300" y="356" text-anchor="middle" class="lab">time t (s)</text>
+  <line class="mark" x1="120" y1="16" x2="120" y2="320"/>
+  <line class="mark" x1="136" y1="16" x2="136" y2="320"/>
+  <text x="114" y="13" text-anchor="end" class="lab2">0.15 s</text>
+  <text x="142" y="13" class="lab3">0.19 s</text>
+  <path class="c2" d="M 60.0,251.9 L 68.0,251.3 L 76.0,249.3 L 84.0,245.9 L 91.9,241.3 L 99.9,235.3 L 107.9,228.0 L 115.9,219.4 L 123.9,209.6 L 131.9,200.2 L 139.8,191.4 L 147.8,183.3 L 155.8,176.0 L 163.8,169.4 L 171.8,163.8 L 179.8,158.9 L 187.7,154.8 L 195.7,151.5 L 203.7,149.0 L 211.7,147.3 L 219.7,146.2 L 227.7,146.0 L 235.6,146.4 L 243.6,147.6 L 251.6,149.5 L 259.6,152.2 L 267.6,155.6 L 275.6,159.8 L 283.6,164.9 L 291.5,170.7 L 299.5,177.4 L 307.5,184.9 L 315.5,193.1 L 323.5,202.1 L 331.5,211.7 L 339.4,221.7 L 347.4,232.1 L 355.4,242.7 L 363.4,253.1 L 371.4,263.2 L 379.4,272.7 L 387.3,281.3 L 395.3,288.9 L 403.3,295.1 L 411.3,299.9 L 419.3,303.1 L 427.3,304.6 L 435.2,304.4 L 443.2,302.5 L 451.2,298.9 L 459.2,293.7 L 467.2,287.1 L 475.2,279.2 L 483.2,270.4 L 491.1,260.7 L 499.1,250.5 L 507.1,240.0 L 515.1,229.5 L 523.1,219.2 L 531.1,209.2 L 539.0,199.8"/>
+  <path class="c1" d="M 60.0,251.9 L 68.0,251.3 L 76.0,249.3 L 84.0,245.9 L 91.9,241.3 L 99.9,235.3 L 107.9,228.0 L 115.9,219.4 L 123.9,209.4 L 131.9,198.1 L 139.8,185.8 L 147.8,173.9 L 155.8,162.8 L 163.8,152.5 L 171.8,143.1 L 179.8,134.3 L 187.7,126.1 L 195.7,118.4 L 203.7,111.1 L 211.7,104.1 L 219.7,97.2 L 227.7,90.2 L 235.6,83.1 L 243.6,75.6 L 251.6,67.5 L 259.6,58.7 L 267.6,48.9 L 275.6,37.8 L 283.6,25.1 L 289.5,14.3"/>
+  <text x="298" y="200" class="lab2">clear at 0.15 s — stable</text>
+  <text x="296" y="34" class="lab3">clear at 0.19 s — loses synchronism</text>
+</svg>
+<figcaption><b>Fig. 1.4 — The stability boundary sits between 0.15&nbsp;s and
+0.19&nbsp;s.</b> Numerical integration of the undamped swing equation (1.7) with (1.8), for
+the machine and the event of Example&nbsp;1.2, by second-order Runge–Kutta at a step of
+10&nbsp;μs, starting from <var>δ</var> = 28.211° at rest. Teal, cleared at 0.15&nbsp;s: the
+angle reaches a first peak of 106.7° and swings back, then oscillates undamped. Orange,
+cleared at 0.19&nbsp;s: the angle passes <var>δ<sub>max</sub></var> = 141.82° with speed
+still positive and runs away; the trace crosses 200° at 0.5662&nbsp;s, and
+reaches 1206° at 1.2&nbsp;s. A bisection on clearing time over the same integration, with failure declared when
+<var>δ</var> passes 200° inside the simulated window, depends on the window length. A
+1.2&nbsp;s window gives 0.1703&nbsp;s; a 1.5&nbsp;s window gives 0.1701&nbsp;s; a 3&nbsp;s
+window gives 0.170085&nbsp;s. The last value sits 4&nbsp;μs above the 0.170081&nbsp;s of
+(1.14). That residual is the 10&nbsp;μs step: an exact fault-on solution followed by a
+fourth-order integrator converges to 0.170081&nbsp;s. The window matters because a rotor
+cleared just after <var>t<sub>cr</sub></var> lingers near <var>δ<sub>max</sub></var>
+before it runs away. Illustrates Theorem&nbsp;1.8 (R09) and
+Example&nbsp;1.2 (R10).</figcaption>
+</figure>
+
+<h3 id="s1-6-1">1.6.1 Where this chapter sits: the stability classification</h3>
+
+<p>The chapter has now produced a complete account of one machine. It is worth naming where
+that account sits in the wider subject, and then naming the single physical assumption it
+rests on.</p>
+
+<div class="res rem" id="rem-1-1" data-rid="R11">
+  <p class="head">Remark 1.1 (classification of power-system stability) <span class="rid">R11</span></p>
+  <p><span class="status">Cited, not proved here</span></p>
+  <p>The accepted classification divides power-system stability into three classes
+  <span class="cite">[S02, Kundur et&nbsp;al. 2004, "Definition and Classification of Power
+  System Stability", <em>IEEE Trans. Power Systems</em> 19(3), 1387–1401, §II — verify]</span>:</p>
+  <ul>
+  <li><strong>Rotor-angle stability</strong> — whether synchronous machines stay in step.
+  It divides into small-disturbance rotor-angle stability, which is §1.5, and transient
+  stability, which is §1.6.</li>
+  <li><strong>Frequency stability</strong> — whether the system frequency stays inside
+  acceptable limits after a large imbalance. Chapter&nbsp;4 works this class.</li>
+  <li><strong>Voltage stability</strong> — whether bus voltages stay acceptable after a
+  disturbance. Not covered in this book.</li>
+  </ul>
+  <p>The 2021 revision of that classification adds two classes that the 2004 classification did
+  not contain <span class="cite">[S03, Hatziargyriou et&nbsp;al. 2021, "Definition and
+  Classification of Power System Stability — Revisited and Extended", <em>IEEE Trans. Power
+  Systems</em> 36(4), 3271–3281, §III — verify]</span>:</p>
+  <ul>
+  <li><strong>Converter-driven stability</strong>, split into slow-interaction and
+  fast-interaction phenomena. Chapter&nbsp;2 derives one slow-interaction mechanism.</li>
+  <li><strong>Resonance stability</strong>, covering torsional and electrical resonance.
+  Not covered in this book.</li>
+  </ul>
+  <p>That two classes had to be added in 2021 is itself the evidence that the classical
+  picture is incomplete for a converter-dominated system.</p>
+</div>
+
+<h3 id="s1-6-2">1.6.2 The single assumption</h3>
+
+<p>Look back at what produced each result. One object appears in every line.</p>
+
+<div class="tw">
+<table>
+<caption>Every result of Chapter&nbsp;1 traced back to the rotor.</caption>
+<thead><tr><th>Result</th><th>What it needs</th><th>Where that comes from</th></tr></thead>
+<tbody>
+<tr><td>Swing equation (1.7), Model 1.4</td><td>a mass that integrates power imbalance</td><td>the rotor's moment of inertia <var>J</var></td></tr>
+<tr><td><var>H</var>, Definition 1.3</td><td>stored kinetic energy at rated speed</td><td>the rotor's mass and radius</td></tr>
+<tr><td><var>K<sub>s</sub></var>, Lemma 1.6</td><td>a voltage source of fixed magnitude behind a reactance, whose angle is a physical position</td><td>the rotor's angular position, not a measurement</td></tr>
+<tr><td><var>ω<sub>n</sub></var> and <var>ζ</var>, Theorem 1.7</td><td>both of the above</td><td>the rotor</td></tr>
+<tr><td><var>t<sub>cr</sub></var>, Theorem 1.8</td><td>the kinetic energy the rotor absorbs during the fault</td><td>the rotor</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>An inverter has no rotor. It has a direct-current capacitor whose stored energy is
+smaller by a factor that Chapter&nbsp;3 computes exactly. It also has an angle that
+conventional control takes from a measurement, not from a state. None of the five rows above therefore
+transfers automatically. Chapter&nbsp;2 shows what happens to an inverter that takes its
+angle from a measurement as the machines around it retire. It derives a limit that is the
+structural twin of Lemma&nbsp;1.6. That limit is a term of the form (voltage) × cos(angle).
+It falls to zero, and it takes the loop's stability with it. Chapter&nbsp;3 asks which of the five rows a
+control law can rebuild. Chapter&nbsp;4 asks how much of it a system needs.</p>
+
+<p><strong>What you can now do.</strong> (1) Write the swing equation of a machine in per
+unit from its moment of inertia and rating, Model&nbsp;1.4. (2) Compute the synchronizing
+torque coefficient of a machine against an infinite bus, Lemma&nbsp;1.6. (3) From it,
+compute the natural frequency and damping ratio of the swing mode, Theorem&nbsp;1.7.
+(4) Decide small-signal stability from the sign of two coefficients. (5) Compute a critical
+clearing angle and time by the equal-area criterion, Theorem&nbsp;1.8. Chapter&nbsp;2 asks which of these survive
+when the rotor is removed.</p>
+
+<h3 id="s1-6-3">1.6.3 What this chapter does not cover</h3>
+
+<ul>
+<li><strong>Anything faster than the fundamental frequency.</strong> Model&nbsp;1.5 assumes
+balanced fundamental-frequency phasors. Electromagnetic transients, travelling waves and
+switching behaviour are outside it.</li>
+<li><strong>Flux and excitation dynamics.</strong> <var>E′</var> was held constant. Over
+several seconds it decays, and an automatic voltage regulator moves it deliberately. Both
+change <var>K<sub>s</sub></var>, and excitation can change the sign of the damping
+contribution <span class="cite">[S01, Kundur 1994, <em>Power System Stability and
+Control</em>, Ch.&nbsp;12 — verify]</span>.</li>
+<li><strong>More than one machine.</strong> The infinite bus is an idealisation that removes the
+dynamics of the other machines. Chapter&nbsp;4 replaces it with a network.</li>
+<li><strong>Governor and turbine response.</strong> Absent from (1.7) by assumption. It
+matters on the timescale of Chapter&nbsp;4, not on the timescale of §1.6.</li>
+<li><strong>Protection engineering.</strong> §1.6 produces a time budget for a protection
+scheme. It does not design one.</li>
+</ul>
+
+
+<h3 id="s1-notation">Notation of this chapter</h3>
+
+<p>Every symbol below is defined in the prose before its first use. This list exists so that
+a reader can check a symbol without hunting for it. The first block is book-wide notation.
+The second block is local to this chapter.</p>
+
+<div class="tw">
+<table>
+<caption>Book-wide symbols used in Chapter&nbsp;1.</caption>
+<thead><tr><th>Symbol</th><th>Meaning</th><th>Unit</th><th>Defined</th></tr></thead>
+<tbody>
+<tr><td><var>S<sub>base</sub></var></td><td>three-phase base apparent power of a unit</td><td>VA (MVA)</td><td>§1.2</td></tr>
+<tr><td><var>V<sub>base</sub></var></td><td>line-to-line base voltage</td><td>V (kV)</td><td>§1.2</td></tr>
+<tr><td><var>I<sub>base</sub></var></td><td>base current</td><td>A</td><td>§1.2</td></tr>
+<tr><td><var>Z<sub>base</sub></var></td><td>base impedance</td><td>ohm</td><td>§1.2</td></tr>
+<tr><td><var>f<sub>0</sub></var></td><td>rated system frequency; 60&nbsp;Hz in every example here</td><td>Hz</td><td>§1.2</td></tr>
+<tr><td><var>ω<sub>0</sub></var></td><td>rated electrical angular frequency, 2π<var>f<sub>0</sub></var></td><td>rad/s</td><td>§1.2</td></tr>
+<tr><td><var>ω<sub>base</sub></var></td><td>base angular frequency; equal to <var>ω<sub>0</sub></var></td><td>rad/s</td><td>§1.2</td></tr>
+<tr><td><var>δ</var></td><td>rotor angle against the synchronous reference frame</td><td>rad (printed in degrees where noted)</td><td>§1.3</td></tr>
+<tr><td><var>δ<sub>0</sub></var></td><td>equilibrium value of <var>δ</var></td><td>rad</td><td>§1.4</td></tr>
+<tr><td><var>ω</var></td><td>electrical angular frequency of the unit</td><td>rad/s</td><td>§1.3</td></tr>
+<tr><td><var>ω<sub>m</sub></var></td><td>mechanical angular speed of the rotor</td><td>rad/s</td><td>§1.3</td></tr>
+<tr><td><var>Δω</var></td><td>per-unit speed deviation (one symbol, not a perturbation)</td><td>dimensionless</td><td>§1.3</td></tr>
+<tr><td><var>J</var></td><td>rotor moment of inertia</td><td>kg&nbsp;m<sup>2</sup></td><td>§1.3</td></tr>
+<tr><td><var>H</var></td><td>inertia constant</td><td>s</td><td>§1.3</td></tr>
+<tr><td><var>E<sub>kin</sub></var></td><td>kinetic energy stored by a unit at rated speed</td><td>J (MJ)</td><td>§1.3</td></tr>
+<tr><td><var>K<sub>D</sub></var></td><td>damping coefficient of the per-unit swing equation</td><td>pu</td><td>§1.3</td></tr>
+<tr><td><var>P<sub>m</sub></var></td><td>mechanical power input</td><td>pu</td><td>§1.3</td></tr>
+<tr><td><var>P<sub>e</sub></var></td><td>electrical power output</td><td>pu</td><td>§1.3</td></tr>
+<tr><td><var>T<sub>m</sub></var>, <var>T<sub>e</sub></var></td><td>mechanical and electrical torque</td><td>pu</td><td>§1.3</td></tr>
+<tr><td><var>E′</var></td><td>constant emf magnitude behind transient reactance</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>X′<sub>d</sub></var></td><td>direct-axis transient reactance</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>X<sub>t</sub></var></td><td>transformer reactance</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>X<sub>L</sub></var></td><td>reactance of one transmission line</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>X</var></td><td>total reactance between <var>E′</var> and the infinite bus</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>V<sub>inf</sub></var></td><td>infinite-bus voltage magnitude</td><td>pu</td><td>§1.4</td></tr>
+<tr><td><var>K<sub>s</sub></var></td><td>synchronizing torque coefficient</td><td>pu/rad</td><td>§1.5</td></tr>
+<tr><td><var>ω<sub>n</sub></var></td><td>undamped natural frequency of the swing mode</td><td>rad/s</td><td>§1.5</td></tr>
+<tr><td><var>ζ</var></td><td>damping ratio of the swing mode</td><td>dimensionless</td><td>§1.5</td></tr>
+<tr><td><var>δ<sub>cr</sub></var></td><td>critical clearing angle</td><td>rad</td><td>§1.6</td></tr>
+<tr><td><var>δ<sub>max</sub></var></td><td>largest angle with decelerating area available</td><td>rad</td><td>§1.6</td></tr>
+<tr><td><var>t<sub>cr</sub></var></td><td>critical clearing time</td><td>s</td><td>§1.6</td></tr>
+<tr><td><var>A<sub>acc</sub></var>, <var>A<sub>dec</sub></var></td><td>accelerating and decelerating areas</td><td>pu&nbsp;rad</td><td>§1.6</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note">
+<span class="nh">Local notation — symbols outside the book-wide table</span>
+<p>These symbols are local to Chapter&nbsp;1. They are listed here because the book-wide
+notation table does not contain them.</p>
+<ul>
+<li><var>t</var> — time, in seconds.</li>
+<li><var>λ</var> — a root of the characteristic polynomial of the linearised model, in
+s<sup>−1</sup>. The book-wide table defines <var>λ</var> with a mode index in
+Chapter&nbsp;4; here it carries no index.</li>
+<li><var>j</var> — the imaginary unit.</li>
+<li>Δ before any other symbol — a small perturbation of that symbol about its equilibrium,
+as in Δ<var>δ</var>. The single symbol <var>Δω</var> is the one exception: it is not a
+perturbation of <var>ω</var> in this sense, but the per-unit speed deviation of the
+book-wide table, (<var>ω</var> − <var>ω<sub>0</sub></var>)/<var>ω<sub>0</sub></var>.</li>
+<li><var>q</var>, <var>q<sub>base</sub></var> — a general physical quantity and its base,
+used only to state the per-unit definition in §1.2.</li>
+<li><var>N<sub>1</sub></var>, <var>N<sub>2</sub></var> — turns on the primary and secondary
+windings of the transformer of §1.2.</li>
+<li><var>Z<sub>1</sub></var>, <var>Z<sub>2</sub></var> — an impedance referred to the
+primary side and to the secondary side of that transformer, in ohms.</li>
+<li><var>p</var> — number of magnetic poles of a machine.</li>
+<li><var>P<sub>max</sub></var> — the amplitude of the power-angle curve, equal to
+<var>E′</var><var>V<sub>inf</sub></var>/<var>X</var>. The qualified forms
+<var>P<sub>max,pre</sub></var> and <var>P<sub>max,post</sub></var> are its values before the
+fault and after the faulted line is tripped.</li>
+<li><var>M</var> — the inertia coefficient 2<var>H</var>/<var>ω<sub>0</sub></var> of the
+alternative swing-equation convention. Named in §1.3, then never used.</li>
+<li><var>K′<sub>D</sub></var> — the damping coefficient of that alternative convention,
+acting on a speed deviation in rad/s. Named in §1.3, used only in Exercise&nbsp;3.</li>
+<li><var>D</var>, <var>D<sub>load</sub></var>, <var>D<sub>v</sub></var>,
+<var>D<sub>eq</sub></var> — damping symbols this book does <em>not</em> use for the swing
+equation. See the notation decision of §1.3 for what each is reserved for instead.</li>
+<li><var>K<sub>D,v</sub></var>, <var>K<sub>D,eq</sub></var> — the virtual and equivalent
+damping coefficients of Chapter&nbsp;3. Named once, in the notation decision of §1.3, so
+that the reader meets the book's spelling of them; not used in this chapter.</li>
+<li><var>I</var>, <var>S</var> — the phasor current from the machine to the infinite bus, and
+the complex power delivered to the bus. Both are used only in the derivation of (1.8) in
+§1.4.</li>
+</ul>
+</div>
+
+<hr>
+
+<h2 id="s1-ex">Exercises</h2>
+
+<div class="exercise" id="exr-1-1">
+<p class="head">Exercise 1.<span class="tag">conceptual</span></p>
+<p>A machine operates at <var>δ<sub>0</sub></var> = 95°. State whether it is small-signal
+stable, and name the term that decides.</p>
+<details><summary>Answer target</summary>
+<p>Not stable. The deciding term is the synchronizing torque coefficient of Lemma&nbsp;1.6:
+<var>K<sub>s</sub></var> = (<var>E′</var><var>V<sub>inf</sub></var>/<var>X</var>) cos 95°,
+and cos&nbsp;95° = −0.087156, so <var>K<sub>s</sub></var> &lt; 0. By Theorem&nbsp;1.7 the
+constant term of (1.11) is then negative, the product of the two roots is negative, and one
+root is real and positive.</p>
+<p>With the numbers of Example&nbsp;1.1 (<var>P<sub>max,pre</sub></var> = 1.692308&nbsp;pu,
+<var>H</var> = 3.5&nbsp;s, <var>K<sub>D</sub></var> = 2&nbsp;pu):
+<var>K<sub>s</sub></var> = 1.692308 × (−0.0871557) = −0.147494&nbsp;pu/rad, the polynomial is
+<var>λ</var><sup>2</sup> + 0.285714<var>λ</var> − 7.943436 = 0, and the roots are
+<var>λ</var> = +2.679&nbsp;s<sup>−1</sup> and −2.965&nbsp;s<sup>−1</sup>. The positive root
+means the angle runs away. Damping cannot save it: <var>K<sub>D</sub></var> appears only in
+the linear term, and no value of it makes a negative constant term positive.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-1-2">
+<p class="head">Exercise 2.<span class="tag">derivational</span></p>
+<p>Derive <var>H</var> for a rotor of <var>J</var> = 5000&nbsp;kg&nbsp;m<sup>2</sup> on a
+four-pole machine at 60&nbsp;Hz rated 200&nbsp;MVA.</p>
+<details><summary>Answer target</summary>
+<p>From Definition&nbsp;1.2, <var>ω<sub>m</sub></var> = 2<var>ω</var>/<var>p</var> with
+<var>p</var> = 4, so <var>ω<sub>m</sub></var> = 2π × 60 / 2 = 188.4956&nbsp;rad/s, that is
+1800&nbsp;rpm. From (1.4),
+<var>E<sub>kin</sub></var> = ½ × 5000 × 188.4956<sup>2</sup> = 88.826&nbsp;MJ. From
+(1.5), <var>H</var> = 88.826&nbsp;MJ / 200&nbsp;MVA = 0.44413&nbsp;s, that is 0.4441&nbsp;s.</p>
+<p><strong>Comment.</strong> 0.4441&nbsp;s is 22&nbsp;% of the lower end of the 2&nbsp;s to
+8&nbsp;s range quoted in Definition&nbsp;1.3 <span class="cite">[S01, Kundur 1994, <em>Power System Stability and
+Control</em>, Ch.&nbsp;3 — verify]</span>. Against the <var>H</var> = 3.5&nbsp;s of
+Example&nbsp;1.1, this rotor alone supplies 0.4441/3.5 = 12.7&nbsp;% of the inertia. The
+turbine stages, the exciter and the shaft carry the rest. The number to quote for a unit is
+always the inertia of the complete turbo-set, never of the generator rotor alone.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-1-3">
+<p class="head">Exercise 3.<span class="tag">derivational</span></p>
+<p>Show that writing the damping term as
+<var>K′<sub>D</sub></var>(<var>ω</var> − <var>ω<sub>0</sub></var>), with <var>ω</var> in
+rad/s, while keeping 2<var>H</var> d<var>Δω</var>/d<var>t</var> on the left-hand side of
+(1.7), multiplies the computed <var>ζ</var> by <var>ω<sub>0</sub></var>.</p>
+<details><summary>Answer target</summary>
+<p>By (1.2), <var>ω</var> − <var>ω<sub>0</sub></var> =
+<var>ω<sub>0</sub></var><var>Δω</var>. So the mixed equation reads
+2<var>H</var> d<var>Δω</var>/d<var>t</var> = <var>P<sub>m</sub></var> −
+<var>P<sub>e</sub></var> −
+<var>K′<sub>D</sub></var><var>ω<sub>0</sub></var><var>Δω</var>, which is (1.7) with
+<var>K<sub>D</sub></var> replaced by
+<var>K′<sub>D</sub></var><var>ω<sub>0</sub></var>. Carry that through Theorem&nbsp;1.7. It
+leaves <var>ω<sub>n</sub></var> unchanged, because <var>ω<sub>n</sub></var> does not contain
+the damping coefficient, and it multiplies
+<var>ζ</var> = <var>K<sub>D</sub></var>/(4<var>H</var><var>ω<sub>n</sub></var>) by
+<var>ω<sub>0</sub></var>.</p>
+<p>For Example&nbsp;1.1: <var>ζ</var> = 376.9911 × 0.0159407 = 6.0095. That would report a
+machine which rings for seven seconds as strongly overdamped, with no oscillation at all.
+The two conventions differ by a factor of 377 in this one number, which is why §1.3 fixes
+one convention and excludes the other.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-1-4">
+<p class="head">Exercise 4.<span class="tag">computational</span></p>
+<p>Integrate the swing equation for the event of Example&nbsp;1.2. Find the clearing time at
+which the machine first fails to return. Use a resolution of 1&nbsp;ms.</p>
+<details><summary>Answer target</summary>
+<p>The answer lies between 0.169&nbsp;s and 0.171&nbsp;s. Use (1.7) with
+<var>K<sub>D</sub></var> = 0, <var>P<sub>e</sub></var> = 0 before the clearing time and
+<var>P<sub>e</sub></var> = 1.294118 sin <var>δ</var> after it, starting from
+<var>δ</var> = 0.492383&nbsp;rad with <var>Δω</var> = 0. Declare failure when <var>δ</var>
+exceeds a large threshold, for example 200°, and bisect on the clearing time. The reference integration behind Fig.&nbsp;1.4 uses second-order Runge–Kutta, step
+10&nbsp;μs, failure threshold 200°. It returns 0.1701&nbsp;s with a 1.5&nbsp;s window and
+0.170085&nbsp;s with a 3&nbsp;s window. Report the value <em>your</em> run returns, with the
+step size, the threshold and the window you used. A short window biases the result upward:
+a rotor cleared just after <var>t<sub>cr</sub></var> lingers near <var>δ<sub>max</sub></var>
+before it runs away. A finite step leaves a residual of a few microseconds.</p>
+<p><strong>Why the two values agree.</strong> The equal-area result 0.170081&nbsp;s from
+(1.14) and the integrated value are the same calculation done two ways, because damping is
+neglected in both. Adding <var>K<sub>D</sub></var> = 2&nbsp;pu to the integration would push
+the boundary slightly later, since damping removes energy from the swing. The equal-area
+value is then a conservative estimate, as Theorem&nbsp;1.8 states.</p>
+</details>
+</div>
+
+<div class="exercise" id="exr-1-5">
+<p class="head">Exercise 5.<span class="tag">computational</span></p>
+<p>Repeat Example&nbsp;1.1 for <var>H</var> over 2, 3.5, 6 and 8&nbsp;s, and plot
+<var>ω<sub>n</sub></var> and <var>ζ</var>. Verify the scaling exponent numerically before
+you state it.</p>
+<details><summary>Answer target</summary>
+<p>Hold <var>K<sub>s</sub></var> = 1.491276&nbsp;pu/rad and
+<var>K<sub>D</sub></var> = 2&nbsp;pu, and use (1.10):</p>
+<div class="tw"><table>
+<thead><tr><th><var>H</var> (s)</th><th><var>ω<sub>n</sub></var> (rad/s)</th><th><var>ω<sub>n</sub></var> (Hz)</th><th><var>ζ</var></th></tr></thead>
+<tbody>
+<tr><td>2.0</td><td>11.8554</td><td>1.8868</td><td>0.02109</td></tr>
+<tr><td>3.5</td><td>8.9618</td><td>1.4263</td><td>0.01594</td></tr>
+<tr><td>6.0</td><td>6.8447</td><td>1.0894</td><td>0.01217</td></tr>
+<tr><td>8.0</td><td>5.9277</td><td>0.9434</td><td>0.01054</td></tr>
+</tbody></table></div>
+<p>Both quantities scale as <var>H</var><sup>−0.5</sup>. The numerical check over the two
+endpoints confirms the exponent: log(5.9277/11.8554)/log(8/2) = −0.50000 for
+<var>ω<sub>n</sub></var>, and log(0.0105438/0.0210875)/log(8/2) = −0.50000 for <var>ζ</var>, using the unrounded values 0.0210875 and 0.0105438 that the table prints as 0.02109 and 0.01054. The rounded table values give −0.5003.</p>
+<p><strong>Why.</strong> <var>ω<sub>n</sub></var> ∝ <var>H</var><sup>−0.5</sup> directly
+from (1.10). For the damping ratio,
+<var>ζ</var> = <var>K<sub>D</sub></var>/(4<var>H</var><var>ω<sub>n</sub></var>) ∝
+<var>H</var><sup>−1</sup> × <var>H</var><sup>+0.5</sup> = <var>H</var><sup>−0.5</sup>.
+Adding inertia therefore slows the oscillation and damps it less, in the same proportion.
+Inertia is not a substitute for damping.</p>
+</details>
+</div>
+
+<hr>
+<p class="cite">Every source identifier above refers to §5.2 of the book plan. Every citation
+carries the mark <em>verify</em>, because no source page was read while this chapter was
+drafted. Only a human who has read the cited page may remove that mark.</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+{
+  "scenario": "cost-curve",
+  "case": "grid-forming BESS replacing a 1.6 GVA synchronous condenser fleet for frequency response",
+  "source": "p1-textbook/ch4.html, section 4.5, Example 4.2 (R39), eq (4.11)-(4.13); same base model as inertia-constant.py",
+  "n_samples": 10000,
+  "seed": 20260922,
+  "varied_uncertainty": "unit cost of the BESS: power cost (USD/kW, converter + grid connection) and energy cost (USD/kWh, cells + racks + BMS); condenser H held fixed at 3.5 s (textbook value), unlike inertia-constant.py",
+  "results": {
+    "bess_power_headroom_MW": {
+      "unit": "MW",
+      "meaning": "required BESS response power at RoCoF 1 Hz/s, eq (4.12); fixed (H held at 3.5 s)",
+      "p5": 224.0,
+      "p50": 224.0,
+      "p95": 224.0,
+      "mean": 224.0
+    },
+    "bess_converter_rating_MVA": {
+      "unit": "MVA",
+      "meaning": "grid-forming converter rating at H_v 5.0 s (0.20 pu headroom), eq (4.13); fixed",
+      "p5": 1120.0,
+      "p50": 1120.0,
+      "p95": 1120.0,
+      "mean": 1120.0
+    },
+    "bess_energy_required_MWh": {
+      "unit": "MWh",
+      "meaning": "energy released over a 0.8 Hz excursion, eq (4.11); fixed physical energy need",
+      "p5": 0.049778,
+      "p50": 0.049778,
+      "p95": 0.049778,
+      "mean": 0.049778
+    },
+    "bess_energy_one_hour_store_MWh": {
+      "unit": "MWh",
+      "meaning": "store size under the textbook one-hour assumption; fixed",
+      "p5": 1120.0,
+      "p50": 1120.0,
+      "p95": 1120.0,
+      "mean": 1120.0
+    },
+    "cost_power_USD_per_kW": {
+      "unit": "USD/kW",
+      "meaning": "sampled unit cost of converter + grid connection (the input)",
+      "p5": 136.036434,
+      "p50": 213.361968,
+      "p95": 306.931221,
+      "mean": 216.730437
+    },
+    "cost_energy_USD_per_kWh": {
+      "unit": "USD/kWh",
+      "meaning": "sampled unit cost of cells + racks + BMS (the input)",
+      "p5": 188.128663,
+      "p50": 276.131299,
+      "p95": 394.645154,
+      "mean": 282.534683
+    },
+    "capex_one_hour_store_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the one-hour store, at sampled unit costs",
+      "p5": 418.686021,
+      "p50": 555.392826,
+      "p95": 714.096023,
+      "mean": 559.176935
+    },
+    "capex_min_energy_MUSD": {
+      "unit": "million USD",
+      "meaning": "capex with the store sized to the physical energy need only, at sampled unit costs",
+      "p5": 152.373461,
+      "p50": 238.978847,
+      "p95": 343.775302,
+      "mean": 242.752154
+    }
+  },
+  "context": {
+    "system_stored_energy_MJ": 200000.0,
+    "reference_loss_MW": 1000.0,
+    "fleet_stored_energy_MJ_at_H_3p5": 5600.0
+  },
+  "findings": [
+    "MW and MWh outputs are constant across all 10,000 samples (224 MW headroom, 1120 MVA, 1120 MWh one-hour store), because only unit cost is varied here; see inertia-constant.py for the sizing-side (H) uncertainty.",
+    "One-hour-store capex at the mode unit costs (200 USD/kW, 250 USD/kWh) is 504.0 MUSD, matching the placeholder figure implied by inertia-constant.py at H = 3.5 s.",
+    "The p5-p95 range of one-hour-store capex reflects only unit-cost uncertainty (independent triangular draws on power cost and energy cost), not sizing uncertainty; combining this with the inertia-constant.py H spread would widen the range further.",
+    "capex_min_energy_MUSD is far below capex_one_hour_store_MUSD because the physical energy need (179.2 MJ = 0.0498 MWh) is about 22,500 times smaller than the one-hour store (1120 MWh); almost all one-hour-store capex is energy cost, so it is far more sensitive to cost_energy_USD_per_kWh than to cost_power_USD_per_kW."
+  ],
+  "assumptions": [
+    "Condenser H fixed at 3.5 s, ch4 Example 4.2 ('assumed for this case - verify against a manufacturer figure'); not varied in this scenario.",
+    "Power cost ~ triangular(100, 200, 350) USD/kW (converter + grid connection). Mode 200 matches the inertia-constant.py placeholder; bounds span the general published range for grid-scale grid-forming BESS converters, an assumption of this study, not read from a source in this run.",
+    "Energy cost ~ triangular(150, 250, 450) USD/kWh (cells + racks + BMS). Mode 250 matches the inertia-constant.py placeholder; bounds likewise an assumption of this study, not read from a source in this run. Verify both ranges against a vendor quote or a published benchmark (e.g. NREL ATB, Lazard LCOS) before use in a bid.",
+    "Power cost and energy cost drawn independently (no assumed correlation); a partial correlation is plausible in practice but has no sourced coefficient here.",
+    "f0 = 50 Hz; RoCoF = 1.0 Hz/s (ch4 eq 4.12, DS3 / GB loss-of-mains figure [S16 - verify]); excursion 0.8 Hz (ch4 eq 4.11); H_v = 5.0 s (ch4 eq 4.13, 'assumed for this case'); current limit 1.2 pu (ch4 Constraint 3); one-hour store (ch4 Constraint 1, 'assumed for this case'). All fixed, all from ch4.html Example 4.2 unless marked assumption.",
+    "Fleet: 8 x 200 MVA = 1.6 GVA, ch4 Example 4.2 (the brief's '1.6 GW' is written as 1.6 GVA in the textbook).",
+    "System context 200 GVA.s and 1000 MW loss from ch4 Example 4.1; used only for reporting, not in the sizing or cost.",
+    "No response delay, no degradation, no outage, no financing or O&M cost, no currency/time discounting: capex is a simple unit-cost x quantity figure, other P5 scenarios cover the other effects."
+  ]
+}
